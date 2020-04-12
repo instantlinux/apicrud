@@ -3,7 +3,7 @@
 
 MAXFAIL    ?= 1000
 PYPI_URL   ?= https://upload.pypi.org/legacy/
-PYPI_USER  ?= svc_docker
+PYPI_USER  ?= $(USER)
 VERSION    ?= $(shell grep -o '[0-9.]*' apicrud/_version.py)
 REGISTRY   ?= $(REGISTRY_URI)
 export EXAMPLE_ENV ?= local
