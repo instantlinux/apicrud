@@ -1,7 +1,0 @@
-README.md
-setup.py
-apicrud.egg-info/PKG-INFO
-apicrud.egg-info/SOURCES.txt
-apicrud.egg-info/dependency_links.txt
-apicrud.egg-info/requires.txt
-apicrud.egg-info/top_level.txt
