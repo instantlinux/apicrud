@@ -1,0 +1,51 @@
+# Usage:
+# Set these private variables in gitlab-ci environment:
+#   CI_JOB_TOKEN
+#   DOCKER_LOGIN
+
+variables:
+  REGISTRY: nexus.instantlinux.net
+  GIT_SSL_NO_VERIFY: "1"
+
+stages:
+  - Analyze and Unit Test
+  - publish
+  - Clean
+
+# See https://gitlab.com/gitlab-org/gitlab-ce/issues/47517
+cache:
+  paths: [ .targets ]
+image: instantlinux/python-builder:3.8.2-r0
+
+before_script:
+  - export TAG=bld_$CI_PIPELINE_IID_${CI_COMMIT_SHA:0:7}
+
+.registry_template: &registry_login
+  before_script:
+  - export TAG=bld_$CI_PIPELINE_IID_${CI_COMMIT_SHA:0:7}
+  - docker login -u $DOCKER_LOGIN -p $CI_JOB_TOKEN $REGISTRY
+
+.create_image_template: &create_image
+  script: make create_image && echo k8s/$CI_JOB_STAGE >> .targets
+
+analysis:
+  stage: Analyze and Unit Test
+  script:
+  - set -e
+  - make analysis
+  - XARGS=--runslow make test
+  artifacts:
+    paths:
+    - conclave/htmlcov/
+    - tests/results.xml
+    reports:
+      junit: tests/results.xml
+
+publish:
+  stage: Publish package
+  script: make publish
+
+clean:
+  stage: Clean
+  script: make clean_images
+  when: always

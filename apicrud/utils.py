@@ -1,0 +1,63 @@
+# Utilities
+
+from datetime import datetime
+from flask import g, jsonify
+from html.parser import HTMLParser
+import random
+import string
+
+
+def gen_id(length=8, prefix='x-', chars=(
+        '-' + string.digits + string.ascii_uppercase + '_' +
+        string.ascii_lowercase)):
+    """Record IDs are random 48-bit RFC-4648 radix-64 with a fixed prefix
+    to make them (somewhat) more human-recognizable
+
+    First 15 bits are generated from Unix epoch to make them sortable
+    by date (granularity 24 hours); rolls over after year 2107
+    """
+    def _int2base(x, chars, base=64):
+        return _int2base(x // base, chars, base).lstrip(chars[0]) + chars[
+            x % base] if x else chars[0]
+    return (prefix +
+            _int2base((datetime.utcnow() - datetime(2018, 1, 1)).days * 8 +
+                      random.randint(0, 8), chars) +
+            ''.join(random.choice(chars) for i in range(length - 3)))
+
+
+def render_status_400(error):
+    return jsonify(dict(
+        message=error.description,
+        error=dict(status=error.name, code=error.code))), error.code
+
+
+def render_problem(error):
+    return jsonify(dict(
+        message=error.detail,
+        error=dict(status=error.title, code=error.status))), error.status
+
+
+def req_duration():
+    return '%.3f' % (datetime.utcnow().timestamp() -
+                     g.request_start_time.timestamp())
+
+
+def strip_tags(html):
+    """Convert html to plain-text by stripping tags"""
+    s = HtmlStripper()
+    s.feed(html)
+    return s.get_data()
+
+
+class HtmlStripper(HTMLParser):
+    def __init__(self):
+        self.reset()
+        self.strict = False
+        self.convert_charrefs = True
+        self.fed = []
+
+    def handle_data(self, d):
+        self.fed.append(d)
+
+    def get_data(self):
+        return ' '.join(self.fed)

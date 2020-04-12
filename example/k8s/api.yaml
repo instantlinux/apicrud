@@ -1,0 +1,110 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: $SERVICE_NAME-api
+  name: $SERVICE_NAME-api
+spec:
+  replicas: $REPLICAS_API
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: $SERVICE_NAME-api
+    spec:
+      containers:
+      - name: $SERVICE_NAME-api
+        env:
+        - { name: AMQ_HOST, value: $AMQ_HOST }
+        - { name: CONCLAVE_ENV, value: $CONCLAVE_ENV }
+        - { name: DB_CONNECTION_TIMEOUT, value: "$DB_CONNECTION_TIMEOUT" }
+        - { name: DB_HOST, value: $DB_HOST }
+        - { name: DB_NAME, value: $DB_NAME }
+        - { name: DB_USER, value: $DB_USER }
+        - { name: DOMAIN, value: $DOMAIN }
+        - { name: REDIS_HOST, value: $REDIS_HOST }
+        - { name: TZ, value: $TZ }
+        - name: DB_AES_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: $SERVICE_NAME-redis-aes-secret
+              key: $SERVICE_NAME-redis-aes-secret
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: $SERVICE_NAME-db-password-$CONCLAVE_ENV
+              key: $SERVICE_NAME-db-password-$CONCLAVE_ENV
+        - name: FLASK_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: $SERVICE_NAME-flask-secret
+              key: $SERVICE_NAME-flask-secret
+        - name: MAPQUEST_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mapquest-api-key
+              key: mapquest-api-key
+        - name: REDIS_AES_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: $SERVICE_NAME-redis-aes-secret
+              key: $SERVICE_NAME-redis-aes-secret
+        image: $REGISTRY_URI/$SERVICE_NAME-api:$TAG
+        livenessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          httpGet:
+            path: /api/v1/health
+            port: 8080
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            memory: $LIMIT_MEM_API
+          requests:
+            cpu: $LIMIT_CPU_REQUEST
+            memory: $LIMIT_MEM_REQUEST
+      imagePullSecrets: [ $IMAGEPULL_SPEC ]
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: $SERVICE_NAME-ingress-public
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/client-body-buffer-size: 20m
+    nginx.ingress.kubernetes.io/proxy-body-size: 20m
+    # nginx.ingress.kubernetes.io/configuration-snippet: |
+    #   limit_req_zone ${DOL}binary_remote_addr zone=api:10m rate=30r/m;
+    #   limit_req_status 429;
+spec:
+  rules:
+  - host: $CONCLAVE_PUBLIC_URL
+    http:
+      paths:
+      - path: /api
+        backend:
+          serviceName: $SERVICE_NAME-api
+          servicePort: 80
+      - path: /
+        backend:
+          serviceName: $SERVICE_NAME-ui
+          servicePort: 80
+  tls:
+  - hosts:
+    - $CONCLAVE_PUBLIC_URL
+    secretName: tls-$SERVICE_NAME-public
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: $SERVICE_NAME-api
+  name: $SERVICE_NAME-api
+spec:
+  clusterIP: None
+  ports:
+  - { port: 80, targetPort: 8080, name: web }
+  selector:
+    app.kubernetes.io/name: $SERVICE_NAME-api

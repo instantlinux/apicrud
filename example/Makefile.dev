@@ -1,0 +1,27 @@
+# Local dev - you need 6 services running. Setting up a MariaDB
+#  database is done outside this Makefile. This assumes you have
+#  kubernetes available. To iterate on UI/API/worker code, start
+#  3 shell sessions and invoke the following to launch:
+#
+#  make run_local
+#  make messaging_worker
+#
+# Clone the instantlinux/apicrud-ui-example and launch locally:
+#  make ui_local
+
+run_local: py_requirements  # TODO redis_adhoc
+	. $(VDIR)/bin/activate && EXAMPLE_ENV=$(EXAMPLE_ENV) \
+	  AMQ_HOST=$(RABBITMQ_IP) REDIS_HOST=$(REDIS_IP) \
+	  FLASK_ENV=development PYTHONPATH=example python3 -m example.main
+
+messaging_worker: rmq_adhoc
+	. $(VDIR)/bin/activate && cd example && \
+	  AMQ_HOST=$(RABBITMQ_IP) \
+	  celery -A messaging worker -Q messaging_$(EXAMPLE_ENV) \
+	  -n messaging1@%h --loglevel=INFO
+
+redis_adhoc:
+	SERVICE_IP=$(REDIS_IP) make example/k8s/redis
+
+rmq_adhoc:
+	SERVICE_IP=$(RABBITMQ_IP) make example/k8s/rmq

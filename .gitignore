@@ -1,0 +1,12 @@
+*~
+*.pyc
+.coverage
+.env
+coverage.xml
+dist
+env-config.js
+htmlcov
+node_modules
+python_env
+results.xml
+tmp

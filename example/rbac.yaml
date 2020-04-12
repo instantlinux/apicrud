@@ -1,0 +1,133 @@
+---
+# Policies:
+#   principal: <user|list|admin|person>
+#   resource: <resource>:<id|*>:
+#   action: <c|d|g|h|i|r|u>
+#
+# Action permissions:
+#  c = create / post
+#  r = read / get
+#  u = update / put
+#  d = delete / delete
+#  j = join / RSVP
+#  g = member (guest)
+#  h = manager (host)
+#  i = invitee
+#
+# Privacy:
+#  While default permissions are defined by role, a resource can
+#  open wider access using these privacy options:
+#
+#  secret (default - based on roles defined here)
+#  manager = read/write by designated resource managers
+#  invitee = read by any invitee to the resource (e.g. list)
+#             (or TODO: by anyone invited to join list_id)
+#  member = read by confirmed member
+#             (or TODO: by any member attached to list_id)
+#  public = read by anyone
+#
+# Keyword substitution:
+#  Put initialization keywords in curly braces; runtime keywords in
+#  doubled curly braces.
+#
+#  list_id = list id
+#  resource = resource type
+#  uid = user id
+
+definition:
+  base: &base_policy
+    - principal: admin
+      resource: "{resource}:*"
+      actions: cdru
+    - principal: user/{{uid}}
+      resource: "{resource}:{{uid}}"
+      actions: cdru
+
+# Privacy levels - first level must be public
+privacy_levels:
+  - public
+  - invitee
+  - member
+  - manager
+  - secret
+
+# Private resources - resources that define privacy for others
+#   TODO - support more than one
+private_resources:
+  - resource: list
+    attr: list_id
+
+policies:
+  category: *base_policy
+  list: *base_policy
+  location: *base_policy
+  profile: *base_policy
+  tzname: *base_policy
+  account:
+    - principal: "*"
+      resource: "{resource}:*"
+      actions: c
+    - principal: admin
+      resource: "{resource}:*"
+      actions: cdru
+    - principal: user/{{uid}}
+      resource: "{resource}:{{uid}}"
+      # TODO maybe get rid of d
+      actions: cdru
+  contact:
+    - principal: admin
+      resource: "{resource}:*"
+      actions: cdru
+    - principal: user/{{uid}}
+      resource: "{resource}:{{uid}}"
+      actions: cdru
+    - principal: pending
+      resource: "{resource}:{{uid}}"
+      actions: ru
+    - principal: person/{{uid}}
+      resource: "{resource}:{{uid}}"
+      actions: ru
+    - principal: list-*
+      resource: "{resource}:{{uid}}"
+      actions: cru
+    - principal: list-{{list_id}}-member
+      resource: "{resource}:{{list_id}}"
+      actions: r
+  grant:
+    - principal: admin
+      resource: "{resource}:*"
+      actions: cdru
+    - principal: user/{{uid}}
+      resource: "{resource}:{{uid}}"
+      actions: r
+  message:
+    - principal: admin
+      resource: "{resource}:*"
+      actions: cdru
+    - principal: user/{{uid}}
+      resource: "{resource}:{{uid}}"
+      actions: cdru
+    - principal: list-{{list_id}}-manager
+      resource: "{resource}:{{list_id}}"
+      actions: cdhr
+    - principal: list-{{list_id}}-invitee
+      resource: "{resource}:{{list_id}}"
+      actions: cr
+  person:
+    - principal: "*"
+      resource: "{resource}:*"
+      actions: cr
+    - principal: admin
+      resource: "{resource}:*"
+      actions: cdru
+    - principal: user/{{uid}}
+      resource: "{resource}:{{uid}}"
+      # TODO maybe get rid of d
+      actions: cdru
+    - principal: list-*
+      resource: "{resource}:{{uid}}"
+      actions: ru
+  settings:
+    - principal: admin
+      resource: "{resource}:*"
+      actions: cdru

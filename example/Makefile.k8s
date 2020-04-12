@@ -1,0 +1,81 @@
+# Kubernetes deployment
+
+create_image:
+	@echo docker build -t $(REGISTRY)/example-$(CI_JOB_STAGE):$(TAG)
+	@docker build -t $(REGISTRY)/example-$(CI_JOB_STAGE):$(TAG) . \
+	 -f Dockerfile.$(CI_JOB_STAGE) \
+	 --build-arg=VCS_REF=$(CI_COMMIT_SHA) \
+	 --build-arg=TAG=$(TAG) \
+	 --build-arg=BUILD_DATE=$(shell date +%Y-%m-%dT%H:%M:%SZ) \
+	 --build-arg=REACT_APP_API_URL=https://dev.$(DOMAIN)/api/v1 \
+	 --build-arg=REACT_APP_MEDIA_URL=https://media-dev.$(DOMAIN)/api/v1 \
+	 --build-arg=REACT_APP_TOKEN_MAPBOX=$(REACT_APP_TOKEN_MAPBOX)
+	docker push $(REGISTRY)/example-$(CI_JOB_STAGE):$(TAG)
+
+promote_images:
+	$(foreach target, $(IMAGES), \
+	  image=$(shell basename $(target)) && \
+	  docker tag $(REGISTRY)/example-$${image}:$(TAG) \
+	    $(REGISTRY)/example-$${image}:latest && \
+	  docker push $(REGISTRY)/example-$${image}:latest \
+	;)
+
+clean_images:
+	docker rmi $(REGISTRY)/example-api:$(TAG) || true
+	docker rmi $(REGISTRY)/example-media:$(TAG) || true
+	docker rmi $(REGISTRY)/example-worker:$(TAG) || true
+	docker rmi $(REGISTRY)/example-ui:$(TAG) || true
+
+K8S_YAML = $(basename $(wildcard example/k8s/*.yaml))
+$(K8S_YAML):
+	@SERVICE_NAME=example SERVICE_IP=$(SERVICE_IP) \
+	 envsubst < $@.yaml | kubectl --kubeconfig=$(KUBECONFIG) apply -f -
+	@if [ "$@" = "k8s/worker" ]; then \
+	 echo updating media_worker && \
+	 SERVICE_NAME=example SERVICE_IP=$(SERVICE_IP) QUEUE=media \
+	 CELERY_APP=media.media_worker \
+	 envsubst < $@.yaml | kubectl --kubeconfig=$(KUBECONFIG) apply -f - ; \
+	fi
+
+SECRETS = $(basename $(wildcard secrets/*.yml secrets/$(EXAMPLE_ENV)/*.yml))
+secrets: $(basename $(wildcard secrets/$(EXAMPLE_ENV)/*.yml)) \
+	secrets/mapbox-api-key secrets/mapquest-api-key
+
+$(SECRETS):
+	-sops -d $@.yml | envsubst | \
+	 kubectl create --context=sudo --namespace=$(K8S_NAMESPACE) -f -
+
+deploy_k8s: k8s/rmq k8s/redis
+
+deploy_dev:
+ifeq ($(TAG),)
+	@echo Please specify an existing tag in form bld_abcdefg
+	@exit 1
+endif
+	EXAMPLE_ENV=dev TAG=$(TAG) \
+	make deploy_k8s k8s/api k8s/worker k8s/media k8s/ui
+
+deploy_prod: create_ui_prod example-api/tag example-media/tag example-worker/tag
+	EXAMPLE_ENV=prod make deploy_k8s k8s/api k8s/worker k8s/media \
+	 k8s/ui
+
+example-%/tag:
+	docker pull $(REGISTRY)/$(@D):latest
+	docker tag $(REGISTRY)/$(@D):latest $(REGISTRY)/$(@D):$(TAG)
+	docker push $(REGISTRY)/$(@D):$(TAG)
+
+create_ui_prod:
+ifeq ($(TAG),)
+	@echo Please specify a new tag in form yy.mm.x
+	@exit 1
+endif
+	@echo docker build -t $(REGISTRY)/example-ui:$(TAG) -f Dockerfile.ui
+	@docker build -t $(REGISTRY)/example-ui:$(TAG) . \
+	 -f Dockerfile.ui \
+	 --build-arg=VCS_REF=$(shell git rev-parse HEAD^) \
+	 --build-arg=TAG=$(TAG) \
+	 --build-arg=BUILD_DATE=$(shell date +%Y-%m-%dT%H:%M:%SZ) \
+	 --build-arg=REACT_APP_API_URL=https://www.example.events/api/v1 \
+	 --build-arg=REACT_APP_MEDIA_URL=https://media.example.events/api/v1 \
+	 --build-arg=REACT_APP_TOKEN_MAPBOX=$(REACT_APP_TOKEN_MAPBOX)
+	docker push $(REGISTRY)/example-ui:$(TAG)

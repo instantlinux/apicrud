@@ -1,0 +1,47 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: $SERVICE_NAME-ui
+  name: $SERVICE_NAME-ui
+spec:
+  replicas: $REPLICAS_UI
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: $SERVICE_NAME-ui
+    spec:
+      containers:
+      - name: $SERVICE_NAME-ui
+        env:
+        - { name: REACT_APP_API_URL, value: https://$PUBLIC_URL/api/v1 }
+        - name: REACT_APP_TOKEN_MAPBOX
+          valueFrom:
+            secretKeyRef:
+              name: conclave-token-mapbox
+              key: conclave-token-mapbox
+        - { name: TZ, value: $TZ }
+        image: $REGISTRY_URI/$SERVICE_NAME-ui:$TAG
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: $LIMIT_MEM_DEFAULT
+          requests:
+            cpu: $LIMIT_CPU_REQUEST
+            memory: $LIMIT_MEM_REQUEST
+      imagePullSecrets: [ $IMAGEPULL_SPEC ]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: $SERVICE_NAME-ui
+  name: $SERVICE_NAME-ui
+spec:
+  clusterIP: None
+  ports:
+  - port: 80
+  selector:
+    app.kubernetes.io/name: $SERVICE_NAME-ui

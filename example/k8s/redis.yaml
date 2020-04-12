@@ -1,0 +1,33 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: $SERVICE_NAME-redis
+spec:
+  clusterIP: $SERVICE_IP
+  ports:
+  - port: 6379
+  selector:
+    app.kubernetes.io/name: $SERVICE_NAME-redis
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: $SERVICE_NAME-redis
+  labels:
+    app.kubernetes.io/name: $SERVICE_NAME-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: $SERVICE_NAME-redis
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: $SERVICE_NAME-redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:$VERSION_REDIS-alpine
+        ports:
+        - containerPort: 6379
