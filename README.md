@@ -1,7 +1,9 @@
 ## apicrud
-[![](https://images.microbadger.com/badges/version/instantlinux/apicrud.svg)](https://microbadger.com/images/instantlinux/apicrud "Version badge") [![](https://images.microbadger.com/badges/image/instantlinux/apicrud.svg)](https://microbadger.com/images/instantlinux/apicrud "Image badge") [![](https://images.microbadger.com/badges/commit/instantlinux/apicrud.svg)](https://microbadger.com/images/instantlinux/apicrud "Commit badge") ![coverage](https://gitlab.com/instantlinux/apicrud/badges/master/coverage.svg?job=analysis)
+[![](https://img.shields.io/pypi/v/apicrud.svg)](https://pypi.org/project/apicrud/) [![](https://images.microbadger.com/badges/version/instantlinux/apicrud.svg)](https://microbadger.com/images/instantlinux/apicrud "Version badge") [![](https://images.microbadger.com/badges/image/instantlinux/apicrud.svg)](https://microbadger.com/images/instantlinux/apicrud "Image badge") [![](https://images.microbadger.com/badges/commit/instantlinux/apicrud.svg)](https://microbadger.com/images/instantlinux/apicrud "Commit badge") [![](https://gitlab.com/instantlinux/apicrud/badges/master/pipeline.svg)](https://gitlab.com/instantlinux/apicrud/pipelines "pipelines") [![](https://gitlab.com/instantlinux/apicrud/badges/master/coverage.svg)](https://gitlab.com/instantlinux/apicrud/-/jobs/artifacts/master/file/junit.xml?job=analysis "coverage")
 
 ### What is this
+
+Skip the python/React.js learning curve and put your ideas in production!
 
 The _apicrud_ framework was created to make it far easier to get started on full-stack development of REST-based services ranging from a simple CLI wrapper for queries of local APIs to full web-scale consumer-facing applications.
 
@@ -20,6 +22,8 @@ Clone this repo to your local environment. To start the example application in a
 * Clone the [instantlinux/apicrud-ui](https://github/instantlinux/apicrud-ui) repo to a separate directory and follow the instructions given in its README to start the front-end
 * Optional: if setting up to run API within a docker container, configure kubernetes secrets as defined below (need at least the `example-db-password`)
 * Optional for Linux: a full ansible-based bare-metal k8s cluster management suite is published at [instantlinux/docker-tools](https://github.com/instantlinux/docker-tools)
+
+The example MVC application is provided here in this repo is also used as a fixture for its unit tests. You can fork / clone this repo and experiment with your own extensions to the database models, controller logic, and openapi.yaml REST endpoints. See the instantlinux/apicrud-ui for definitions of the views (as React.js code).
 
 ### Environment variables
 

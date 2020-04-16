@@ -5,7 +5,7 @@ MAXFAIL    ?= 1000
 PYPI_URL   ?= https://upload.pypi.org/legacy/
 PYPI_USER  ?= $(USER)
 VERSION    ?= $(shell grep -o '[0-9.]*' apicrud/_version.py)
-REGISTRY   ?= $(REGISTRY_URI)
+export REGISTRY    ?= $(REGISTRY_URI)/$(CI_PROJECT_PATH)
 export EXAMPLE_ENV ?= local
 
 include example/Makefile.vars

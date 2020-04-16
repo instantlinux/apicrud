@@ -3,7 +3,9 @@ import os.path
 import setuptools
 from setuptools.command.test import test as TestCommand
 
-from apicrud._version import __version__
+setup_ver = {}
+with open('apicrud/_version.py') as file:
+    exec(file.read(), setup_ver)
 
 __long_desc__ = io.open(os.path.join(os.path.dirname(
     os.path.abspath(__file__)), 'README.md'), encoding='utf-8').read()
@@ -25,20 +27,17 @@ class PyTest(TestCommand):
 
 
 setuptools.setup(
-    version=__version__,
+    version=setup_ver.get('__version__'),
     name='apicrud',
     description='Flask REST framework for role-based access',
     long_description=__long_desc__,
-    long_description_content_type='text/markdown',
     keywords='api flask rbac rest',
     author='Rich Braun',
-    author_email='richb@instantlinux.net',
+    author_email='docker@instantlinux.net',
     url='https://github.com/instantlinux/apicrud',
-    # entry_points={
-    #   'console_scripts': []
-    # },
+    license='Apache License Version 2.0',
     scripts=[],
-    packages=setuptools.find_packages(exclude=['tests']),
+    packages=('apicrud',),
     include_package_data=True,
     install_requires=[
         'alembic>=1.4.1',

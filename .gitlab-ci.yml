@@ -1,21 +1,20 @@
 # Usage:
 # Set these private variables in gitlab-ci environment:
-#   CI_JOB_TOKEN
-#   DOCKER_LOGIN
-
-variables:
-  REGISTRY: nexus.instantlinux.net
-  GIT_SSL_NO_VERIFY: "1"
+#   PYPI_PASSWORD
+#   PYPI_USER
+#   REGISTRY_URI
 
 stages:
   - Analyze and Unit Test
+  - api
+  - worker
+  - Functional Tests
+  - Promote Images
   - Publish Package
   - Clean
 
-# See https://gitlab.com/gitlab-org/gitlab-ce/issues/47517
-cache:
-  paths: [ .targets ]
 image: instantlinux/python-builder:3.8.2-r0
+services: [ "docker:dind" ]
 
 before_script:
   - export TAG=bld_$CI_PIPELINE_IID_${CI_COMMIT_SHA:0:7}
@@ -23,7 +22,7 @@ before_script:
 .registry_template: &registry_login
   before_script:
   - export TAG=bld_$CI_PIPELINE_IID_${CI_COMMIT_SHA:0:7}
-  - docker login -u $DOCKER_LOGIN -p $CI_JOB_TOKEN $REGISTRY
+  - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $REGISTRY_URI
 
 .create_image_template: &create_image
   script: make create_image
@@ -36,10 +35,31 @@ analysis:
   - XARGS=--runslow make test
   artifacts:
     paths:
-    - conclave/htmlcov/
+    - apicrud/htmlcov/
     - tests/results.xml
     reports:
       junit: tests/results.xml
+  coverage: '/TOTAL.*\s(\d+)%/'
+
+create_example_api:
+  stage: api
+  <<: *registry_login
+  <<: *create_image
+
+create_example_worker:
+  stage: worker
+  <<: *registry_login
+  <<: *create_image
+
+test:
+  stage: Functional Tests
+  script: make test_functional
+
+promote_images:
+  stage: Promote Images
+  <<: *registry_login
+  script: IMAGES="api worker" make promote_images
+  only: { refs: [ master ] }
 
 publish:
   stage: Publish Package
