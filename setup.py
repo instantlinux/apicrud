@@ -31,6 +31,7 @@ setuptools.setup(
     name='apicrud',
     description='Flask REST framework for role-based access',
     long_description=__long_desc__,
+    long_description_content_type='text/markdown',
     keywords='api flask rbac rest',
     author='Rich Braun',
     author_email='docker@instantlinux.net',

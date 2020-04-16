@@ -61,7 +61,7 @@ test: test_requirements py_requirements
 	 --cov-report term-missing \
 	 --cov .)
 
-dist/apicrud-$(VERSION).tar.gz:
+dist/apicrud-$(VERSION).tar.gz: test_requirements
 	@echo "Building package"
 	pip show wheel >/dev/null; \
 	if [ $$? -ne 0 ]; then \

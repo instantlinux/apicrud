@@ -3,6 +3,7 @@
 *.egg-info
 .coverage
 .env
+build
 coverage.xml
 dist
 env-config.js
