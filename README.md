@@ -1,5 +1,5 @@
 ## apicrud
-[![](https://img.shields.io/pypi/v/apicrud.svg)](https://pypi.org/project/apicrud/) [![](https://images.microbadger.com/badges/version/instantlinux/apicrud.svg)](https://microbadger.com/images/instantlinux/apicrud "Version badge") [![](https://images.microbadger.com/badges/image/instantlinux/apicrud.svg)](https://microbadger.com/images/instantlinux/apicrud "Image badge") [![](https://images.microbadger.com/badges/commit/instantlinux/apicrud.svg)](https://microbadger.com/images/instantlinux/apicrud "Commit badge") [![](https://gitlab.com/instantlinux/apicrud/badges/master/pipeline.svg)](https://gitlab.com/instantlinux/apicrud/pipelines "pipelines") [![](https://gitlab.com/instantlinux/apicrud/badges/master/coverage.svg)](https://gitlab.com/instantlinux/apicrud/-/jobs/artifacts/master/file/junit.xml?job=analysis "coverage")
+[![](https://img.shields.io/pypi/v/apicrud.svg)](https://pypi.org/project/apicrud/) [![](https://gitlab.com/instantlinux/apicrud/badges/master/pipeline.svg)](https://gitlab.com/instantlinux/apicrud/pipelines "pipelines") [![](https://gitlab.com/instantlinux/apicrud/badges/master/coverage.svg)](https://gitlab.com/instantlinux/apicrud/-/jobs/artifacts/master/file/apicrud/htmlcov/index.html?job=analysis "coverage")
 
 ### What is this
 
@@ -66,3 +66,9 @@ Your pull-requests and bug-reports are welcome here. See [CONTRIBUTING.md](CONTR
 ### License
 
 Software copyright &copy; 2020 by Richard Braun &bull; <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a> license <p />
+
+### TODO
+
+These badges only work once the images are published to docker hub.
+
+[![](https://images.microbadger.com/badges/version/instantlinux/apicrud.svg)](https://microbadger.com/images/instantlinux/apicrud "Version badge") [![](https://images.microbadger.com/badges/image/instantlinux/apicrud.svg)](https://microbadger.com/images/instantlinux/apicrud "Image badge") [![](https://images.microbadger.com/badges/commit/instantlinux/apicrud.svg)](https://microbadger.com/images/instantlinux/apicrud "Commit badge")

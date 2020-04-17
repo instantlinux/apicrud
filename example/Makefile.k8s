@@ -15,6 +15,7 @@ create_image:
 promote_images:
 	$(foreach target, $(IMAGES), \
 	  image=$(shell basename $(target)) && \
+	  docker pull $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
 	  docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
 	    $(REGISTRY)/$(APPNAME)-$${image}:latest && \
 	  docker push $(REGISTRY)/$(APPNAME)-$${image}:latest \

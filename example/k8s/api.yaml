@@ -16,7 +16,7 @@ spec:
       - name: $SERVICE_NAME-api
         env:
         - { name: AMQ_HOST, value: $AMQ_HOST }
-        - { name: CONCLAVE_ENV, value: $CONCLAVE_ENV }
+        - { name: EXAMPLE_ENV, value: $EXAMPLE_ENV }
         - { name: DB_CONNECTION_TIMEOUT, value: "$DB_CONNECTION_TIMEOUT" }
         - { name: DB_HOST, value: $DB_HOST }
         - { name: DB_NAME, value: $DB_NAME }
@@ -32,8 +32,8 @@ spec:
         - name: DB_PASS
           valueFrom:
             secretKeyRef:
-              name: $SERVICE_NAME-db-password-$CONCLAVE_ENV
-              key: $SERVICE_NAME-db-password-$CONCLAVE_ENV
+              name: $SERVICE_NAME-db-password-$EXAMPLE_ENV
+              key: $SERVICE_NAME-db-password-$EXAMPLE_ENV
         - name: FLASK_SECRET_KEY
           valueFrom:
             secretKeyRef:
@@ -49,7 +49,7 @@ spec:
             secretKeyRef:
               name: $SERVICE_NAME-redis-aes-secret
               key: $SERVICE_NAME-redis-aes-secret
-        image: $REGISTRY_URI/$SERVICE_NAME-api:$TAG
+        image: $REGISTRY_URI/$REGISTRY_PATH/$SERVICE_NAME-api:$TAG
         livenessProbe:
           initialDelaySeconds: 30
           periodSeconds: 10
@@ -80,7 +80,7 @@ metadata:
     #   limit_req_status 429;
 spec:
   rules:
-  - host: $CONCLAVE_PUBLIC_URL
+  - host: $EXAMPLE_PUBLIC_URL
     http:
       paths:
       - path: /api
@@ -93,7 +93,7 @@ spec:
           servicePort: 80
   tls:
   - hosts:
-    - $CONCLAVE_PUBLIC_URL
+    - $EXAMPLE_PUBLIC_URL
     secretName: tls-$SERVICE_NAME-public
 ---
 apiVersion: v1

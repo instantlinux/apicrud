@@ -623,7 +623,7 @@ components:
       type: http
       scheme: basic
       x-basicInfoFunc: auth.basic_auth
-    conclave_apikey:
+    example_apikey:
       in: header
       name: api_key
       type: apiKey

@@ -213,7 +213,7 @@ def upgrade():
     sa.Column('lang', sa.String(length=6), server_default='en_US', nullable=False),
     sa.Column('tz_id', sa.INTEGER(), server_default='598', nullable=False),
     sa.Column('url', sa.String(length=255), nullable=True),
-    sa.Column('window_title', sa.String(length=127), server_default='Conclave Event Management', nullable=True),
+    sa.Column('window_title', sa.String(length=127), server_default='Example apicrud Application', nullable=True),
     sa.Column('default_cat_id', sa.String(length=16), nullable=False),
     sa.Column('administrator_id', sa.String(length=16), nullable=False),
     sa.Column('default_hostlist_id', sa.String(length=16), nullable=True),

@@ -19,8 +19,8 @@ spec:
         - name: REACT_APP_TOKEN_MAPBOX
           valueFrom:
             secretKeyRef:
-              name: conclave-token-mapbox
-              key: conclave-token-mapbox
+              name: token-mapbox
+              key: token-mapbox
         - { name: TZ, value: $TZ }
         image: $REGISTRY_URI/$SERVICE_NAME-ui:$TAG
         ports:
