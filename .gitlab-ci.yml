@@ -58,6 +58,7 @@ promote_images:
   stage: Promote Images
   <<: *registry_login
   script: IMAGES="api worker" make promote_images
+  only: [ master ]
 
 publish:
   stage: Publish Package
