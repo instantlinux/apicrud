@@ -47,9 +47,6 @@ spec:
         volumeMounts:
         - mountPath: /var/lib/rabbitmq
           name: rmq
-      dnsConfig:
-        options: [ name: ndots ]
-      imagePullSecrets: [ $IMAGEPULL_SPEC ]
   volumeClaimTemplates:
   - metadata:
       name: rmq

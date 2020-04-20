@@ -166,7 +166,7 @@ def upgrade():
     sa.Column('id', sa.String(length=16), nullable=False),
     sa.Column('name', sa.String(length=64), nullable=False),
     sa.Column('description', sa.TEXT(), nullable=True),
-    sa.Column('privacy', sa.String(length=8), server_default='secret', nullable=False),
+    sa.Column('privacy', sa.String(length=8), server_default='public', nullable=False),
     sa.Column('category_id', sa.String(length=16), nullable=False),
     sa.Column('uid', sa.String(length=16), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),

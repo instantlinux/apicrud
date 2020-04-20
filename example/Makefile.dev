@@ -1,24 +1,26 @@
-# Local dev - you need 6 services running. Setting up a MariaDB
-#  database is done outside this Makefile. This assumes you have
-#  kubernetes available. To iterate on UI/API/worker code, start
-#  3 shell sessions and invoke the following to launch:
+# Local dev - you need 6 services running. This assumes you have
+# kubernetes available to run the 3 adhoc services listed below.
 #
-#  make run_local
-#  make messaging_worker
-#
-# Clone the instantlinux/apicrud-ui-example and launch locally:
-#  make ui_local
+# To iterate on UI/API/worker code, clone github.com/instantlinux/apicrud-ui
+# into another directory, start 3 shell sessions and invoke the following to
+# launch the following commands in separate sesions:
+#    make run_local       # (from top level of this clone)
+#    make messaging_worker
+#    make ui_local        # (from the other clone)
 
-run_local: py_requirements  # TODO redis_adhoc
+run_local: py_requirements redis_adhoc mariadb_adhoc
 	. $(VDIR)/bin/activate && EXAMPLE_ENV=$(EXAMPLE_ENV) \
 	  AMQ_HOST=$(RABBITMQ_IP) REDIS_HOST=$(REDIS_IP) \
 	  FLASK_ENV=development PYTHONPATH=example python3 -m example.main
 
 messaging_worker: rmq_adhoc
 	. $(VDIR)/bin/activate && cd example && \
-	  AMQ_HOST=$(RABBITMQ_IP) \
+	  AMQ_HOST=$(RABBITMQ_IP) PYTHONPATH=.. \
 	  celery -A messaging worker -Q messaging_$(EXAMPLE_ENV) \
 	  -n messaging1@%h --loglevel=INFO
+
+mariadb_adhoc:
+	SERVICE_IP=$(MARIADB_IP) make example/k8s/mariadb
 
 redis_adhoc:
 	SERVICE_IP=$(REDIS_IP) make example/k8s/redis

@@ -1,0 +1,60 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: $SERVICE_NAME-mariadb
+spec:
+  clusterIP: $SERVICE_IP
+  ports:
+  - port: 3306
+  selector:
+    app.kubernetes.io/name: $SERVICE_NAME-mariadb
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/name: $SERVICE_NAME-mariadb
+    release: "0.1"
+  name: $SERVICE_NAME-mariadb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: $SERVICE_NAME-mariadb
+      release: "0.1"
+  serviceName: $SERVICE_NAME-mariadb
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: $SERVICE_NAME-mariadb
+        release: "0.1"
+    spec:
+      containers:
+      - name: mariadb
+        image: mariadb:$VERSION_MARIADB
+        env:
+        - { name: MYSQL_ROOT_PASSWORD, value: 'secret' }
+        - { name: MYSQL_DATABASE, value: ${SERVICE_NAME}_${EXAMPLE_ENV} }
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: database
+          mountPath: /var/lib/mysql
+        - name: initdb
+          mountPath: /docker-entrypoint-initdb.d/setup.sql
+          subPath: setup.sql
+      volumes:
+      - name: database
+        hostPath: { path: /tmp/$SERVICE_NAME-db }
+      - name: initdb
+        configMap:
+          name: $SERVICE_NAME-initdb
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: $SERVICE_NAME-initdb
+data:
+  setup.sql: |
+    GRANT ALL PRIVILEGES ON `${SERVICE_NAME}_${EXAMPLE_ENV}`.* TO '$DB_USER'@'%' IDENTIFIED BY '$DB_PASS';
