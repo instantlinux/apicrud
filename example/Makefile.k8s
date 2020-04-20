@@ -1,4 +1,5 @@
 # Kubernetes deployment
+#  Env var TAG must be set; it will not default to 'latest'
 
 create_image:
 	@echo docker build -t $(REGISTRY)/$(APPNAME)-$(CI_JOB_STAGE):$(TAG)
@@ -20,13 +21,29 @@ promote_images:
 	    $(REGISTRY)/$(APPNAME)-$${image}:latest && \
 	  docker push $(REGISTRY)/$(APPNAME)-$${image}:latest \
 	;)
+ifneq ($(CI_COMMIT_TAG),)
+	# Also push to dockerhub, if registry is somewhere like GitLab
+ifneq ($(REGISTRY), $(USER_LOGIN))
+	docker login -u $(USER_LOGIN) -p $(DOCKER_TOKEN)
+	$(foreach target, $(IMAGES), \
+	  image=$(shell basename $(target)) && \
+	  docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
+	    $(USER_LOGIN)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
+	  docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
+	    $(USER_LOGIN)/$(APPNAME)-$${image}:latest && \
+	  docker push $(USER_LOGIN)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
+	  docker push $(USER_LOGIN)/$(APPNAME)-$${image}:latest \
+	;)
+	curl -X post https://hooks.microbadger.com/images/$(USER_LOGIN)/$(APPNAME)-$${image}/$(MICROBADGER_TOKEN)
+endif
+endif
 
 clean_images:
 	docker rmi $(REGISTRY)/$(APPNAME)-api:$(TAG) || true
 	docker rmi $(REGISTRY)/$(APPNAME)-media:$(TAG) || true
 	docker rmi $(REGISTRY)/$(APPNAME)-worker:$(TAG) || true
 
-K8S_YAML = $(basename $(wildcard $(APPNAME)/k8s/*.yaml))
+K8S_YAML = $(basename $(wildcard example/k8s/*.yaml))
 $(K8S_YAML):
 	@SERVICE_NAME=$(APPNAME) SERVICE_IP=$(SERVICE_IP) \
 	 envsubst < $@.yaml | kubectl --kubeconfig=$(KUBECONFIG) apply -f -
@@ -37,15 +54,7 @@ $(K8S_YAML):
 	 envsubst < $@.yaml | kubectl --kubeconfig=$(KUBECONFIG) apply -f - ; \
 	fi
 
-SECRETS = $(basename $(wildcard secrets/*.yml secrets/$(EXAMPLE_ENV)/*.yml))
-secrets: $(basename $(wildcard secrets/$(EXAMPLE_ENV)/*.yml)) \
-	secrets/mapbox-api-key secrets/mapquest-api-key
-
-$(SECRETS):
-	-sops -d $@.yml | envsubst | \
-	 kubectl create --context=sudo --namespace=$(K8S_NAMESPACE) -f -
-
-deploy_k8s: $(APPNAME)/k8s/rmq $(APPNAME)/k8s/redis
+deploy_k8s: example/k8s/rmq example/k8s/redis
 
 deploy_dev:
 ifeq ($(TAG),)

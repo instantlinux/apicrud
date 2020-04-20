@@ -15,9 +15,7 @@ Clone this repo to your local environment. To start the example application in a
 
 * Set environment variables as defined below
 * Install docker ([desktop for Mac](https://docs.docker.com/docker-for-mac/) or [Linux/Ubuntu](https://docs.docker.com/engine/install/ubuntu/) and enable kubernetes; Linux _kubeadm_ setup is beyond scope of this README
-* Set up a local MariaDB or MySQL instance using _helm_ (TODO still beyond scope of
- this doc, the goal is to provide a single command that just-plain-works); create ablank database `example_local` and add a role user/password
-* Invoke `make run_local` to bring up the back-end API with its dependent services redis and rabbitMQ
+* Invoke `make run_local` to bring up the back-end API with its dependent services mariadb, redis and rabbitmq
 * Invoke `make messaging_worker` to bring up the email/SMS worker back-end
 * Clone the [instantlinux/apicrud-ui](https://github/instantlinux/apicrud-ui) repo to a separate directory and follow the instructions given in its README to start the front-end
 * Optional: if setting up to run API within a docker container, configure kubernetes secrets as defined below (need at least the `example-db-password`)

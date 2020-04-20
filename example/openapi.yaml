@@ -377,7 +377,7 @@ components:
           - manager
           - secret
           type: string
-          # default: secret
+          # default: public
         owner:
           $ref: '#/components/schemas/Person/properties/name'
           readOnly: true

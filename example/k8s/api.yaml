@@ -103,8 +103,8 @@ metadata:
     app.kubernetes.io/name: $SERVICE_NAME-api
   name: $SERVICE_NAME-api
 spec:
-  clusterIP: None
+  clusterIP: $API_IP
   ports:
-  - { port: 80, targetPort: 8080, name: web }
+  - { port: 8080, targetPort: 8080, name: web }
   selector:
     app.kubernetes.io/name: $SERVICE_NAME-api

@@ -17,7 +17,7 @@ class TestLists(test_base.TestBase):
         record = dict(name='list1', category_id=self.cat_id)
         expected = dict(
             category='default', description=None, members=[],
-            status='active', privacy='secret', uid=self.test_uid,
+            status='active', privacy='public', uid=self.test_uid,
             owner=self.test_person_name, rbac='dru', **record)
         response = self.call_endpoint('/list', 'post', data=record)
         self.assertEqual(response.status_code, 201)
@@ -31,10 +31,10 @@ class TestLists(test_base.TestBase):
     def test_update_list(self):
         record = dict(
             name='list2', category_id=self.cat_id)
-        updated = dict(privacy='public')
+        updated = dict(privacy='member')
         expected = dict(
             category='default', description=None, members=[],
-            status='active', privacy='secret', uid=self.test_uid,
+            status='active', uid=self.test_uid,
             owner=self.test_person_name, rbac='dru', **record)
 
         response = self.call_endpoint('/list', 'post', data=record)
@@ -57,7 +57,7 @@ class TestLists(test_base.TestBase):
             name='list3', category_id=self.cat_id)
         expected = dict(
             category='default', description=None, members=[],
-            status='disabled', privacy='secret', uid=self.test_uid,
+            status='disabled', privacy='public', uid=self.test_uid,
             owner=self.test_person_name, rbac='dru', **record)
 
         response = self.call_endpoint('/list', 'post', data=record)
@@ -86,7 +86,7 @@ class TestLists(test_base.TestBase):
         members = [self.test_uid, 'x-23450001']
         expected = dict(
             category='default', description=None, uid=self.test_uid,
-            status='active', privacy='secret', owner=self.test_person_name,
+            status='active', privacy='public', owner=self.test_person_name,
             rbac='dru', **record)
 
         response = self.call_endpoint('/list', 'post', data=record)

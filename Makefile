@@ -1,5 +1,6 @@
 # Usage:
 # See .gitlab-ci.yml for the main pipeline
+# See example/Makefile.dev for working locally
 
 MAXFAIL    ?= 1000
 PYPI_URL   ?= https://upload.pypi.org/legacy/
@@ -11,6 +12,7 @@ export EXAMPLE_ENV ?= local
 include example/Makefile.vars
 include example/Makefile.dev
 include example/Makefile.k8s
+include example/Makefile.sops
 
 VENV=python_env
 VDIR=$(PWD)/$(VENV)
