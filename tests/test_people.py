@@ -95,7 +95,7 @@ class TestPeople(test_base.TestBase):
         result = response.get_json()
         self.assertEqual(response.status_code, 404)
 
-    @mock.patch('messaging.send_contact.delay')
+    @mock.patch('example.messaging.send_contact.delay')
     def test_update_primary_contact(self, mock_messaging):
         record = dict(name='Witness Protected',
                       identity='oldaccount@conclave.events')
@@ -138,7 +138,7 @@ class TestPeople(test_base.TestBase):
         result = response.get_json()
         self.assertEqual(result['identity'], updated['info'])
 
-    @mock.patch('messaging.send_contact.delay')
+    @mock.patch('example.messaging.send_contact.delay')
     def test_person_update_disallowed_upon_confirm(self, mock_messaging):
         """One person refers another, by invoking POST to /person with
         a name and email address. Update/delete is allowed by either

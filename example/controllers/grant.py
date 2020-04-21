@@ -3,12 +3,10 @@
 created 27-may-2019 by richb@instantlinux.net
 """
 
-import config
-import constants
+from example import config, constants, models
 from apicrud.basic_crud import BasicCRUD
 from apicrud.access import AccessControl
 from apicrud.grants import Grants
-import models
 
 
 class GrantController(BasicCRUD):

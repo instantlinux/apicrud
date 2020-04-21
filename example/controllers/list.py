@@ -1,12 +1,12 @@
 from flask import g, request
 import logging
-import config
+
 from apicrud.basic_crud import BasicCRUD
 from apicrud.access import AccessControl
 from apicrud.grants import Grants
-import models
-from models import List, ListMember
 from apicrud import singletons
+from example import config, models
+from example.models import List, ListMember
 
 
 class ListController(BasicCRUD):

@@ -9,7 +9,7 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy_utils import EncryptedType
 
-import constants
+from example import constants
 
 # revision identifiers, used by Alembic.
 revision = 'cac2000912a5'

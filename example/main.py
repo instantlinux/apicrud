@@ -19,6 +19,7 @@ from apicrud.access import AccessControl
 from apicrud.session_manager import SessionManager
 
 application = connexion.FlaskApp(__name__)
+setup_db_only_once = {}
 
 
 def initialize_app():
@@ -45,14 +46,16 @@ initialize_app()
 
 
 @application.app.before_first_request
-def setup_db():
-    if __name__ in ['__main__', 'uwsgi_file_main']:
+def setup_db(db_url=config.DB_URL, redis_conn=None):
+    if not setup_db_only_once:
         database.initialize_db(
-            models, db_url=config.DB_URL, redis_host=config.REDIS_HOST,
+            models, db_url=db_url, redis_host=config.REDIS_HOST,
+            redis_conn=redis_conn,
             migrate=True, geo_support=config.DB_GEO_SUPPORT,
             connection_timeout=config.DB_CONNECTION_TIMEOUT,
             schema_update=db_schema.update,
             schema_maxtime=config.DB_SCHEMA_MAXTIME)
+        setup_db_only_once['initialized'] = True
 
 
 @application.app.before_request

@@ -35,7 +35,7 @@ spec:
             secretKeyRef:
               name: $SERVICE_NAME-db-password-$EXAMPLE_ENV
               key: $SERVICE_NAME-db-password-$EXAMPLE_ENV
-        image: $REGISTRY_URI/$SERVICE_NAME-worker:$TAG
+        image: $REGISTRY_URI/$REGISTRY_PATH/$SERVICE_NAME-worker:$TAG
         ports:
         - containerPort: 5555
         resources:

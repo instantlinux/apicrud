@@ -18,7 +18,7 @@ class TestMessages(test_base.TestBase):
         self.list = dict(
             name='My Message Board', description='For message testing',
             uid=self.test_uid)
-        patcher = mock.patch('messaging.send.delay')
+        patcher = mock.patch('example.messaging.send.delay')
         self.mock_send = patcher.start()
         response = self.call_endpoint('/list', 'post', data=self.list)
         if response.status_code != 405 or (
@@ -49,7 +49,7 @@ class TestMessages(test_base.TestBase):
 
     """
     TODO these rely on Guest
-    @mock.patch('messaging.send.delay')
+    @mock.patch('example.messaging.send.delay')
     def test_fetch_message_invitee(self, mock_messaging):
         record = dict(subject='Posting 2', content='Greetings of the season',
                       list_id=self.list_id, privacy='invitee')
@@ -87,7 +87,7 @@ class TestMessages(test_base.TestBase):
         expected['id'] = message_id
         self.assertEqual(result, expected)
 
-    @mock.patch('messaging.send.delay')
+    @mock.patch('example.messaging.send.delay')
     def test_mailblast_guests(self, mock_send):
         record = dict(subject='Posting 2', content='Lorem Ipsum dolor',
                       list_id=self.list_id, mailblast=True,

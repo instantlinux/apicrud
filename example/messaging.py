@@ -17,14 +17,12 @@ import smtplib
 from sqlalchemy.orm.exc import NoResultFound
 import ssl
 
-import celeryconfig
-import config
-import i18n_textstrings as i18n
+from example import celeryconfig, config, models
+from example import i18n_textstrings as i18n
+from example.models import Account, Contact, Profile
+# from example.models import Account, Contact, Person, Profile
 from apicrud.account_settings import AccountSettings
 from apicrud.database import get_session
-import models
-# from models import Account, Contact, Person, Profile
-from models import Account, Contact, Profile
 
 CARRIER_GATEWAY = dict(
     att='txt.att.net',

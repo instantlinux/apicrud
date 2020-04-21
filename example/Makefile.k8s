@@ -2,16 +2,13 @@
 #  Env var TAG must be set; it will not default to 'latest'
 
 create_image:
-	@echo docker build -t $(REGISTRY)/$(APPNAME)-$(CI_JOB_STAGE):$(TAG)
-	@docker build -t $(REGISTRY)/$(APPNAME)-$(CI_JOB_STAGE):$(TAG) . \
-	 -f $(APPNAME)/Dockerfile.$(CI_JOB_STAGE) \
+	@echo docker build -t $(REGISTRY)/$(APPNAME)-$(CI_JOB_NAME):$(TAG)
+	@docker build -t $(REGISTRY)/$(APPNAME)-$(CI_JOB_NAME):$(TAG) . \
+	 -f $(APPNAME)/Dockerfile.$(CI_JOB_NAME) \
 	 --build-arg=VCS_REF=$(CI_COMMIT_SHA) \
 	 --build-arg=TAG=$(TAG) \
-	 --build-arg=BUILD_DATE=$(shell date +%Y-%m-%dT%H:%M:%SZ) \
-	 --build-arg=REACT_APP_API_URL=https://dev.$(DOMAIN)/api/v1 \
-	 --build-arg=REACT_APP_MEDIA_URL=https://media-dev.$(DOMAIN)/api/v1 \
-	 --build-arg=REACT_APP_TOKEN_MAPBOX=$(REACT_APP_TOKEN_MAPBOX)
-	docker push $(REGISTRY)/$(APPNAME)-$(CI_JOB_STAGE):$(TAG)
+	 --build-arg=BUILD_DATE=$(shell date +%Y-%m-%dT%H:%M:%SZ) && \
+	docker push $(REGISTRY)/$(APPNAME)-$(CI_JOB_NAME):$(TAG)
 
 promote_images:
 	$(foreach target, $(IMAGES), \
@@ -40,21 +37,22 @@ endif
 
 clean_images:
 	docker rmi $(REGISTRY)/$(APPNAME)-api:$(TAG) || true
-	docker rmi $(REGISTRY)/$(APPNAME)-media:$(TAG) || true
 	docker rmi $(REGISTRY)/$(APPNAME)-worker:$(TAG) || true
 
 K8S_YAML = $(basename $(wildcard example/k8s/*.yaml))
 $(K8S_YAML):
 	@SERVICE_NAME=$(APPNAME) SERVICE_IP=$(SERVICE_IP) \
 	 envsubst < $@.yaml | kubectl --kubeconfig=$(KUBECONFIG) apply -f -
-	@if [ "$@" = "k8s/worker" ]; then \
-	 echo updating media_worker && \
-	 SERVICE_NAME=$(APPNAME) SERVICE_IP=$(SERVICE_IP) QUEUE=media \
-	 CELERY_APP=media.media_worker \
-	 envsubst < $@.yaml | kubectl --kubeconfig=$(KUBECONFIG) apply -f - ; \
-	fi
 
 deploy_k8s: example/k8s/rmq example/k8s/redis
+
+deploy_local: mariadb_adhoc redis_adhoc rmq_adhoc example/k8s/dev
+ifeq ($(TAG),)
+	@echo Please specify an existing tag in form bld_abcdefg
+	@exit 1
+endif
+	EXAMPLE_ENV=local TAG=$(TAG) \
+	make $(APPNAME)/k8s/api $(APPNAME)/k8s/worker $(APPNAME)/k8s/ui
 
 deploy_dev:
 ifeq ($(TAG),)
@@ -62,30 +60,13 @@ ifeq ($(TAG),)
 	@exit 1
 endif
 	EXAMPLE_ENV=dev TAG=$(TAG) \
-	make deploy_k8s $(APPNAME)/k8s/api $(APPNAME)/k8s/worker k8s/media k8s/ui
+	make deploy_k8s $(APPNAME)/k8s/api $(APPNAME)/k8s/worker
 
-deploy_prod: create_ui_prod $(APPNAME)-api/tag $(APPNAME)-media/tag \
-	     $(APPNAME)-worker/tag
+deploy_prod:  $(APPNAME)-api/tag $(APPNAME)-worker/tag
 	EXAMPLE_ENV=prod make deploy_k8s $(APPNAME)/k8s/api $(APPNAME)k8s/worker \
-	  $(APPNAME)/k8s/media $(APPNAME)/k8s/ui
+	  $(APPNAME)/k8s/ui
 
 $(APPNAME)-%/tag:
 	docker pull $(REGISTRY)/$(@D):latest
 	docker tag $(REGISTRY)/$(@D):latest $(REGISTRY)/$(@D):$(TAG)
 	docker push $(REGISTRY)/$(@D):$(TAG)
-
-create_ui_prod:
-ifeq ($(TAG),)
-	@echo Please specify a new tag in form yy.mm.x
-	@exit 1
-endif
-	@echo docker build -t $(REGISTRY)/$(APPNAME)-ui:$(TAG) -f Dockerfile.ui
-	@docker build -t $(REGISTRY)/$(APPNAME)-ui:$(TAG) . \
-	 -f Dockerfile.ui \
-	 --build-arg=VCS_REF=$(shell git rev-parse HEAD^) \
-	 --build-arg=TAG=$(TAG) \
-	 --build-arg=BUILD_DATE=$(shell date +%Y-%m-%dT%H:%M:%SZ) \
-	 --build-arg=REACT_APP_API_URL=https://www.example.events/api/v1 \
-	 --build-arg=REACT_APP_MEDIA_URL=https://media.example.events/api/v1 \
-	 --build-arg=REACT_APP_TOKEN_MAPBOX=$(REACT_APP_TOKEN_MAPBOX)
-	docker push $(REGISTRY)/$(APPNAME)-ui:$(TAG)

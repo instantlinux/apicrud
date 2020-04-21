@@ -8,13 +8,13 @@ import logging
 from sqlalchemy.orm.exc import NoResultFound
 
 from apicrud.basic_crud import BasicCRUD
-import config
-import i18n_textstrings as i18n
+from example import config
+import example.i18n_textstrings as i18n
 from apicrud.confirmation import Confirmation
 from apicrud.session_auth import SessionAuth
 from apicrud.utils import gen_id
-from messaging import send_contact
-import models
+from example import models
+from example.messaging import send_contact
 from apicrud import singletons
 
 

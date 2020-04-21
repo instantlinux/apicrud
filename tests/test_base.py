@@ -18,10 +18,8 @@ import unittest
 
 from apicrud import database
 from apicrud.session_manager import SessionManager
-from apicrud.database import initialize_db
-from example import config, db_schema
-from example.main import application
-import models
+from example import config
+from example.main import application, setup_db
 from models import Account, Category, Contact, Person
 
 global_fixture = {}
@@ -41,9 +39,7 @@ class TestBase(unittest.TestCase):
             global_fixture['redis'] = fakeredis.FakeStrictRedis(
                 server=fakeredis.FakeServer())
             config.redis_conn = global_fixture['redis']
-            initialize_db(models, db_url=config.DB_URL,
-                          schema_update=db_schema.update,
-                          redis_conn=config.redis_conn, migrate=True)
+            setup_db(db_url=config.DB_URL, redis_conn=config.redis_conn)
 
             # TODO figure out how to divert logging under pytest
             # global_fixture['logfile_name'] = tempfile.mkstemp(

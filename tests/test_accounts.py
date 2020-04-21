@@ -16,7 +16,7 @@ import test_base
 class TestAccounts(test_base.TestBase):
 
     @pytest.mark.slow
-    @mock.patch('messaging.send_contact.delay')
+    @mock.patch('example.messaging.send_contact.delay')
     def test_add_and_fetch_account(self, mock_messaging):
         record = dict(
             name='Jessica Simpson',
@@ -49,7 +49,7 @@ class TestAccounts(test_base.TestBase):
         expected['id'] = id
         self.assertEqual(result, expected)
 
-    @mock.patch('messaging.send_contact.delay')
+    @mock.patch('example.messaging.send_contact.delay')
     def test_register_and_login(self, mock_messaging):
         record = dict(
             name='Black Hat', identity='blackhat@ddos.net', username='devil')
@@ -104,7 +104,7 @@ class TestAccounts(test_base.TestBase):
         expected['id'] = uid
         self.assertEqual(result, expected)
 
-    @mock.patch('messaging.send_contact.delay')
+    @mock.patch('example.messaging.send_contact.delay')
     def test_register_existing_person(self, mock_messaging):
         person = dict(name='Edgar Rodriguez', identity='edgar@conclave.events')
         username = 'eddie'
@@ -138,7 +138,7 @@ class TestAccounts(test_base.TestBase):
         self.assertEqual(response.get_json(), dict(id=uid, username=username))
 
     @pytest.mark.slow
-    @mock.patch('messaging.send_contact.delay')
+    @mock.patch('example.messaging.send_contact.delay')
     def test_change_password_reset(self, mock_messaging):
         record = dict(
             name='Drunk Fool', identity='fool@aol.com', username='dfool')
@@ -192,7 +192,7 @@ class TestAccounts(test_base.TestBase):
                          response.get_json().get('message'))
 
     @pytest.mark.slow
-    @mock.patch('messaging.send_contact.delay')
+    @mock.patch('example.messaging.send_contact.delay')
     def test_change_password_using_old(self, mock_messaging):
         record = dict(
             name='Farah Faucet', identity='farah@baidu.com', username='farah')
@@ -241,7 +241,7 @@ class TestAccounts(test_base.TestBase):
                          response.get_json().get('message'))
 
     @pytest.mark.slow
-    @mock.patch('messaging.send_contact.delay')
+    @mock.patch('example.messaging.send_contact.delay')
     @mock.patch('time.sleep')
     def test_account_lockout(self, mock_sleep, mock_messaging):
         record = dict(
@@ -273,7 +273,7 @@ class TestAccounts(test_base.TestBase):
         mock_sleep.assert_has_calls([mock.call(5)])
 
     @pytest.mark.slow
-    @mock.patch('messaging.send_contact.delay')
+    @mock.patch('example.messaging.send_contact.delay')
     def test_account_disabled(self, mock_messaging):
         record = dict(
             name='Adam Tsui', identity='tsui@conclave.events', username='tsui')
@@ -305,7 +305,7 @@ class TestAccounts(test_base.TestBase):
         self.assertEqual(status, 403)
 
     @pytest.mark.slow
-    @mock.patch('messaging.send_contact.delay')
+    @mock.patch('example.messaging.send_contact.delay')
     def test_account_reset_bad_token(self, mock_messaging):
         record = dict(
             name='Barry Bonds', identity='bonds@ddos.net', username='bonds')
@@ -323,7 +323,7 @@ class TestAccounts(test_base.TestBase):
         self.assertEqual(response.get_json(), dict(
             message='invalid token', username=record['username']))
 
-    @mock.patch('messaging.send_contact.delay')
+    @mock.patch('example.messaging.send_contact.delay')
     def test_weak_or_mismatching_password(self, mock_messaging):
         record = dict(
             name='Clueless Luser', identity='luser@aol.com', username='luser')
@@ -357,7 +357,7 @@ class TestAccounts(test_base.TestBase):
         self.assertEqual(response.get_json(),
                          dict(message='passwords do not match'))
 
-    @mock.patch('messaging.send_contact.delay')
+    @mock.patch('example.messaging.send_contact.delay')
     def test_duplicate_account(self, mock_messaging):
         record = dict(
             name='Yin Yang', identity='twins@cnn.com', username='twins')

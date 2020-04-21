@@ -8,17 +8,19 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.name=example-worker \
     org.label-schema.vcs-ref=$VCS_REF \
     org.label-schema.vcs-url=https://github.com/instantlinux/apicrud
-
+ENV CELERY_APP=example.messaging \
+    EXAMPLE_ENV=dev \
+    QUEUE=messaging
 ARG CELERY_UID=2062
-ENV QUEUE=messaging \
-    CELERY_APP=messaging
 
 EXPOSE 5555
-WORKDIR /opt/example
+WORKDIR /opt
 COPY example/ /opt/example
-RUN chmod -R g-w,o-w /opt/example && \
-    adduser -u $CELERY_UID -D -s /bin/false -G users celery && \
-    pip install -r requirements.txt
+COPY apicrud/ /opt/apicrud
+COPY requirements.txt /usr/src/
+RUN pip3 install -r /usr/src/requirements.txt && \
+    chmod -R g-w,o-w /opt/example && \
+    adduser -u $CELERY_UID -D -s /bin/false -G users celery
 
 USER celery
 COPY example/entrypoint-worker.sh /usr/local/bin/entrypoint.sh

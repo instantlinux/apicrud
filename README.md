@@ -1,5 +1,5 @@
 ## apicrud
-[![](https://img.shields.io/pypi/v/apicrud.svg)](https://pypi.org/project/apicrud/) [![](https://gitlab.com/instantlinux/apicrud/badges/master/pipeline.svg)](https://gitlab.com/instantlinux/apicrud/pipelines "pipelines") [![](https://gitlab.com/instantlinux/apicrud/badges/master/coverage.svg)](https://gitlab.com/instantlinux/apicrud/-/jobs/artifacts/master/file/apicrud/htmlcov/index.html?job=analysis "coverage")
+[![](https://img.shields.io/pypi/v/apicrud.svg)](https://pypi.org/project/apicrud/) [![](https://images.microbadger.com/badges/image/instantlinux/example-api.svg)](https://microbadger.com/images/instantlinux/example-api "Image badge") [![](https://gitlab.com/instantlinux/apicrud/badges/master/pipeline.svg)](https://gitlab.com/instantlinux/apicrud/pipelines "pipelines") [![](https://gitlab.com/instantlinux/apicrud/badges/master/coverage.svg)](https://gitlab.com/instantlinux/apicrud/-/jobs/artifacts/master/file/apicrud/htmlcov/index.html?job=analysis "coverage")
 
 ### What is this
 
@@ -15,33 +15,36 @@ Clone this repo to your local environment. To start the example application in a
 
 * Set environment variables as defined below
 * Install docker ([desktop for Mac](https://docs.docker.com/docker-for-mac/) or [Linux/Ubuntu](https://docs.docker.com/engine/install/ubuntu/) and enable kubernetes; Linux _kubeadm_ setup is beyond scope of this README
-* Invoke `make run_local` to bring up the back-end API with its dependent services mariadb, redis and rabbitmq
-* Invoke `make messaging_worker` to bring up the email/SMS worker back-end
-* Clone the [instantlinux/apicrud-ui](https://github/instantlinux/apicrud-ui) repo to a separate directory and follow the instructions given in its README to start the front-end
+* To run the full example demo in your local kubernetes, choose a tag and:
+  * Invoke `TAG=latest make deploy_local`
+  * Browse http://localhost:32180 as `admin` with password `p@ssw0rd`
+* Or, to run only database/cache images for developing on your laptop:
+  * Invoke `make run_local` to bring up the back-end API with its dependent services mariadb, redis and rabbitmq
+  * Invoke `make messaging_worker` to bring up the email/SMS worker back-end
+  * Clone the [instantlinux/apicrud-ui](https://github.com/instantlinux/apicrud-ui) repo to a separate directory and follow the instructions given in its README to start and log into the front-end
 * Optional: if setting up to run API within a docker container, configure kubernetes secrets as defined below (need at least the `example-db-password`)
 * Optional for Linux: a full ansible-based bare-metal k8s cluster management suite is published at [instantlinux/docker-tools](https://github.com/instantlinux/docker-tools)
 
-The example MVC application is provided here in this repo is also used as a fixture for its unit tests. You can fork / clone this repo and experiment with your own extensions to the database models, controller logic, and openapi.yaml REST endpoints. See the instantlinux/apicrud-ui for definitions of the views (as React.js code).
+The example MVC application is provided here in this repo is also used as a fixture for its unit tests. You can fork / clone this repo and experiment with your own extensions to the database models, controller logic, and openapi.yaml REST endpoints. See [instantlinux/apicrud-ui](https://github.com/instantlinux/apicrud-ui) for definitions of the views (as React.js code).
 
 ### Environment variables
 
 Variable | Default | Description
 -------- | ------- | -----------
 AMQ_HOST | `example-rmq` | IP address or hostname of rabbitMQ
-DB_HOST | `db00` | IP address or hostname of MySQL-compatible database
+API_DEV_PORT | `32080` | TCP port for API service (local dev k8s)
+DB_HOST | `10.101.2.30` | IP address or hostname of MySQL-compatible database
 DB_NAME | `example_local` | Name of the database
-DB_PASS | | Password for database
+DB_PASS | `example` | Password for database
 DOMAIN | | Domain for service URLs
 EXAMPLE_API_PORT | `8080` | TCP port for API service
 KUBECONFIG | | Config credentials filename for k8s
-RABBITMQ_IP | | IP address to use for rabbitMQ under k8s
-REDIS_IP | | IP address for redis under k8s
-
-TODO: the published docker image won't read these values at startup until the implementation of [env-config.js](https://www.freecodecamp.org/news/how-to-implement-runtime-environment-variables-with-create-react-app-docker-and-nginx-7f9d42a91d70/) is completed.
+RABBITMQ_IP | `10.101.2.20` | IP address to use for rabbitMQ under k8s
+REDIS_IP | `10.101.2.10` | IP address for redis under k8s
 
 ### Secrets
 
-Kubernetes needs secrets defined. (TODO add default k8s yaml files and provide instructions here; [this](https://kubernetes.io/docs/concepts/configuration/secret/) is a ridiculously-steep learning curve for k8s rookies.)
+Kubernetes needs secrets defined. Default values for these are under example/secrets/. See the example/Makefile.sops (and the lengthy [kubernetes secrets doc](https://kubernetes.io/docs/concepts/configuration/secret/) for instructions on modifying them or adding new secrets for multiple namespace environments.
 
 Secret | Description
 ------ | -----------
@@ -64,9 +67,3 @@ Your pull-requests and bug-reports are welcome here. See [CONTRIBUTING.md](CONTR
 ### License
 
 Software copyright &copy; 2020 by Richard Braun &bull; <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a> license <p />
-
-### TODO
-
-These badges only work once the images are published to docker hub.
-
-[![](https://images.microbadger.com/badges/version/instantlinux/apicrud.svg)](https://microbadger.com/images/instantlinux/apicrud "Version badge") [![](https://images.microbadger.com/badges/image/instantlinux/apicrud.svg)](https://microbadger.com/images/instantlinux/apicrud "Image badge") [![](https://images.microbadger.com/badges/commit/instantlinux/apicrud.svg)](https://microbadger.com/images/instantlinux/apicrud "Commit badge")

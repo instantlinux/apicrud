@@ -6,12 +6,13 @@ created 4-apr-2020 by richb@instantlinux.net
 """
 
 from flask import g
-import i18n_textstrings as i18n
 from itsdangerous import URLSafeTimedSerializer
 import logging
 import random
 from sqlalchemy.orm.exc import NoResultFound
 import string
+
+from .constants import i18n
 
 
 class Confirmation:

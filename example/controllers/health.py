@@ -3,10 +3,9 @@
 created 23-sep-2019 by richb@instantlinux.net
 """
 
-import _version
+from example import _version, config
 from apicrud import health
-import config
-from models import AlembicVersion
+from example.models import AlembicVersion
 
 
 class HealthController(object):

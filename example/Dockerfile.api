@@ -13,15 +13,17 @@ ENV AMQ_HOST=example-rmq \
     EXAMPLE_ENV=local
 
 EXPOSE 8080
-WORKDIR /opt/app
-COPY requirements.txt /usr/src/
+WORKDIR /opt/example
+COPY requirements.txt example/uwsgi.ini /usr/src/
 RUN pip3 install -r /usr/src/requirements.txt && \
     mkdir /var/opt/example && chown uwsgi /var/opt/example
 
-COPY example/ /opt/app
-RUN chmod -R g-w,o-w /opt/app && \
-    ln -s /usr/lib/uwsgi/python3_plugin.so /opt/app/ && \
+COPY example/ /opt/example
+COPY apicrud/ /opt/apicrud
+RUN chmod -R g-w,o-w /opt/example && \
+    ln -s /usr/lib/uwsgi/python3_plugin.so /opt/example/ && \
     sed -i -e "s/^vcs_ref =.*/vcs_ref = '$VCS_REF'/" \
     -e "s/^__version__ =.*/__version__ = '$TAG'/" \
     -e "s/^build_date =.*/build_date = '$BUILD_DATE'/" \
-    /opt/app/_version.py
+    /opt/example/_version.py
+CMD ["uwsgi", "--module", "example.main", "--ini", "/usr/src/uwsgi.ini"]

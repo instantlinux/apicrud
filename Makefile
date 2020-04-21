@@ -1,6 +1,9 @@
 # Usage:
 # See .gitlab-ci.yml for the main pipeline
 # See example/Makefile.dev for working locally
+#
+# To start all services in local kubernetes:
+#   TAG=latest make deploy_local
 
 MAXFAIL    ?= 1000
 PYPI_URL   ?= https://upload.pypi.org/legacy/
@@ -73,9 +76,10 @@ dist/apicrud-$(VERSION).tar.gz: test_requirements
 	fi
 
 clean:
-	rm -rf build dist apicrud/htmlcov *.egg-info \
-	 .cache .pytest_cache apicrud/__pycache__ tests/__pycache__
+	rm -rf build dist *.egg-info .cache .pytest_cache \
+	 apicrud/__pycache__ example/__pycache__ tests/__pycache__
 	find . -regextype egrep -regex \
-         '.*(coverage.xml|results.xml|\.pyc|\.coverage|~)' -exec rm -rf {} \;
+         '.*(coverage.xml|results.xml|\.pyc|htmlcov|\.coverage|~)' \
+	 -exec rm -rf {} \;
 wipe_clean: clean
 	rm -rf python_env

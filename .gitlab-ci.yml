@@ -4,8 +4,7 @@
 
 stages:
   - Analyze and Unit Test
-  - api
-  - worker
+  - Images
   - Functional Tests
   - Promote Images
   - Publish Package
@@ -39,14 +38,13 @@ analysis:
       junit: tests/results.xml
   coverage: '/TOTAL.*\s(\d+)%/'
 
-create_example_api:
-  stage: api
+api:
+  stage: Images
   <<: *registry_login
   <<: *create_image
-  only: { refs: [ master ] }
 
-create_example_worker:
-  stage: worker
+worker:
+  stage: Images
   <<: *registry_login
   <<: *create_image
 

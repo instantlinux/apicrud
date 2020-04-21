@@ -8,7 +8,7 @@ created 17-oct-2019 by richb@instantlinux.net
 import test_base
 
 import config
-import _version
+from example import _version
 
 
 class TestMain(test_base.TestBase):

@@ -7,8 +7,8 @@ from flask import g, request
 import logging
 
 from apicrud.session_auth import SessionAuth
-import config
-import models
+from example import config
+from example import models
 from apicrud import singletons
 
 

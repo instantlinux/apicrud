@@ -9,14 +9,12 @@ import logging
 import re
 from sqlalchemy.orm.exc import NoResultFound
 
-import config
-import constants
+from example import config, constants, models
+from example.messaging import send_contact
 from apicrud.basic_crud import BasicCRUD
 from apicrud.access import AccessControl
 from apicrud.confirmation import Confirmation
 from apicrud.grants import Grants
-from messaging import send_contact
-import models
 from apicrud import singletons
 
 

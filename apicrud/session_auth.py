@@ -19,7 +19,7 @@ import time
 from .access import AccessControl
 from .confirmation import Confirmation
 from . import constants
-import i18n_textstrings as i18n
+from .constants import i18n
 
 
 class SessionAuth(object):

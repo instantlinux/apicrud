@@ -1,9 +1,8 @@
 from flask import g
 
-import config
+from example import config, models
 from apicrud.basic_crud import BasicCRUD
 from apicrud.access import AccessControl
-import models
 
 
 class MessageController(BasicCRUD):
