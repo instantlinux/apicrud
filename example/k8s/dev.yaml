@@ -11,3 +11,16 @@ spec:
   selector:
     app.kubernetes.io/name: $SERVICE_NAME-api
   type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: $SERVICE_NAME-ui
+  name: $SERVICE_NAME-dev-ui
+spec:
+  ports:
+  - { port: 80, targetPort: 80, nodePort: $UI_DEV_PORT }
+  selector:
+    app.kubernetes.io/name: $SERVICE_NAME-ui
+  type: NodePort
