@@ -46,7 +46,7 @@ $(K8S_YAML):
 
 deploy_k8s: example/k8s/rmq example/k8s/redis
 
-deploy_local: mariadb_adhoc redis_adhoc rmq_adhoc example/k8s/dev
+deploy_local: envsubst mariadb_adhoc redis_adhoc rmq_adhoc example/k8s/dev secrets
 ifeq ($(TAG),)
 	@echo Please specify an existing tag in form bld_abcdefg
 	@exit 1

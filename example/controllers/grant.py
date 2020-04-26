@@ -33,7 +33,7 @@ class GrantController(BasicCRUD):
                 value=Grants(models,
                              ttl=config.CACHE_TTL).get(kwargs.get('name')),
                 uid=AccessControl().uid)]), 200
-        response = constants.DEFAULT_GRANTS.copy()
+        response = config.DEFAULT_GRANTS.copy()
         for item in retval[0]['items']:
             response[item['name']] = item['value']
         return dict(

@@ -40,11 +40,12 @@ spec:
             secretKeyRef:
               name: $SERVICE_NAME-flask-secret
               key: $SERVICE_NAME-flask-secret
-        - name: MAPQUEST_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: mapquest-api-key
-              key: mapquest-api-key
+	# TODO make this optional secret available
+        # - name: MAPQUEST_API_KEY
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: mapquest-api-key
+        #       key: mapquest-api-key
         - name: REDIS_AES_SECRET
           valueFrom:
             secretKeyRef:

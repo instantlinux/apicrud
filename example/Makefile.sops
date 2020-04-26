@@ -62,7 +62,7 @@ endif
 
 SECRETS = $(basename $(wildcard example/secrets/*.yml example/secrets/*/*.yml))
 secrets: $(SECRETS)
-$(SECRETS):
+$(SECRETS): sops
 	-sops -d $@.yml | envsubst | \
 	 kubectl create $(KUBE_OPTS) -f -
 
@@ -73,3 +73,6 @@ example/secrets/%.yml example/secrets/*/%yml:
 	sops --config example/secrets/.sops.yaml -e $(TMP) > $@
 	@rm $(TMP)
 	cd example/secrets && sops $(shell echo $@ | sed -e s:example/secrets/::)
+
+sops-import-gpg:
+	gpg --import example/secrets/example-private.key 

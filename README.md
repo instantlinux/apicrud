@@ -15,9 +15,10 @@ Clone this repo to your local environment. To start the example application in a
 
 * Set environment variables as defined below
 * Install docker ([desktop for Mac](https://docs.docker.com/docker-for-mac/) or [Linux/Ubuntu](https://docs.docker.com/engine/install/ubuntu/) and enable kubernetes; Linux _kubeadm_ setup is beyond scope of this README
-* To run the full example demo in your local kubernetes, choose a tag and:
+* To run the full example demo in your local kubernetes:
+  * Make secrets available: `ln -s example/secrets/.gnupg ~` if you don't already use gpg, or `make sops-import-gpg` if gpg is already installed
   * Invoke `TAG=latest make deploy_local`
-  * Browse http://localhost:32180 as `admin` with password `p@ssw0rd`
+  * Browse http://localhost:32180 as `admin` with password `p@ssw0rd` once all services are running
 * Or, to run only database/cache images for developing on your laptop:
   * Invoke `make run_local` to bring up the back-end API with its dependent services mariadb, redis and rabbitmq
   * Invoke `make messaging_worker` to bring up the email/SMS worker back-end
