@@ -15,7 +15,7 @@ spec:
       containers:
       - name: $SERVICE_NAME-ui
         env:
-        - { name: REACT_APP_API_URL, value: http://$EXAMPLE_PUBLIC_URL/api/v1 }
+        - { name: REACT_APP_API_URL, value: $REACT_APP_API_URL }
         # - name: REACT_APP_TOKEN_MAPBOX
         #   valueFrom:
         #     secretKeyRef:

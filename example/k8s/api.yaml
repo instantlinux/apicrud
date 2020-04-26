@@ -16,12 +16,13 @@ spec:
       - name: $SERVICE_NAME-api
         env:
         - { name: AMQ_HOST, value: $AMQ_HOST }
-        - { name: EXAMPLE_ENV, value: $EXAMPLE_ENV }
+        - { name: CORS_ORIGINS, value: "$CORS_ORIGINS" }
         - { name: DB_CONNECTION_TIMEOUT, value: "$DB_CONNECTION_TIMEOUT" }
         - { name: DB_HOST, value: $DB_HOST }
         - { name: DB_NAME, value: $DB_NAME }
         - { name: DB_USER, value: $DB_USER }
         - { name: DOMAIN, value: $DOMAIN }
+        - { name: EXAMPLE_ENV, value: $EXAMPLE_ENV }
         - { name: REDIS_HOST, value: $REDIS_HOST }
         - { name: TZ, value: $TZ }
         - name: DB_AES_SECRET
@@ -65,36 +66,6 @@ spec:
             cpu: $LIMIT_CPU_REQUEST
             memory: $LIMIT_MEM_REQUEST
       imagePullSecrets: [ $IMAGEPULL_SPEC ]
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: $SERVICE_NAME-ingress-public
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/client-body-buffer-size: 20m
-    nginx.ingress.kubernetes.io/proxy-body-size: 20m
-    # nginx.ingress.kubernetes.io/configuration-snippet: |
-    #   limit_req_zone ${DOL}binary_remote_addr zone=api:10m rate=30r/m;
-    #   limit_req_status 429;
-spec:
-  rules:
-  - host: $EXAMPLE_PUBLIC_URL
-    http:
-      paths:
-      - path: /api
-        backend:
-          serviceName: $SERVICE_NAME-api
-          servicePort: 80
-      - path: /
-        backend:
-          serviceName: $SERVICE_NAME-ui
-          servicePort: 80
-  tls:
-  - hosts:
-    - $EXAMPLE_PUBLIC_URL
-    secretName: tls-$SERVICE_NAME-public
 ---
 apiVersion: v1
 kind: Service

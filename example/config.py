@@ -74,7 +74,7 @@ if os.environ.get('CORS_ORIGINS'):
     CORS_ORIGINS = os.environ['CORS_ORIGINS'].split(',')
 elif os.environ.get('EXAMPLE_ENV') == 'prod':
     CORS_ORIGINS = [
-        'https://example.ci.net', 'https://example-media.ci.net']
+        "https://example.$DOMAIN", "https://media.$DOMAIN"]
 else:
     CORS_ORIGINS = [
-        'https://example-dev.ci.net', 'https://example-media-dev.ci.net']
+        "https://dev.$DOMAIN", "https://media-dev.$DOMAIN"]
