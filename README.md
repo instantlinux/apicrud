@@ -3,18 +3,20 @@
 
 ### What is this
 
-Skip the python/React.js learning curve and put your ideas in production!
+Skip the kubernetes / python / React.js learning curve and put your ideas in production!
 
 The _apicrud_ framework was created to make it far easier to get started on full-stack development of REST-based services ranging from a simple CLI wrapper for queries of local APIs to full web-scale consumer-facing applications.
 
-The essential components of a modern full-stack application include a back-end API server, a front-end UI server, a database, a memory-cache and a background worker for performing actions such as emailing, photo uploading or report generation. This is the API back-end and worker, with an _example_ application.
+The essential components of a modern full-stack application include a back-end API server, a front-end UI server, a database, a memory-cache and a background worker for performing actions such as emailing, photo uploading or report generation. The challenge of setting up CI testing and microservice deployment is usually daunting; this repo addresses all of those issues by providing a fully-working example you can set up and start modifying in minutes. No prior experience is required.
+
+This is the API back-end and worker, with an _example_ application.
 
 ### Usage
 
 Clone this repo to your local environment. To start the example application in a shell session (on a Linux or Mac laptop):
 
 * Set environment variables as defined below
-* Install docker ([desktop for Mac](https://docs.docker.com/docker-for-mac/) or [Linux/Ubuntu](https://docs.docker.com/engine/install/ubuntu/) and enable kubernetes; Linux _kubeadm_ setup is beyond scope of this README
+* Install docker ([desktop for Mac](https://docs.docker.com/docker-for-mac/) or [Linux/Ubuntu](https://docs.docker.com/engine/install/ubuntu/) and enable kubernetes; if you're on a Mac install [homebrew](https://brew.sh); Linux _kubeadm_ setup is beyond scope of this README
 * To run the full example demo in your local kubernetes:
   * Make secrets available: `ln -s example/secrets/.gnupg ~` if you don't already use gpg, or `make sops-import-gpg` if gpg is already installed
   * Invoke `TAG=latest make deploy_local`

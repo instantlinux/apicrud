@@ -22,7 +22,15 @@ def lookup(address=None, neighborhood=None, city=None, state=None,
     location = '%s,%s,%s' % (city, state, country)
     if address or neighborhood:
         location = '%s,%s' % (address or neighborhood, location)
-    geo = geocoder.mapquest(location)
+    try:
+        geo = geocoder.mapquest(location)
+    except Exception as ex:
+        if 'Provide API Key' in str(ex):
+            logging.info('geocode: no MapQuest key set')
+        else:
+            logging.error('action=geo_lookup error=%s' % str(ex))
+        return (None, None, '')
+
     # POINT column type only supported in PostgreSQL / sqlite
     # geo = 'POINT(%f %f)' % (geo.lng, geo.lat)
     geolat = int(geo.lat * 1.0e7)

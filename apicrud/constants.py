@@ -10,6 +10,8 @@ created 31-mar-2019 by richb@instantlinux.net
 AUTH_INVITEE = 'invitee'
 LIB_MOD_SPATIALITE = ['/usr/lib/x86_64-linux-gnu/mod_spatialite.so',
                       '/usr/lib/mod_spatialite.so.7']
+MIME_IMAGE_TYPES = ("gif", "heic", "jpeg", "png", "svg")
+MIME_VIDEO_TYPES = ("mp4", "mpeg")
 PER_PAGE_DEFAULT = 100
 REDIS_TTL = 3600
 
