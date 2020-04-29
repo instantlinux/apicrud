@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """initialize
 
 Revision ID: cac2000912a5
@@ -52,8 +54,9 @@ def upgrade():
     sa.ForeignKeyConstraint(['uid'], ['people.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id'),
-    sa.UniqueConstraint('name', 'uid', name='uniq_category_owner')
+    sa.UniqueConstraint('name', 'uid', name='uniq_category_owner'),
     )
+
     op.create_table('contacts',
     sa.Column('id', sa.String(length=16), nullable=False),
     sa.Column('label', sa.Enum('home', 'mobile', 'other', 'work'), server_default='home', nullable=False),
@@ -70,7 +73,7 @@ def upgrade():
     sa.ForeignKeyConstraint(['uid'], ['people.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id'),
-    sa.UniqueConstraint('info', 'type', name='uniq_info_type')
+    sa.UniqueConstraint('info', 'type', name='uniq_info_type'),
     )
     with op.batch_alter_table('contacts', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_contacts_uid'), ['uid'], unique=False)
@@ -84,11 +87,12 @@ def upgrade():
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.Column('modified', sa.TIMESTAMP(), nullable=True),
     sa.Column('status', sa.Enum('active', 'disabled'), server_default='active', nullable=False),
-    sa.ForeignKeyConstraint(['uid'], ['people.id'], ),
+    sa.ForeignKeyConstraint(['uid'], ['people.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id'),
     sa.UniqueConstraint('name', 'uid', name='uniq_grant_user')
     )
+
     op.create_table(
     'locations',
     sa.Column('id', sa.String(length=16), primary_key=True, unique=True),
@@ -122,6 +126,7 @@ def upgrade():
     sa.Column('subject', sa.String(length=128), nullable=True),
     sa.Column('sender_id', sa.String(length=16), nullable=False),
     sa.Column('recipient_id', sa.String(length=16), nullable=True),
+    sa.Column('list_id', sa.String(length=16), nullable=True),
     sa.Column('privacy', sa.String(length=8), server_default='secret', nullable=False),
     sa.Column('published', sa.BOOLEAN(), nullable=True),
     sa.Column('uid', sa.String(length=16), nullable=False),
@@ -133,31 +138,33 @@ def upgrade():
     sa.ForeignKeyConstraint(['sender_id'], ['people.id'], ),
     sa.ForeignKeyConstraint(['uid'], ['people.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('id')
+    sa.UniqueConstraint('id'),
     )
+
     op.create_table('profileitems',
     sa.Column('id', sa.String(length=16), nullable=False),
     sa.Column('uid', sa.String(length=16), nullable=False),
     sa.Column('item', sa.Enum('birthday', 'employer', 'gender', 'hometown', 'jobtitle', 'lang', 'location', 'partner', 'album', 'reminders', 'tz'), nullable=False),
     sa.Column('value', sa.String(length=32), nullable=True),
+    sa.Column('location_id', sa.String(length=16), nullable=True),
     sa.Column('tz_id', sa.INTEGER(), nullable=True),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.Column('modified', sa.TIMESTAMP(), nullable=True),
     sa.Column('status', sa.Enum('active', 'disabled'), nullable=False),
+    sa.ForeignKeyConstraint(['location_id'], ['locations.id'], ),
     sa.ForeignKeyConstraint(['tz_id'], ['time_zone_name.id'], ),
     sa.ForeignKeyConstraint(['uid'], ['people.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id'),
     sa.UniqueConstraint('uid', 'item', name='uniq_itemuid')
     )
+
     op.create_table('directmessages',
-    sa.Column('message_id', sa.String(length=16), nullable=False),
-    sa.Column('uid', sa.String(length=16), nullable=False),
+    sa.Column('message_id', sa.String(length=16), primary_key=True, nullable=False),
+    sa.Column('uid', sa.String(length=16), primary_key=True, nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.ForeignKeyConstraint(['message_id'], ['messages.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['uid'], ['people.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('message_id'),
-    sa.UniqueConstraint('message_id', 'uid', name='uniq_directmessage')
     )
     with op.batch_alter_table('directmessages', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_directmessages_uid'), ['uid'], unique=False)
@@ -179,26 +186,22 @@ def upgrade():
     sa.UniqueConstraint('name', 'uid', name='uniq_list_owner')
     )
     op.create_table('listmembers',
-    sa.Column('uid', sa.String(length=16), nullable=False),
-    sa.Column('list_id', sa.String(length=16), nullable=False),
+    sa.Column('uid', sa.String(length=16), primary_key=True, nullable=False),
+    sa.Column('list_id', sa.String(length=16), primary_key=True, nullable=False),
     sa.Column('authorization', sa.String(length=8), server_default='member', nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.ForeignKeyConstraint(['list_id'], ['lists.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['uid'], ['people.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('uid'),
-    sa.UniqueConstraint('list_id', 'uid', name='uniq_listmember')
     )
     with op.batch_alter_table('listmembers', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_listmembers_list_id'), ['list_id'], unique=False)
 
     op.create_table('listmessages',
-    sa.Column('message_id', sa.String(length=16), nullable=False),
-    sa.Column('list_id', sa.String(length=16), nullable=False),
+    sa.Column('message_id', sa.String(length=16), primary_key=True, nullable=False),
+    sa.Column('list_id', sa.String(length=16), primary_key=True, nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.ForeignKeyConstraint(['list_id'], ['lists.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['message_id'], ['messages.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('message_id'),
-    sa.UniqueConstraint('list_id', 'message_id', name='uniq_listmessage')
     )
     with op.batch_alter_table('listmessages', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_listmessages_list_id'), ['list_id'], unique=False)
@@ -207,8 +210,9 @@ def upgrade():
     sa.Column('id', sa.String(length=16), nullable=False),
     sa.Column('name', sa.String(length=32), nullable=False),
     sa.Column('privacy', sa.String(length=8), server_default='public', nullable=False),
-    sa.Column('smtp_port', sa.INTEGER(), server_default='25', nullable=False),
+    sa.Column('smtp_port', sa.INTEGER(), server_default='587', nullable=False),
     sa.Column('smtp_smarthost', sa.String(length=255), nullable=True),
+    sa.Column('smtp_credential_id', sa.String(length=16), nullable=True),
     sa.Column('country', sa.String(length=2), server_default='US', nullable=False),
     sa.Column('lang', sa.String(length=6), server_default='en_US', nullable=False),
     sa.Column('tz_id', sa.INTEGER(), server_default='598', nullable=False),
@@ -248,4 +252,172 @@ def upgrade():
     sa.UniqueConstraint('name'),
     sa.UniqueConstraint('uid')
     )
+
+    op.create_table(
+    'credentials',
+    sa.Column('id', sa.String(length=16), primary_key=True, nullable=False),
+    sa.Column('name', sa.String(length=64), nullable=False),
+    sa.Column('vendor', sa.String(length=32), nullable=False),
+    sa.Column('type', sa.String(length=16), nullable=True),
+    sa.Column('url', sa.String(length=64), nullable=True),
+    sa.Column('key', sa.String(length=128), nullable=True),
+    sa.Column('secret', EncryptedType(sa.String(length=128)), nullable=True),
+    sa.Column('otherdata', EncryptedType(sa.String(length=1024)), nullable=True),
+    sa.Column('expires', sa.TIMESTAMP(), nullable=True),
+    sa.Column('settings_id', sa.String(length=16), nullable=False),
+    sa.Column('uid', sa.String(length=16), nullable=False),
+    sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('modified', sa.TIMESTAMP(), nullable=True),
+    sa.Column('status', sa.Enum(u'active', u'disabled'), nullable=False,
+              server_default='active'),
+    sa.ForeignKeyConstraint(['uid'], ['people.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['settings_id'], [u'settings.id']),
+    sa.UniqueConstraint('id'),
+    sa.UniqueConstraint('name', 'uid', name='uniq_name_uid')
+    )
+    with op.batch_alter_table('settings', schema=None) as batch_op:
+        batch_op.create_foreign_key('settings_fk1', 'credentials', ['smtp_credential_id'], ['id'])
+
+    ###############################################
+    # Tables and column additions for media service
+    ###############################################
+
+    op.create_table('storageitems',
+    sa.Column('id', sa.String(length=16), nullable=False),
+    sa.Column('name', sa.String(length=32), nullable=False),
+    sa.Column('prefix', sa.String(length=128), server_default='', nullable=True),
+    sa.Column('bucket', sa.String(length=64), nullable=False),
+    sa.Column('region', sa.String(length=16), server_default='us-east-2', nullable=True),
+    sa.Column('cdn_uri', sa.String(length=64), nullable=True),
+    sa.Column('identifier', sa.String(length=64), nullable=True),
+    sa.Column('privacy', sa.String(length=8), server_default='public', nullable=False),
+    sa.Column('credentials_id', sa.String(length=16), nullable=True),
+    sa.Column('uid', sa.String(length=16), nullable=False),
+    sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('modified', sa.TIMESTAMP(), nullable=True),
+    sa.Column('status', sa.Enum('active', 'disabled'), server_default='active', nullable=False),
+    sa.ForeignKeyConstraint(['credentials_id'], ['credentials.id'], ),
+    sa.ForeignKeyConstraint(['uid'], ['people.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('id')
+    )
+
+    op.create_table('pictures',
+    sa.Column('id', sa.String(length=16), nullable=False),
+    sa.Column('name', sa.String(length=64), nullable=False),
+    sa.Column('path', sa.String(length=64), server_default='', nullable=False),
+    sa.Column('caption', sa.String(length=255), nullable=True),
+    sa.Column('uid', sa.String(length=16), nullable=False),
+    sa.Column('size', sa.BIGINT(), nullable=True),
+    sa.Column('sha1', sa.LargeBinary(length=20), nullable=True),
+    sa.Column('sha256', sa.LargeBinary(length=32), nullable=True),
+    sa.Column('thumbnail50x50', sa.BLOB(), nullable=True),
+    sa.Column('format_original', sa.Enum('gif', 'heic', 'heif', 'ico', 'jpeg', 'mov', 'mp4', 'png', 'wmv'), nullable=True),
+    sa.Column('is_encrypted', sa.BOOLEAN(), server_default=sa.text('0'), nullable=False),
+    sa.Column('duration', sa.Float(), nullable=True),
+    sa.Column('compression', sa.String(length=16), nullable=True),
+    sa.Column('datetime_original', sa.TIMESTAMP(), nullable=True),
+    sa.Column('gps_altitude', sa.Float(), nullable=True),
+    sa.Column('geolat', sa.INTEGER(), nullable=True),
+    sa.Column('geolong', sa.INTEGER(), nullable=True),
+    sa.Column('height', sa.INTEGER(), nullable=True),
+    sa.Column('make', sa.String(length=16), nullable=True),
+    sa.Column('model', sa.String(length=32), nullable=True),
+    sa.Column('orientation', sa.SMALLINT(), nullable=True),
+    sa.Column('width', sa.INTEGER(), nullable=True),
+    sa.Column('privacy', sa.String(length=8), server_default='invitee', nullable=False),
+    sa.Column('category_id', sa.String(length=16), nullable=False),
+    sa.Column('storage_id', sa.String(length=16), nullable=False),
+    sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('modified', sa.TIMESTAMP(), nullable=True),
+    sa.Column('status', sa.Enum('active', 'disabled'), nullable=False),
+    sa.ForeignKeyConstraint(['category_id'], ['categories.id'], ),
+    sa.ForeignKeyConstraint(['storage_id'], ['storageitems.id'], ),
+    sa.ForeignKeyConstraint(['uid'], ['people.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('id')
+    )
+
+    op.create_table('albums',
+    sa.Column('id', sa.String(length=16), nullable=False),
+    sa.Column('name', sa.String(length=64), nullable=False),
+    sa.Column('sizes', sa.String(length=32), server_default='120,720', nullable=False),
+    sa.Column('encryption', sa.Enum('aes'), nullable=True),
+    sa.Column('password', EncryptedType(sa.String(length=64)), nullable=True),
+    sa.Column('uid', sa.String(length=16), nullable=False),
+    sa.Column('list_id', sa.String(length=16), nullable=True),
+    sa.Column('cover_id', sa.String(length=16), nullable=True),
+    sa.Column('category_id', sa.String(length=16), nullable=False),
+    sa.Column('privacy', sa.String(length=8), server_default='invitee', nullable=False),
+    sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('modified', sa.TIMESTAMP(), nullable=True),
+    sa.Column('status', sa.Enum('active', 'disabled'), server_default='active', nullable=False),
+    sa.ForeignKeyConstraint(['category_id'], ['categories.id'], ),
+    sa.ForeignKeyConstraint(['cover_id'], ['pictures.id'], ),
+    sa.ForeignKeyConstraint(['list_id'], ['lists.id'], ),
+    sa.ForeignKeyConstraint(['uid'], ['people.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('id'),
+    sa.UniqueConstraint('name', 'uid', name='uniq_album_user')
+    )
+
+    with op.batch_alter_table('messages', schema=None) as batch_op:
+        batch_op.add_column(sa.Column('album_id', sa.String(length=16), nullable=True))
+        batch_op.create_foreign_key('messages_fk1', 'albums', ['album_id'], ['id'])
+    with op.batch_alter_table('profileitems', schema=None) as batch_op:
+        batch_op.add_column(sa.Column('album_id', sa.String(length=16), nullable=True))
+        batch_op.create_foreign_key('albums_fk1', 'albums', ['album_id'], ['id'])
+
+    op.create_table('albumcontents',
+    sa.Column('album_id', sa.String(length=16), nullable=False),
+    sa.Column('picture_id', sa.String(length=16), nullable=False),
+    sa.Column('rank', sa.Float(), nullable=True),
+    sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.ForeignKeyConstraint(['album_id'], ['albums.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['picture_id'], ['pictures.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('album_id'),
+    sa.UniqueConstraint('album_id', 'picture_id', name='uniq_albumpic')
+    )
+    with op.batch_alter_table('albumcontents', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_albumcontents_picture_id'), ['picture_id'], unique=False)
+
+    op.create_table('files',
+    sa.Column('id', sa.String(length=16), nullable=False),
+    sa.Column('name', sa.String(length=64), nullable=False),
+    sa.Column('path', sa.String(length=64), nullable=False),
+    sa.Column('mime_type', sa.String(length=32), server_default='text/plain', nullable=False),
+    sa.Column('size', sa.BIGINT(), nullable=True),
+    sa.Column('sha1', sa.LargeBinary(length=20), nullable=True),
+    sa.Column('sha256', sa.LargeBinary(length=32), nullable=True),
+    sa.Column('storage_id', sa.String(length=16), nullable=True),
+    sa.Column('privacy', sa.String(length=8), server_default='member', nullable=False),
+    sa.Column('list_id', sa.String(length=16), nullable=True),
+    sa.Column('uid', sa.String(length=16), nullable=False),
+    sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('modified', sa.TIMESTAMP(), nullable=True),
+    sa.Column('status', sa.Enum('active', 'disabled'), server_default='active', nullable=False),
+    sa.ForeignKeyConstraint(['storage_id'], ['storageitems.id'], ),
+    sa.ForeignKeyConstraint(['list_id'], ['lists.id'], ),
+    sa.ForeignKeyConstraint(['uid'], ['people.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('id')
+    )
+
+    with op.batch_alter_table('files', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_files_uid'), ['uid'], unique=False)
+
+    op.create_table('messagefiles',
+    sa.Column('file_id', sa.String(length=16), primary_key=True, nullable=False),
+    sa.Column('message_id', sa.String(length=16), primary_key=True, nullable=False),
+    sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.ForeignKeyConstraint(['file_id'], ['files.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['message_id'], ['messages.id'], ondelete='CASCADE'),
+    )
+    with op.batch_alter_table('messagefiles', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_messagefiles_message_id'), ['message_id'], unique=False)
+
+    with op.batch_alter_table('settings', schema=None) as batch_op:
+        batch_op.add_column(sa.Column('default_storage_id', sa.String(length=16), nullable=True))
+        batch_op.create_foreign_key('settings_fk2', 'storageitems', ['default_storage_id'], ['id'])
+
     # ### end Alembic commands ###

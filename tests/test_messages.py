@@ -43,7 +43,6 @@ class TestMessages(test_base.TestBase):
         self.assertEqual(response.status_code, 200)
         result = response.get_json()
         del(result['created'])
-        del(expected['list_id'])
         expected['id'] = id
         self.assertEqual(result, expected)
 
@@ -146,7 +145,7 @@ class TestMessages(test_base.TestBase):
         result = response.get_json()
         del(result['created'])
         del(result['modified'])
-        del(expected['list_id'])
+        # del(expected['list_id'])
         expected.update(updated)
         expected['id'] = id
         self.assertEqual(result, expected)
@@ -157,8 +156,8 @@ class TestMessages(test_base.TestBase):
         expected = dict(
             published=None, recipient_id=None,
             sender_id=self.test_uid, viewed=None, status='disabled',
-            privacy='secret', rbac='dru', uid=self.test_uid,
-            owner=self.test_person_name, **record)
+            privacy='secret', uid=self.test_uid,
+            rbac='dru', owner=self.test_person_name, **record)
 
         response = self.call_endpoint('/message', 'post', data=record)
         self.assertEqual(response.status_code, 201)
@@ -170,7 +169,6 @@ class TestMessages(test_base.TestBase):
         response = self.call_endpoint('/message/%s' % id, 'get')
         result = response.get_json()
         del(result['created'])
-        del(expected['list_id'])
         expected['id'] = id
         self.assertEqual(result, expected)
 

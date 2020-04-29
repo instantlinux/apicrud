@@ -8,41 +8,16 @@ created 31-mar-2019 by richb@instantlinux.net
 import connexion
 from datetime import datetime
 from flask import g
-from flask_cors import CORS
-import logging
-import os
 
 from . import config, db_schema, models
 from .controllers import _init
-from apicrud import database, grants, utils
-from apicrud.access import AccessControl
+from apicrud import database, utils
 from apicrud.session_manager import SessionManager
 
-application = connexion.FlaskApp(__name__)
 setup_db_only_once = {}
-
-
-def initialize_app():
-    logging.basicConfig(level=config.LOG_LEVEL,
-                        format='%(asctime)s %(levelname)s %(message)s',
-                        datefmt='%m-%d %H:%M:%S')
-    logging.getLogger('werkzeug').setLevel(logging.ERROR)
-    application.app.config.from_object(config)
-    application.add_api('openapi.yaml')
-    application.add_error_handler(400, utils.render_status_400)
-    application.add_error_handler(connexion.ProblemException,
-                                  utils.render_problem)
-    CORS(application.app,
-         resources={r"/api/*": {'origins': config.CORS_ORIGINS}},
-         supports_credentials=True)
-    AccessControl().load_rbac(os.path.join(os.path.dirname(
-        os.path.abspath(__file__)), 'rbac.yaml'))
-    grants.Grants(models).load_defaults(config.DEFAULT_GRANTS)
-    _init.controllers()
-    return application.app
-
-
-initialize_app()
+application = connexion.FlaskApp(__name__)
+utils.initialize_app(application, config, models)
+_init.controllers()
 
 
 @application.app.before_first_request

@@ -53,14 +53,23 @@ DEFAULT_GRANTS = dict(
 JWT_ISSUER = 'example.%s' % os.environ.get('DOMAIN')
 JWT_SECRET = os.environ.get('JWT_SECRET', 'PY07l0g0FSqeKsyx')
 LOG_LEVEL = logging.INFO
+
+# Adjustable parameters for login sessions
+#  Time limit of sessions (measured from session start) is 2 hours in
+#  production, 24 hours in dev; admin is limited to 15 minutes in prod
+LOGIN_ADMIN_LIMIT = 900 if os.environ.get('EXAMPLE_ENV') == 'prod' else 86400
 LOGIN_ATTEMPTS_MAX = 5
-LOGIN_LOCKOUT_INTERVAL = 10
+LOGIN_LOCKOUT_INTERVAL = 600
 LOGIN_SESSION_LIMIT = (7200 if os.environ.get('EXAMPLE_ENV') == 'prod' else
                        86400)
+
 PORT = os.environ.get('APP_PORT', 8080)
 MAGIC_VALIDITY_HOURS_MIN = 504
 MAGIC_VALIDITY_FROM_EVENT = 168
 MEDIA_PORT = os.environ.get('MEDIA_PORT', 8082)
+OPENAPI_FILE = 'openapi.yaml'
+RBAC_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                         'rbac.yaml')
 REDIS_AES_SECRET = os.environ.get('REDIS_AES_SECRET', '5bj27gMy6Kbb37A7P')
 REDIS_HOST = os.environ.get('REDIS_HOST', 'example-redis')
 redis_conn = None

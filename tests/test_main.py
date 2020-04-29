@@ -46,8 +46,8 @@ class TestMain(test_base.TestBase):
             # default_storage_id=self.default_storage_id,
             default_cat_id='x-3423ceaf', default_hostlist_id=None,
             lang='en_US', name='global', privacy='public',
-            smtp_port=25, smtp_smarthost='smtp.ci.net', tz_id=598,
-            url='http://elbrus.ci.net:3000',
+            smtp_port=587, smtp_smarthost='smtp.gmail.com',
+            smtp_credential_id=None, tz_id=598, url='http://localhost:3000',
             window_title='Example apicrud Application', rbac='r')
         self.authorize()
         response = self.call_endpoint('/settings/x-75023275', 'get')

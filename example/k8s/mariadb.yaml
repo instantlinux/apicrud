@@ -42,11 +42,14 @@ spec:
         - name: database
           mountPath: /var/lib/mysql
         - name: initdb
+          mountPath: /etc/mysql/conf.d/my.cnf
+          subPath: my.cnf
+        - name: initdb
           mountPath: /docker-entrypoint-initdb.d/setup.sql
           subPath: setup.sql
       volumes:
       - name: database
-        hostPath: { path: /tmp/$SERVICE_NAME-db }
+        hostPath: { path: /var/tmp/$SERVICE_NAME-db }
       - name: initdb
         configMap:
           name: $SERVICE_NAME-initdb
@@ -58,3 +61,7 @@ metadata:
 data:
   setup.sql: |
     GRANT ALL PRIVILEGES ON `${SERVICE_NAME}_${EXAMPLE_ENV}`.* TO '$DB_USER'@'%' IDENTIFIED BY '$DB_PASS';
+  my.cnf: |
+    [mysqld]
+    character_set_server  = utf8
+    innodb_data_file_path = ibdata1:10M:autoextend

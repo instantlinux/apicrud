@@ -79,7 +79,7 @@ clean:
 	rm -rf build dist *.egg-info .cache .pytest_cache \
 	 apicrud/__pycache__ example/__pycache__ tests/__pycache__
 	find . -regextype egrep -regex \
-         '.*(coverage.xml|results.xml|\.pyc|htmlcov|\.coverage|~)' \
+         '.*(coverage.xml|results.xml|\.pyc|htmlcov|\.coverage|\.created|~)' \
 	 -exec rm -rf {} \;
 wipe_clean: clean
 	rm -rf python_env

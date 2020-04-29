@@ -132,7 +132,7 @@ class AccessControl(object):
           query (obj) - a resource query in SQLalchemy
           access (str) - one of lrwcd (list, read, write, create, delete)
 
-        TODO restrictions on contact-read by event-id
+        TODO restrictions on contact-read by list-id
         """
         if hasattr(self.model, 'privacy'):
             conditions = [self.model.privacy == 'public']

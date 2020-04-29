@@ -27,6 +27,15 @@ Clone this repo to your local environment. To start the example application in a
   * Clone the [instantlinux/apicrud-ui](https://github.com/instantlinux/apicrud-ui) repo to a separate directory and follow the instructions given in its README to start and log into the front-end
 * Optional: if setting up to run API within a docker container, configure kubernetes secrets as defined below (need at least the `example-db-password`)
 * Optional for Linux: a full ansible-based bare-metal k8s cluster management suite is published at [instantlinux/docker-tools](https://github.com/instantlinux/docker-tools)
+* Optional: configure outbound email (via GMail or another provider)
+  * Head to [App Passwords](https://myaccount.google.com/apppasswords) account settings in your GMail account and generate an app password
+  * Login to the the example demo as `admin`
+  * At upper right, go into Settings and choose Credentials tab
+  * Add a new entry: `key` is your GMail email address, `secret` is the app password
+  * Choose Settings tab, set the smarthost to `smtp.gmail.com`, SMTP port to 587, and select the SMTP credential you just created
+  * Also in Settings tab, update the URL to match the hostname and port number you see in address bar
+  * At upper right, go into Profile and select Contact Info
+  * Edit the admin email address to your GMail address
 
 The example MVC application is provided here in this repo is also used as a fixture for its unit tests. You can fork / clone this repo and experiment with your own extensions to the database models, controller logic, and openapi.yaml REST endpoints. See [instantlinux/apicrud-ui](https://github.com/instantlinux/apicrud-ui) for definitions of the views (as React.js code).
 

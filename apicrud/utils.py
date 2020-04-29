@@ -1,10 +1,16 @@
 # Utilities
 
+import connexion
 from datetime import datetime
 from flask import g, jsonify
+from flask_cors import CORS
 from html.parser import HTMLParser
+import logging
 import random
 import string
+
+from . import grants, utils
+from .access import AccessControl
 
 
 def gen_id(length=8, prefix='x-', chars=(
@@ -23,6 +29,34 @@ def gen_id(length=8, prefix='x-', chars=(
             _int2base((datetime.utcnow() - datetime(2018, 1, 1)).days * 8 +
                       random.randint(0, 8), chars) +
             ''.join(random.choice(chars) for i in range(length - 3)))
+
+
+def initialize_app(application, config, models):
+    """ Initialize the Flask app defined by openapi.yaml
+
+    params:
+      application - a connexion object
+      config - a flask config object
+      models - the SQLalchemy models
+      init_func - any other function to call
+    """
+
+    logging.basicConfig(level=config.LOG_LEVEL,
+                        format='%(asctime)s %(levelname)s %(message)s',
+                        datefmt='%m-%d %H:%M:%S')
+    logging.getLogger('werkzeug').setLevel(logging.ERROR)
+    application.app.config.from_object(config)
+    application.add_api(config.OPENAPI_FILE)
+    application.add_error_handler(400, utils.render_status_400)
+    application.add_error_handler(connexion.ProblemException,
+                                  utils.render_problem)
+    CORS(application.app,
+         resources={r"/api/*": {'origins': config.CORS_ORIGINS}},
+         supports_credentials=True)
+    AccessControl().load_rbac(config.RBAC_FILE)
+    grants.Grants(models).load_defaults(config.DEFAULT_GRANTS)
+    logging.info(dict(action='initialize_app', port=config.PORT))
+    return application.app
 
 
 def render_status_400(error):

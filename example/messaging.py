@@ -19,8 +19,7 @@ import ssl
 
 from example import celeryconfig, config, models
 from example import i18n_textstrings as i18n
-from example.models import Account, Contact, Profile
-# from example.models import Account, Contact, Person, Profile
+from example.models import Account, Credential, Contact, Person, Profile
 from apicrud.account_settings import AccountSettings
 from apicrud.database import get_session
 
@@ -41,11 +40,11 @@ class SendException(Exception):
 
 
 @app.task(name='tasks.messaging.send')
-def send(uid, guest_ids, template, **kwargs):
+def send(uid, recipient_ids, template, **kwargs):
     """
     params:
       uid (Person) - uid of host
-      guest_ids (Contact) - recipients
+      recipient_ids (Person) - recipients
       template (str) - template name, jinja2 from i18n_texstrings
       kwargs - kv pairs for template
     """
@@ -55,32 +54,32 @@ def send(uid, guest_ids, template, **kwargs):
     with smtplib.SMTP(settings.get.smtp_smarthost,
                       settings.get.smtp_port) as smtp:
         smtp.starttls(context=ssl_context)
-        # hosts = kwargs['hosts']
+        if settings.get.smtp_credential_id:
+            try:
+                cred = db_session.query(Credential).filter_by(
+                    id=settings.get.smtp_credential_id).one()
+                smtp.login(cred.key, cred.secret)
+            except Exception as ex:
+                logging.error('action=send message=%s' % str(ex))
+                raise
         count, errors = (0, 0)
-        """
-        TODO needs to work without Guest
-        for guest_id in guest_ids:
+        for person in recipient_ids:
             try:
                 contacts = [item.id for item in db_session.query(Contact).join(
-                    Person, Contact.uid == Person.id).join(
-                    Guest, Person.id == Guest.uid).filter_by(
-                        id=guest_id).all() if not item.muted and not
+                    Person, Contact.uid == person).all()
+                            if not item.muted and not
                             item.status == 'disabled']
-                guest = db_session.query(Guest).filter_by(id=guest_id).one()
-                magic = guest.magic
-                name = guest.person.name
+                name = db_session.query(Person).filter_by(id=person).one().name
                 try:
                     lang = db_session.query(Profile).filter(
-                        Profile.uid == guest.uid,
+                        Profile.uid == person,
                         Profile.item == 'lang').one().value
                 except NoResultFound:
                     lang = settings.get.lang
             except NoResultFound as ex:
-                logging.warning('action=send guest_id=%s message=%s' %
-                                (guest_id, str(ex)))
-            kwargs.update(dict(guest_id=guest_id, magic=magic, name=name))
-            kwargs.update(dict(hosts=_replace_last_comma_and(
-                hosts, lang)))
+                logging.warning('action=send uid=%s message=%s' %
+                                (person, str(ex)))
+            kwargs.update(dict(name=name, lang=lang))
             for contact in contacts:
                 try:
                     send_contact(frm=uid, to=contact, template=template,
@@ -88,8 +87,6 @@ def send(uid, guest_ids, template, **kwargs):
                     count += 1
                 except SendException:
                     errors += 1
-        """
-    db_session.commit()
     db_session.remove()
     if errors > 0:
         msg = 'action=send count=%d errors=%d' % (count, errors)
@@ -155,6 +152,15 @@ def send_contact(frm=None, to=None, template=None, db_session=None, **kwargs):
         with smtplib.SMTP(settings.get.smtp_smarthost,
                           settings.get.smtp_port) as smtp:
             smtp.starttls(context=ssl_context)
+            if settings.get.smtp_credential_id:
+                try:
+                    cred = db_session.query(Credential).filter_by(
+                        id=settings.get.smtp_credential_id).one()
+                    smtp.login(cred.key, cred.secret)
+                except Exception as ex:
+                    logging.error('action=send_contact message=%s' %
+                                  str(ex))
+                    raise
             logging.info('action=send_contact id=%s type=%s address=%s' %
                          (to, to_contact.type, to_contact.info))
             if to_contact.type == 'sms':

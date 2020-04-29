@@ -63,8 +63,9 @@ endif
 SECRETS = $(basename $(wildcard example/secrets/*.yml example/secrets/*/*.yml))
 secrets: $(SECRETS)
 $(SECRETS): sops
-	-sops -d $@.yml | envsubst | \
+	-[ -f $@.created ] || sops -d $@.yml | envsubst | \
 	 kubectl create $(KUBE_OPTS) -f -
+	@touch $@.created
 
 example/secrets/%.yml example/secrets/*/%yml:
 	@echo Creating secret $(@F)

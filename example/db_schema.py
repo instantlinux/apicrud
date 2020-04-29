@@ -54,7 +54,7 @@ def update(db_engine, models, migrate=False, schema_maxtime=0):
         if db_engine.dialect.name == 'sqlite' and spatialite_loaded:
             conn.execute(select([func.InitSpatialMetaData(1)]))
         env.configure(connection=conn, target_metadata=Base.metadata,
-                      fn=_do_upgrade)
+                      verbose=True, fn=_do_upgrade)
         with env.begin_transaction():
             env.run_migrations()
         logging.info('action=schema_update finished migration, '
@@ -98,8 +98,10 @@ def _seed_new_db(db_session):
     record = Settings(id='x-75023275',
                       administrator_id='x-23450001', tz_id=598,
                       default_cat_id=cat_id, name='global',
-                      smtp_smarthost='smtp.ci.net', country='US',
-                      lang='en_US', url='http://elbrus.ci.net:3000')
+                      smtp_smarthost=constants.DEFAULT_SMARTHOST,
+                      country=constants.DEFAULT_COUNTRY,
+                      lang=constants.DEFAULT_LANG,
+                      url=constants.DEFAULT_URL)
     db_session.add(record)
     record = Location(id='x-67673434', city='San Francisco',
                       geolat=37.756503 * 1e7, geolong=-122.425671 * 1e7,

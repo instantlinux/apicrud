@@ -3,7 +3,7 @@
 created 27-may-2019 by richb@instantlinux.net
 """
 
-from example import config, constants, models
+from example import config, models
 from apicrud.basic_crud import BasicCRUD
 from apicrud.access import AccessControl
 from apicrud.grants import Grants
@@ -38,4 +38,4 @@ class GrantController(BasicCRUD):
             response[item['name']] = item['value']
         return dict(
             items=[dict(name=k, value=v) for k, v in response.items()],
-            count=len(constants.DEFAULT_GRANTS)), retval[1]
+            count=len(config.DEFAULT_GRANTS)), retval[1]

@@ -5,8 +5,8 @@ Initialize each controller
 created 14-jan-2020 by richb@instantlinux.net
 """
 
-from . import account, auth, category, contact, grant, list, location, \
-    message, person, settings, tz
+from . import account, auth, category, contact, credential, grant, list, \
+    location, message, person, settings, tz
 
 
 def controllers():
@@ -15,6 +15,7 @@ def controllers():
             auth.AuthController,
             category.CategoryController,
             contact.ContactController,
+            credential.CredentialController,
             grant.GrantController,
             list.ListController,
             location.LocationController,

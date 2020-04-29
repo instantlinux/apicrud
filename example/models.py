@@ -116,16 +116,46 @@ class Contact(Base):
                 for col in self.__table__.columns}
 
 
+class Credential(Base):
+    __tablename__ = 'credentials'
+    __table_args__ = (
+        UniqueConstraint(u'name', u'uid', name='uniq_name_uid'),
+    )
+
+    id = Column(String(16), primary_key=True, unique=True)
+    name = Column(String(64), nullable=False, unique=True)
+    vendor = Column(String(32), nullable=False)
+    # placeholder field TODO make clear how this will be used
+    #  probably to delegate to Secrets Manager / KMS
+    type = Column(String(16))
+    url = Column(String(length=64))
+    key = Column(String(length=128))
+    secret = Column(EncryptedType(Unicode, aes_secret, AesEngine, 'pkcs5'))
+    otherdata = Column(EncryptedType(Unicode, aes_secret, AesEngine, 'pkcs5'))
+    expires = Column(TIMESTAMP)
+    settings_id = Column(ForeignKey(u'settings.id'), nullable=False)
+    uid = Column(ForeignKey(u'people.id', ondelete='CASCADE'), nullable=False)
+    created = Column(TIMESTAMP, nullable=False, server_default=func.now())
+    modified = Column(TIMESTAMP)
+    status = Column(Enum(u'active', u'disabled'), nullable=False,
+                    server_default=u'active')
+
+    settings = relationship('Settings', foreign_keys=[settings_id])
+    owner = relationship('Person', foreign_keys=[uid], backref=backref(
+        'credential_uid', cascade='all, delete-orphan'))
+
+    def as_dict(self):
+        return {col.name: getattr(self, col.name)
+                for col in self.__table__.columns}
+
+
 class DirectMessage(Base):
     __tablename__ = 'directmessages'
-    __table_args__ = (
-        UniqueConstraint(u'message_id', u'uid', name='uniq_directmessage'),
-    )
 
     message_id = Column(ForeignKey(u'messages.id', ondelete='CASCADE'),
                         primary_key=True, nullable=False)
     uid = Column(ForeignKey(u'people.id', ondelete='CASCADE'),
-                 nullable=False, index=True)
+                 primary_key=True, nullable=False, index=True)
     created = Column(TIMESTAMP, nullable=False, server_default=func.now())
 
     owner = relationship('Person', foreign_keys=[uid], backref=backref(
@@ -193,14 +223,11 @@ class List(Base):
 # see https://docs.sqlalchemy.org/en/13/orm/extensions/associationproxy.html
 class ListMember(Base):
     __tablename__ = 'listmembers'
-    __table_args__ = (
-        UniqueConstraint(u'list_id', u'uid', name='uniq_listmember'),
-    )
 
     uid = Column(ForeignKey(u'people.id', ondelete='CASCADE'),
                  primary_key=True, nullable=False)
     list_id = Column(ForeignKey(u'lists.id', ondelete='CASCADE'),
-                     nullable=False, index=True)
+                     primary_key=True, nullable=False, index=True)
     authorization = Column(String(8), nullable=False,
                            server_default=u'member')
     created = Column(TIMESTAMP, nullable=False, server_default=func.now())
@@ -213,14 +240,11 @@ class ListMember(Base):
 
 class ListMessage(Base):
     __tablename__ = 'listmessages'
-    __table_args__ = (
-        UniqueConstraint(u'list_id', u'message_id', name='uniq_listmessage'),
-    )
 
     message_id = Column(ForeignKey(u'messages.id', ondelete='CASCADE'),
                         primary_key=True, nullable=False)
     list_id = Column(ForeignKey(u'lists.id', ondelete='CASCADE'),
-                     nullable=False, index=True)
+                     primary_key=True, nullable=False, index=True)
     created = Column(TIMESTAMP, nullable=False, server_default=func.now())
 
     message = relationship(
@@ -271,6 +295,8 @@ class Message(Base):
     subject = Column(String(128))
     sender_id = Column(ForeignKey(u'people.id'), nullable=False)
     recipient_id = Column(ForeignKey(u'people.id'))
+    # TODO use the many-to-many table instead
+    list_id = Column(ForeignKey(u'lists.id'))
     privacy = Column(String(8), nullable=False, server_default=u'secret')
     published = Column(BOOLEAN)
     uid = Column(ForeignKey(u'people.id', ondelete='CASCADE'), nullable=False)
@@ -280,6 +306,7 @@ class Message(Base):
     status = Column(Enum('active', u'disabled'), nullable=False,
                     server_default=u'active')
 
+    list = relationship('List')
     owner = relationship('Person', foreign_keys=[uid])
     recipient = relationship('Person', foreign_keys=[recipient_id])
 
@@ -347,6 +374,7 @@ class Settings(Base):
     privacy = Column(String(8), nullable=False, server_default=u'public')
     smtp_port = Column(INTEGER, nullable=False, server_default='25')
     smtp_smarthost = Column(String(255))
+    smtp_credential_id = Column(ForeignKey(u'credentials.id'))
     country = Column(String(2), nullable=False,
                      server_default=constants.DEFAULT_COUNTRY)
     lang = Column(String(6), nullable=False,
@@ -362,6 +390,8 @@ class Settings(Base):
     created = Column(TIMESTAMP, nullable=False, server_default=func.now())
     modified = Column(TIMESTAMP)
 
+    smtp_credential = relationship('Credential',
+                                   foreign_keys=[smtp_credential_id])
     default_category = relationship('Category', foreign_keys=[default_cat_id])
     administrator = relationship('Person')
     default_hostlist = relationship('List',

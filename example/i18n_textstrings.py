@@ -122,7 +122,7 @@ You can adjust your communication preferences by visiting this link:
         Messaging Preferences</a>
     </td></tr>
   </table></td></tr>
-</table> {% endif %}
+</table>
 <br>
 Software copyright &copy; 2020 Richard Braun &bull; San Francisco, CA<hr>
 """,
@@ -134,7 +134,7 @@ You can adjust your communication preferences by
 visiting this link:
 {{ siteurl }}/#/prefs?guest_id={{ guest_id }}&magic={{ magic }}&cid={{
    contact_id }}.
-{% endif %}
+
 Software copyright (C) 2020 Richard Braun * San Francisco, CA
 """,
     sms=""

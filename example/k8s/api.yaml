@@ -28,8 +28,8 @@ spec:
         - name: DB_AES_SECRET
           valueFrom:
             secretKeyRef:
-              name: $SERVICE_NAME-redis-aes-secret
-              key: $SERVICE_NAME-redis-aes-secret
+              name: $SERVICE_NAME-db-aes-secret
+              key: $SERVICE_NAME-db-aes-secret
         - name: DB_PASS
           valueFrom:
             secretKeyRef:
@@ -40,7 +40,7 @@ spec:
             secretKeyRef:
               name: $SERVICE_NAME-flask-secret
               key: $SERVICE_NAME-flask-secret
-	# TODO make this optional secret available
+        # TODO make this optional secret available
         # - name: MAPQUEST_API_KEY
         #   valueFrom:
         #     secretKeyRef:

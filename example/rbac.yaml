@@ -59,7 +59,7 @@ private_resources:
 
 policies:
   category: *base_policy
-  list: *base_policy
+  credential: *base_policy
   location: *base_policy
   profile: *base_policy
   tzname: *base_policy
@@ -99,6 +99,22 @@ policies:
       actions: cdru
     - principal: user/{{uid}}
       resource: "{resource}:{{uid}}"
+      actions: r
+  list:
+    - principal: admin
+      resource: "{resource}:*"
+      actions: cdiru
+    - principal: user/{{uid}}
+      resource: "{resource}:{{uid}}"
+      actions: cdghjiru
+    - principal: event-{{eid}}-manager
+      resource: "{resource}:{{eid}}"
+      actions: cdghijru
+    - principal: event-{{eid}}-member
+      resource: "{resource}:{{eid}}"
+      actions: gijr
+    - principal: event-{{eid}}-invitee
+      resource: "{resource}:{{eid}}"
       actions: r
   message:
     - principal: admin

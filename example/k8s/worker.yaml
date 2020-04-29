@@ -28,13 +28,18 @@ spec:
         - name: DB_AES_SECRET
           valueFrom:
             secretKeyRef:
-              name: $SERVICE_NAME-redis-aes-secret
-              key: $SERVICE_NAME-redis-aes-secret
+              name: $SERVICE_NAME-db-aes-secret
+              key: $SERVICE_NAME-db-aes-secret
         - name: DB_PASS
           valueFrom:
             secretKeyRef:
               name: $SERVICE_NAME-db-password-$EXAMPLE_ENV
               key: $SERVICE_NAME-db-password-$EXAMPLE_ENV
+        - name: REDIS_AES_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: $SERVICE_NAME-redis-aes-secret
+              key: $SERVICE_NAME-redis-aes-secret
         image: $REGISTRY_URI/$REGISTRY_PATH/$SERVICE_NAME-worker:$TAG
         ports:
         - containerPort: 5555

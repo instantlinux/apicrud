@@ -30,6 +30,7 @@ class SessionAuth(object):
         self.login_attempts_max = config.LOGIN_ATTEMPTS_MAX
         self.login_lockout_interval = config.LOGIN_LOCKOUT_INTERVAL
         self.login_session_limit = config.LOGIN_SESSION_LIMIT
+        self.login_admin_limit = config.LOGIN_ADMIN_LIMIT
         self.func_send = func_send
 
     def account_login(self, username, password, roles_from=None):
@@ -59,7 +60,7 @@ class SessionAuth(object):
             return dict(message='DB operational error, try again'), 403
         if (account.invalid_attempts >= self.login_attempts_max and
             account.last_invalid_attempt + timedelta(
-                minutes=self.login_lockout_interval) > datetime.utcnow()):
+                seconds=self.login_lockout_interval) > datetime.utcnow()):
             time.sleep(5)
             return dict(username=username, message='locked out'), 403
         if account.password == '':
@@ -99,7 +100,8 @@ class SessionAuth(object):
                 roles += self.get_roles(account.uid, roles_from)
         else:
             roles = []
-        duration = 900 if account.is_admin else self.login_session_limit
+        duration = (self.login_admin_limit if account.is_admin
+                    else self.login_session_limit)
         ses = g.session.create(account.uid, roles, acc=account.id,
                                identity=account.owner.identity,  ttl=duration)
         if ses:

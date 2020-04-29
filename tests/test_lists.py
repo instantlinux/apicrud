@@ -18,7 +18,7 @@ class TestLists(test_base.TestBase):
         expected = dict(
             category='default', description=None, members=[],
             status='active', privacy='public', uid=self.test_uid,
-            owner=self.test_person_name, rbac='dru', **record)
+            owner=self.test_person_name, rbac='dghijru', **record)
         response = self.call_endpoint('/list', 'post', data=record)
         self.assertEqual(response.status_code, 201)
         id = response.get_json()['id']
@@ -35,7 +35,7 @@ class TestLists(test_base.TestBase):
         expected = dict(
             category='default', description=None, members=[],
             status='active', uid=self.test_uid,
-            owner=self.test_person_name, rbac='dru', **record)
+            owner=self.test_person_name, rbac='dghijru', **record)
 
         response = self.call_endpoint('/list', 'post', data=record)
         self.assertEqual(response.status_code, 201)
@@ -58,7 +58,7 @@ class TestLists(test_base.TestBase):
         expected = dict(
             category='default', description=None, members=[],
             status='disabled', privacy='public', uid=self.test_uid,
-            owner=self.test_person_name, rbac='dru', **record)
+            owner=self.test_person_name, rbac='dghijru', **record)
 
         response = self.call_endpoint('/list', 'post', data=record)
         self.assertEqual(response.status_code, 201)
@@ -87,7 +87,7 @@ class TestLists(test_base.TestBase):
         expected = dict(
             category='default', description=None, uid=self.test_uid,
             status='active', privacy='public', owner=self.test_person_name,
-            rbac='dru', **record)
+            rbac='dghijru', **record)
 
         response = self.call_endpoint('/list', 'post', data=record)
         self.assertEqual(response.status_code, 201)

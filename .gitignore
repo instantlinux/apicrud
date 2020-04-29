@@ -1,6 +1,7 @@
 *~
-*.pyc
+*.created
 *.egg-info
+*.pyc
 .coverage
 .env
 build

@@ -21,9 +21,6 @@ class AuthController(object):
 
     @staticmethod
     def login(body):
-        """Examine parameters to determine whether guest or account
-        access is requested
-        """
         if body.get('username') and body.get('password'):
             return SessionAuth(config=config, models=models).account_login(
                 body['username'], body['password'], roles_from=models.List)
