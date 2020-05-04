@@ -1,6 +1,8 @@
 # Secrets management with Mozilla sops
 #
 # Usage:
+#    make secrets         - Upload secrets/<env>/*.yml to k8s
+#
 #    export EDITOR=<your editor>
 #    make gen_sops_gpg    - Set up local PGP private key
 #    make secrets/foo.yml - Create a new secret
@@ -60,7 +62,7 @@ endif
 	echo creation_rules: > $@
 	echo "  - pgp: $(GPG_FINGERPRINT)" >> $@
 
-SECRETS = $(basename $(wildcard example/secrets/*.yml example/secrets/*/*.yml))
+SECRETS = $(basename $(wildcard example/secrets/$(EXAMPLE_ENV)/*.yml))
 secrets: $(SECRETS)
 $(SECRETS): sops
 	-[ -f $@.created ] || sops -d $@.yml | envsubst | \

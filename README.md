@@ -15,29 +15,29 @@ This is the API back-end and worker, with an _example_ application.
 
 Clone this repo to your local environment. To start the example application in a shell session (on a Linux or Mac laptop):
 
-* Set environment variables as defined below
 * Install docker ([desktop for Mac](https://docs.docker.com/docker-for-mac/) or [Linux/Ubuntu](https://docs.docker.com/engine/install/ubuntu/) and enable kubernetes; if you're on a Mac install [homebrew](https://brew.sh); Linux _kubeadm_ setup is beyond scope of this README
 * To run the full example demo in your local kubernetes:
   * Make secrets available: `ln -s example/secrets/.gnupg ~` if you don't already use gpg, or `make sops-import-gpg` if gpg is already installed
   * Invoke `TAG=latest make deploy_local`
   * Browse http://localhost:32180 as `admin` with password `p@ssw0rd` once all services are running
 * Or, to run only database/cache images for developing on your laptop:
+  * Optional: set environment variables (as defined below) if you wish to override default values
   * Invoke `make run_local` to bring up the back-end API with its dependent services mariadb, redis and rabbitmq
   * Invoke `make messaging_worker` to bring up the email/SMS worker back-end
   * Clone the [instantlinux/apicrud-ui](https://github.com/instantlinux/apicrud-ui) repo to a separate directory and follow the instructions given in its README to start and log into the front-end
-* Optional: if setting up to run API within a docker container, configure kubernetes secrets as defined below (need at least the `example-db-password`)
-* Optional for Linux: a full ansible-based bare-metal k8s cluster management suite is published at [instantlinux/docker-tools](https://github.com/instantlinux/docker-tools)
 * Optional: configure outbound email (via GMail or another provider)
   * Head to [App Passwords](https://myaccount.google.com/apppasswords) account settings in your GMail account and generate an app password
-  * Login to the the example demo as `admin`
+  * Login as `admin` to the example demo UI (as above)
   * At upper right, go into Settings and choose Credentials tab
   * Add a new entry: `key` is your GMail email address, `secret` is the app password
-  * Choose Settings tab, set the smarthost to `smtp.gmail.com`, SMTP port to 587, and select the SMTP credential you just created
+  * Choose Settings tab, set the smarthost to `smtp.gmail.com`, SMTP port to `587`, and select the SMTP credential you just created
   * Also in Settings tab, update the URL to match the hostname and port number you see in address bar
   * At upper right, go into Profile and select Contact Info
   * Edit the admin email address to your GMail address
+* Optional: if running API within a docker container, update the kubernetes secrets defined below; see instructions in [example/Makefile.sops](https://github.com/instantlinux/apicrud/blob/master/example/Makefile.sops)
+* Optional for Linux: a full ansible-based bare-metal k8s cluster management suite is published at [instantlinux/docker-tools](https://github.com/instantlinux/docker-tools)
 
-The example MVC application is provided here in this repo is also used as a fixture for its unit tests. You can fork / clone this repo and experiment with your own extensions to the database models, controller logic, and openapi.yaml REST endpoints. See [instantlinux/apicrud-ui](https://github.com/instantlinux/apicrud-ui) for definitions of the views (as React.js code).
+The example MVC application provided here in this repo is also used as a fixture for its unit tests. You can fork / clone this repo and experiment with your own extensions to the database models, controller logic, and openapi.yaml REST endpoints. See [instantlinux/apicrud-ui](https://github.com/instantlinux/apicrud-ui) for definitions of the views (as React.js code).
 
 ### Environment variables
 
@@ -47,7 +47,6 @@ AMQ_HOST | `example-rmq` | IP address or hostname of rabbitMQ
 API_DEV_PORT | `32080` | TCP port for API service (local dev k8s)
 DB_HOST | `10.101.2.30` | IP address or hostname of MySQL-compatible database
 DB_NAME | `example_local` | Name of the database
-DB_PASS | `example` | Password for database
 DOMAIN | | Domain for service URLs
 EXAMPLE_API_PORT | `8080` | TCP port for API service
 KUBECONFIG | | Config credentials filename for k8s
@@ -56,7 +55,7 @@ REDIS_IP | `10.101.2.10` | IP address for redis under k8s
 
 ### Secrets
 
-Kubernetes needs secrets defined. Default values for these are under example/secrets/. See the example/Makefile.sops (and the lengthy [kubernetes secrets doc](https://kubernetes.io/docs/concepts/configuration/secret/) for instructions on modifying them or adding new secrets for multiple namespace environments.
+Kubernetes needs secrets defined. Default values for these are under example/secrets/. See the [example/Makefile.sops](https://github.com/instantlinux/apicrud/blob/master/example/Makefile.sops) (and the lengthy [kubernetes secrets doc](https://kubernetes.io/docs/concepts/configuration/secret/) for instructions on modifying them or adding new secrets for multiple namespace environments.
 
 Secret | Description
 ------ | -----------
@@ -65,6 +64,7 @@ example-db-password | Database password
 example-flask-secret | Session passphrase (32 hex digits)
 example-redis-secret | Encryption passphrase for redis values (~16 bytes)
 mapquest-api-key | API key for address lookups (sign-up: [mapquest](http://developer.mapquest.com))
+mariadb-root-password | Root password for MariaDB
 
 ### Background
 

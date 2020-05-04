@@ -34,8 +34,12 @@ spec:
       - name: mariadb
         image: mariadb:$VERSION_MARIADB
         env:
-        - { name: MYSQL_ROOT_PASSWORD, value: 'secret' }
         - { name: MYSQL_DATABASE, value: ${SERVICE_NAME}_${EXAMPLE_ENV} }
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-root-password
+              key: mariadb-root-password
         ports:
         - containerPort: 3306
         volumeMounts:

@@ -5,7 +5,7 @@ Tests for messages controller
 created 22-oct-2019 by richb@instantlinux.net
 """
 
-import mock
+from unittest import mock
 
 # from apicrud import database
 import test_base
