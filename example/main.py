@@ -12,16 +12,18 @@ from flask import g
 from . import config, db_schema, models
 from .controllers import _init
 from apicrud import database, utils
+from apicrud.service_registry import ServiceRegistry
 from apicrud.session_manager import SessionManager
 
 setup_db_only_once = {}
 application = connexion.FlaskApp(__name__)
 utils.initialize_app(application, config, models)
-_init.controllers()
+resources = _init.controllers()
 
 
 @application.app.before_first_request
 def setup_db(db_url=config.DB_URL, redis_conn=None):
+    ServiceRegistry(config).register(resources)
     if not setup_db_only_once:
         database.initialize_db(
             models, db_url=db_url, redis_host=config.REDIS_HOST,
@@ -42,7 +44,7 @@ def before_request():
 
 @application.app.after_request
 def add_header(response):
-    response.cache_control.max_age = config.CACHE_API
+    response.cache_control.max_age = config.HTTP_RESPONSE_CACHE_MAX_AGE
     return response
 
 

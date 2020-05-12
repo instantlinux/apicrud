@@ -39,6 +39,8 @@ class TestBase(unittest.TestCase):
             global_fixture['redis'] = fakeredis.FakeStrictRedis(
                 server=fakeredis.FakeServer())
             config.redis_conn = global_fixture['redis']
+            unittest.mock.patch(
+                'apicrud.service_registry.ServiceRegistry.update').start()
             setup_db(db_url=config.DB_URL, redis_conn=config.redis_conn)
 
             # TODO figure out how to divert logging under pytest
@@ -60,7 +62,7 @@ class TestBase(unittest.TestCase):
         self.redis = global_fixture['redis']
         self.maxDiff = None
 
-        self.base_url = '/api/v1'
+        self.base_url = config.BASE_URL
         self.theme_id = 'x-05a720bf'
         self.credentials = {}
         self.authuser = None

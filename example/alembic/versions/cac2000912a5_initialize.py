@@ -285,7 +285,7 @@ def upgrade():
     op.create_table('storageitems',
     sa.Column('id', sa.String(length=16), nullable=False),
     sa.Column('name', sa.String(length=32), nullable=False),
-    sa.Column('prefix', sa.String(length=128), server_default='', nullable=True),
+    sa.Column('prefix', sa.String(length=128), nullable=True),
     sa.Column('bucket', sa.String(length=64), nullable=False),
     sa.Column('region', sa.String(length=16), server_default='us-east-2', nullable=True),
     sa.Column('cdn_uri', sa.String(length=64), nullable=True),
@@ -299,7 +299,8 @@ def upgrade():
     sa.ForeignKeyConstraint(['credentials_id'], ['credentials.id'], ),
     sa.ForeignKeyConstraint(['uid'], ['people.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('id')
+    sa.UniqueConstraint('id'),
+    sa.UniqueConstraint('name', 'uid', name='uniq_storage_user')
     )
 
     op.create_table('pictures',
@@ -369,14 +370,12 @@ def upgrade():
         batch_op.create_foreign_key('albums_fk1', 'albums', ['album_id'], ['id'])
 
     op.create_table('albumcontents',
-    sa.Column('album_id', sa.String(length=16), nullable=False),
-    sa.Column('picture_id', sa.String(length=16), nullable=False),
+    sa.Column('album_id', sa.String(length=16), primary_key=True, nullable=False),
+    sa.Column('picture_id', sa.String(length=16), primary_key=True, nullable=False),
     sa.Column('rank', sa.Float(), nullable=True),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.ForeignKeyConstraint(['album_id'], ['albums.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['picture_id'], ['pictures.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('album_id'),
-    sa.UniqueConstraint('album_id', 'picture_id', name='uniq_albumpic')
     )
     with op.batch_alter_table('albumcontents', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_albumcontents_picture_id'), ['picture_id'], unique=False)

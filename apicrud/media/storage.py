@@ -19,22 +19,22 @@ import redis
 from sqlalchemy.orm.exc import NoResultFound
 import uuid
 
-import config
-import constants
 import apicrud.access as access
+import apicrud.constants as constants
 import apicrud.grants as grants
 import apicrud.utils as utils
-import media.media_worker
 
 
 class StorageAPI(object):
 
-    def __init__(self, ttl=None, redis_conn=None, uid=None, models=None,
+    def __init__(self, credential_ttl=None, redis_conn=None, redis_host=None,
+                 redis_port=6379, cache_ttl=1200, uid=None, models=None,
                  db_session=None):
         self.models = models
         self.redis_conn = (
-            redis_conn or redis.Redis(host=config.REDIS_HOST, port=6379, db=0))
-        self.ttl = ttl or 86400
+            redis_conn or redis.Redis(host=redis_host, port=redis_port, db=0))
+        self.cache_ttl = cache_ttl
+        self.credential_ttl = credential_ttl or 86400
         self.uid = uid or access.AccessControl().uid
         self.db = db_session or g.db
 
@@ -68,7 +68,7 @@ class StorageAPI(object):
                     'parent_id'), message='album not found'), 404
             max_size = grants.Grants(self.models,
                                      db_session=self.db,
-                                     ttl=config.CACHE_TTL).get('album_size')
+                                     ttl=self.cache_ttl).get('album_size')
             if album_size >= max_size:
                 msg = 'album is full (max=%d)' % max_size
                 logging.info(dict(message=msg, **logmsg))
@@ -87,19 +87,19 @@ class StorageAPI(object):
         else:
             ctype = None
         storage_path = ('%s/%s/%s' % (
-            storage.prefix, self.uid, id)).strip('/')
+            storage.prefix if storage.prefix else '', self.uid, id)).strip('/')
         suffix = '.' + ctype if ctype else ''
         if ctype in constants.MIME_VIDEO_TYPES:
             duration_max = grants.Grants(
                 self.models, db_session=self.db,
-                ttl=config.CACHE_TTL).get('video_duration_max')
+                ttl=self.cache_ttl).get('video_duration_max')
             if body.get('duration') and body['duration'] > duration_max:
                 msg = 'video exceeds maximum duration=%f' % duration_max
                 logging.warning(dict(message=msg, **logmsg))
                 return dict(message=msg), 405
         max_size = grants.Grants(
             self.models, db_session=self.db,
-            ttl=config.CACHE_TTL).get('media_size_max')
+            ttl=self.cache_ttl).get('media_size_max')
         if body.get('size') and body['size'] > max_size:
             msg = 'file size exceeds max=%d' % max_size
             logging.info(dict(message=msg, **logmsg))
@@ -111,8 +111,8 @@ class StorageAPI(object):
                     content_type=body.get('content_type'))
         elif self.vendor == 'aws':
             result, status = StorageS3(
-                self.models.Storage, credentials=storage.credentials,
-                ttl=self.ttl).get_upload_url(
+                credentials=storage.credentials,
+                credential_ttl=self.credential_ttl).get_upload_url(
                     storage.bucket, storage_path + suffix,
                     content_type=body.get('content_type'))
         else:
@@ -158,7 +158,7 @@ class StorageAPI(object):
     def update_file_meta(self, file_id, meta):
         key = 'fid:%s:%s' % (self.uid, file_id[-8:])
         try:
-            self.redis_conn.set(key, json.dumps(meta), ex=self.ttl,
+            self.redis_conn.set(key, json.dumps(meta), ex=self.cache_ttl,
                                 nx=True)
         except Exception as ex:
             logging.warn('action=update_file_meta uid=%s exception=%s' %
@@ -172,13 +172,21 @@ class StorageAPI(object):
             logging.warn('action=del_file_meta uid=%s exception=%s' %
                          (self.uid, str(ex)))
 
-    def upload_complete(self, file_id, status):
+    def upload_complete(self, file_id, status, func_worker):
+        """ Finalize upload - pass to the worker
+
+        params:
+          file_id - ID of file meta in redis
+          status - completion status from frontend ('done' if OK)
+          func_worker - callback function for passing to celery worker
+        """
+
         meta = self.get_file_meta(file_id)
         if meta and status == 'done':
             duration = datetime.utcnow().timestamp() - meta['created']
             logging.info(dict(action='upload_complete', file_id=file_id,
                               duration='%.3f' % duration))
-            media.media_worker.incoming.delay(self.uid, file_id)
+            func_worker(self.uid, file_id)
             return dict(file_id=file_id), 201
         else:
             msg = 'unhandled frontend status'
@@ -210,7 +218,7 @@ class StorageAPI(object):
             else:
                 max_height = grants.Grants(
                     self.models, self.db,
-                    ttl=config.CACHE_TTL).get('photo_res_max')
+                    ttl=self.cache_ttl).get('photo_res_max')
                 if not picture.height or picture.height <= max_height:
                     orig_uri = '%s.%s' % (uri_path, fmt)
                 else:
@@ -252,8 +260,7 @@ class StorageAPI(object):
         except NoResultFound:
             logging.error('storage volume not found')
         if storage.credentials.vendor == 'aws':
-            return StorageS3(self.models.Storage,
-                             credentials=storage.credentials).get_object(
+            return StorageS3(credentials=storage.credentials).get_object(
                                  storage.bucket, storage_key)
 
     def put_object(self, storage_id, storage_key, content,
@@ -264,8 +271,7 @@ class StorageAPI(object):
         except NoResultFound:
             logging.error('storage volume not found')
         if storage.credentials.vendor == 'aws':
-            return StorageS3(self.models.Storage,
-                             credentials=storage.credentials).put_object(
+            return StorageS3(credentials=storage.credentials).put_object(
                                  storage.bucket, storage_key, content,
                                  content_type=content_type)
 
@@ -276,8 +282,7 @@ class StorageAPI(object):
         except NoResultFound:
             logging.error('storage volume not found')
         if storage.credentials.vendor == 'aws':
-            return StorageS3(self.models.Storage,
-                             credentials=storage.credentials).del_object(
+            return StorageS3(credentials=storage.credentials).del_object(
                                  storage.bucket, storage_key)
 
 
@@ -311,9 +316,9 @@ class StorageBackblaze(object):
 
 class StorageS3(object):
 
-    def __init__(self, ttl=3600, credentials=None, access_key=None,
+    def __init__(self, credential_ttl=3600, credentials=None, access_key=None,
                  secret_key=None, region=constants.DEFAULT_AWS_REGION):
-        self.ttl = ttl
+        self.credential_ttl = credential_ttl
         self.region = region
         if credentials:
             self.access_key = credentials.key
@@ -332,7 +337,7 @@ class StorageS3(object):
                        content_type='image/jpeg'):
         try:
             result = self.api.generate_presigned_post(
-                bucket, storage_key, ExpiresIn=self.ttl)
+                bucket, storage_key, ExpiresIn=self.credential_ttl)
         except ClientError as ex:
             msg = str(ex)
             return dict(message=msg, bucket=bucket), 405

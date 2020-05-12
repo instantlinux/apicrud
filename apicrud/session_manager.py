@@ -23,8 +23,8 @@ class SessionManager(object):
     def __init__(self, config, ttl=constants.REDIS_TTL, redis_conn=None):
         self.config = config
         self.connection = (
-            redis_conn or redis.Redis(host=self.config.REDIS_HOST, port=6379,
-                                      db=0))
+            redis_conn or redis.Redis(host=config.REDIS_HOST,
+                                      port=config.REDIS_PORT, db=0))
         self.ttl = ttl
         self.aes = AESEncrypt(self.config.REDIS_AES_SECRET)
 

@@ -10,6 +10,15 @@ from . import account, auth, category, contact, credential, grant, list, \
 
 
 def controllers():
+    """ Runs the __init__ function for each controller, which
+    makes the resource name and object available as singletons for
+    use with flask
+
+    returns:
+      list of resources initialized
+    """
+
+    resources = []
     for controller in [
             account.AccountController,
             auth.AuthController,
@@ -24,4 +33,6 @@ def controllers():
             # profile.ProfileController,
             settings.SettingsController,
             tz.TZController]:
-        controller()
+        setup = controller()
+        resources.append(setup.resource)
+    return resources

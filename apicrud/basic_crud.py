@@ -43,7 +43,7 @@ class BasicCRUD(object):
             return dict(message='id is a read-only property',
                         title='Bad Request'), 405
         body['id'] = utils.gen_id(prefix=id_prefix)
-        body['created'] = datetime.utcnow()
+        body['created'] = utils.utcnow()
         if body.get('expires'):
             try:
                 body['expires'] = datetime.strptime(
@@ -133,7 +133,7 @@ class BasicCRUD(object):
             return dict(message='id is a read-only property',
                         title='Bad Request'), 405
         self = singletons.controller[request.url_rule.rule.split('/')[3]]
-        body['modified'] = datetime.utcnow()
+        body['modified'] = utils.utcnow()
         if body.get('expires'):
             try:
                 body['expires'] = datetime.strptime(
@@ -271,6 +271,7 @@ class BasicCRUD(object):
                     query = query.filter(getattr(self.model, key).in_(items))
         if hasattr(self.model, 'starts'):
             if filter.get('prev'):
+                # TODO confirm whether to use utcnow()
                 query = query.filter(self.model.starts < datetime.now())
             else:
                 # Filter out records that start more than 12 hours ago

@@ -6,9 +6,11 @@ created 13-may-2019 by richb@instantlinux.net
 """
 
 from collections import namedtuple
-from datetime import datetime, timedelta
+from datetime import timedelta
 import logging
 from sqlalchemy.orm.exc import NoResultFound
+
+from . import utils
 
 SETTINGS = {}
 
@@ -21,7 +23,7 @@ class AccountSettings(object):
             return namedtuple('GenericDict', attrs.keys())(**attrs)
 
         if account_id not in SETTINGS or (
-                datetime.utcnow() > SETTINGS[account_id]['expires']):
+                utils.utcnow() > SETTINGS[account_id]['expires']):
             try:
                 if account_id:
                     account = db_session.query(models.Account).filter_by(
@@ -43,8 +45,8 @@ class AccountSettings(object):
             except NoResultFound:
                 category_id = account.settings.default_cat_id
             SETTINGS[account_id] = dict(
-                expires=datetime.utcnow() + timedelta(
-                    seconds=config.CACHE_TTL),
+                expires=utils.utcnow() + timedelta(
+                    seconds=config.REDIS_TTL),
                 settings=dict(
                     record.as_dict(), **dict(
                         category_id=category_id,

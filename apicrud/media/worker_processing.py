@@ -1,4 +1,4 @@
-"""media_processing.py
+"""worker_processing.py
 
 Media worker functions to process media
 
@@ -12,8 +12,7 @@ import logging
 from PIL import Image
 from PIL.ExifTags import GPSTAGS, TAGS
 
-from . import constants
-from .account_settings import AccountSettings
+from ..account_settings import AccountSettings
 from .storage import StorageAPI
 
 
@@ -23,7 +22,8 @@ class MediaUploadException(Exception):
 
 class MediaProcessing(object):
     def __init__(self, uid, file_id, config, models, db_session=None):
-        self.api = StorageAPI(uid=uid, models=models, db_session=db_session)
+        self.api = StorageAPI(redis_host=config.REDIS_HOST, uid=uid,
+                              models=models, db_session=db_session)
         self.file_id = file_id
         self.config = config
         self.models = models
@@ -58,8 +58,8 @@ class MediaProcessing(object):
 
         # generate the 50-pixel thumbnail
         thumbnail = img.copy()
-        thumbnail.thumbnail((constants.THUMBNAIL_TINY,
-                             constants.THUMBNAIL_TINY), Image.ANTIALIAS)
+        thumbnail.thumbnail((self.config.THUMBNAIL_TINY,
+                             self.config.THUMBNAIL_TINY), Image.ANTIALIAS)
         tbytes = io.BytesIO()
         thumbnail.save(tbytes, meta["ctype"])
 

@@ -8,6 +8,7 @@ created 31-mar-2019 by richb@instantlinux.net
 """
 
 AUTH_INVITEE = 'invitee'
+DEFAULT_AWS_REGION = 'us-east-2'
 LIB_MOD_SPATIALITE = ['/usr/lib/x86_64-linux-gnu/mod_spatialite.so',
                       '/usr/lib/mod_spatialite.so.7']
 MIME_IMAGE_TYPES = ("gif", "heic", "jpeg", "png", "svg")

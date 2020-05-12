@@ -38,7 +38,7 @@ class ListController(BasicCRUD):
         return super(ListController, ListController).update(id, body)
 
     def _update_many(self, id, attr, related_ids):
-        max_size = int(Grants(self.models, ttl=config.CACHE_TTL).get(
+        max_size = int(Grants(self.models, ttl=config.REDIS_TTL).get(
             'list_size'))
         if len(related_ids) > max_size:
             msg = 'Max list size exceeded'

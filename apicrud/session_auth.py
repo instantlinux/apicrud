@@ -20,6 +20,7 @@ from .access import AccessControl
 from .confirmation import Confirmation
 from . import constants
 from .constants import i18n
+from .service_registry import ServiceRegistry
 
 
 class SessionAuth(object):
@@ -108,6 +109,7 @@ class SessionAuth(object):
             retval = dict(
                 jwt_token=jwt.encode(
                     ses, self.jwt_secret, algorithm='HS256').decode('utf-8'),
+                resources=ServiceRegistry(self.config).find()['url_map'],
                 settings_id=account.settings_id)
             if hasattr(account.settings, 'default_storage_id'):
                 retval['storage_id'] = account.settings.default_storage_id

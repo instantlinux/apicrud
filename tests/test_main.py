@@ -43,7 +43,7 @@ class TestMain(test_base.TestBase):
         expected = dict(
             id='x-75023275',  # theme_id='x-05a720bf',
             administrator_id='x-23450001', country='US',
-            # default_storage_id=self.default_storage_id,
+            default_storage_id=None,
             default_cat_id='x-3423ceaf', default_hostlist_id=None,
             lang='en_US', name='global', privacy='public',
             smtp_port=587, smtp_smarthost='smtp.gmail.com',

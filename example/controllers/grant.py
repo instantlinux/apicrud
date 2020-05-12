@@ -21,7 +21,7 @@ class GrantController(BasicCRUD):
 
     @staticmethod
     def update(id, body):
-        Grants(models, ttl=config.CACHE_TTL).uncache(body.get('uid'))
+        Grants(models, ttl=config.REDIS_TTL).uncache(body.get('uid'))
         return super(GrantController, GrantController).update(id, body)
 
     @staticmethod
@@ -30,8 +30,8 @@ class GrantController(BasicCRUD):
         if 'name' in kwargs and retval[0]['count'] == 0:
             return dict(count=1, items=[dict(
                 name=kwargs.get('name'),
-                value=Grants(models,
-                             ttl=config.CACHE_TTL).get(kwargs.get('name')),
+                value=Grants(
+                    models, ttl=config.REDIS_TTL).get(kwargs.get('name')),
                 uid=AccessControl().uid)]), 200
         response = config.DEFAULT_GRANTS.copy()
         for item in retval[0]['items']:

@@ -377,6 +377,7 @@ class Settings(Base):
     smtp_credential_id = Column(ForeignKey(u'credentials.id'))
     country = Column(String(2), nullable=False,
                      server_default=constants.DEFAULT_COUNTRY)
+    default_storage_id = Column(ForeignKey(u'storageitems.id'))
     lang = Column(String(6), nullable=False,
                   server_default=constants.DEFAULT_LANG)
     tz_id = Column(ForeignKey(u'time_zone_name.id'), nullable=False,
@@ -397,6 +398,37 @@ class Settings(Base):
     default_hostlist = relationship('List',
                                     foreign_keys=[default_hostlist_id])
     tz = relationship('TZname')
+
+    def as_dict(self):
+        return {col.name: getattr(self, col.name)
+                for col in self.__table__.columns}
+
+
+class Storage(Base):
+    __tablename__ = 'storageitems'
+    __table_args__ = (
+        UniqueConstraint(u'name', u'uid', name='uniq_storage_user'),
+    )
+
+    id = Column(String(16), primary_key=True, unique=True)
+    name = Column(String(32), nullable=False)
+    prefix = Column(String(128), server_default="", nullable=False)
+    bucket = Column(String(64), nullable=False)
+    region = Column(String(16),
+                    server_default=constants.DEFAULT_AWS_REGION)
+    cdn_uri = Column(String(64))
+    identifier = Column(String(64))
+    privacy = Column(String(8), nullable=False, server_default=u'public')
+    credentials_id = Column(ForeignKey(u'credentials.id'))
+    uid = Column(ForeignKey(u'people.id', ondelete='CASCADE'), nullable=False)
+    created = Column(TIMESTAMP, nullable=False, server_default=func.now())
+    modified = Column(TIMESTAMP)
+    status = Column(Enum('active', u'disabled'), nullable=False,
+                    server_default="active")
+
+    credentials = relationship('Credential')
+    owner = relationship('Person', foreign_keys=[uid], backref=backref(
+        'storage_uid', cascade='all, delete-orphan'))
 
     def as_dict(self):
         return {col.name: getattr(self, col.name)

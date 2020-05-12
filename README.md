@@ -5,7 +5,7 @@
 
 Skip the kubernetes / python / React.js learning curve and put your ideas in production!
 
-The _apicrud_ framework was created to make it far easier to get started on full-stack development of REST-based services ranging from a simple CLI wrapper for queries of local APIs to full web-scale consumer-facing applications.
+The _apicrud_ framework makes it far easier to get started on full-stack development of REST-based services, ranging from a simple CLI wrapper for queries of local APIs to full web-scale consumer-facing applications running on kubernetes.
 
 The essential components of a modern full-stack application include a back-end API server, a front-end UI server, a database, a memory-cache and a background worker for performing actions such as emailing, photo uploading or report generation. The challenge of setting up CI testing and microservice deployment is usually daunting; this repo addresses all of those issues by providing a fully-working example you can set up and start modifying in minutes. No prior experience is required.
 
@@ -15,11 +15,29 @@ This is the API back-end and worker, with an _example_ application.
 
 Clone this repo to your local environment. To start the example application in a shell session (on a Linux or Mac laptop):
 
-* Install docker ([desktop for Mac](https://docs.docker.com/docker-for-mac/) or [Linux/Ubuntu](https://docs.docker.com/engine/install/ubuntu/) and enable kubernetes; if you're on a Mac install [homebrew](https://brew.sh); Linux _kubeadm_ setup is beyond scope of this README
+* Install docker ([desktop for Mac](https://docs.docker.com/docker-for-mac/) or [Linux/Ubuntu](https://docs.docker.com/engine/install/ubuntu/)) and enable kubernetes; if you're on a Mac install [homebrew](https://brew.sh); Linux _kubeadm_ setup is beyond scope of this README
 * To run the full example demo in your local kubernetes:
   * Make secrets available: `ln -s example/secrets/.gnupg ~` if you don't already use gpg, or `make sops-import-gpg` if gpg is already installed
-  * Invoke `TAG=latest make deploy_local`
-  * Browse http://localhost:32180 as `admin` with password `p@ssw0rd` once all services are running
+  * Invoke `TAG=latest make deploy_local` and wait for services to come up:
+    ```
+    $ kubectl get pods
+    example-api-9d898b479-c52hs               1/1     Running     3  32h
+    example-mariadb-0                         1/1     Running     0  9h
+    example-redis-f54fb554d-t4rtc             1/1     Running     0  14d
+    example-rmq-0                             1/1     Running     0  14d
+    example-ui-7c9c99d89b-lk8pf               1/1     Running     0  21h
+    example-worker-messaging-cdcc4bf96-5f97f  1/1     Running     0  32h
+    $ kubectl get services
+    example-api        ClusterIP      10.101.2.2       <none>   8080/TCP                    8d
+    example-dev-api    NodePort       10.97.75.110     <none>   8080:32080/TCP              8d
+    example-dev-ui     NodePort       10.107.96.242    <none>   80:32180/TCP                8d
+    example-mariadb    ClusterIP      10.101.2.30      <none>   3306/TCP                    14d
+    example-redis      ClusterIP      10.101.2.10      <none>   6379/TCP                    14d
+    example-rmq        ClusterIP      10.101.2.20      <none>   4369/TCP,5671/TCP,5672/TCP  14d
+    example-ui         ClusterIP      None             <none>   80/TCP                      8d
+    example-worker-messaging ClusterIP 10.98.233.206   <none>   5555/TCP                    13d
+    ```
+  * Browse http://localhost:32180 as `admin` with password `p@ssw0rd`
 * Or, to run only database/cache images for developing on your laptop:
   * Optional: set environment variables (as defined below) if you wish to override default values
   * Invoke `make run_local` to bring up the back-end API with its dependent services mariadb, redis and rabbitmq
@@ -70,7 +88,7 @@ mariadb-root-password | Root password for MariaDB
 
 The rise of Docker and Kubernetes starting around 2017 made it possible to set up these production-grade services directly on the laptop of any developer. Only recently have the tools been easier to configure and set up. This framework provides working example code you can use to get started creating your own secure, web-scale services.
 
-Implementation/design includes these technologies: <a href="http://www.celeryproject.org/">celery</a>, <a href="https://aws.amazon.com/cloudfront/">CloudFront and S3</a>, <a href="https://www.docker.com/">docker</a>, <a href="http://flask.pocoo.org/">flask</a>, <a href="https://kubernetes.io/">kubernetes</a>, <a href="https://developer.mapquest.com/documentation/open/geocoding-api/">MapQuest geocoding</a>, <a href="https://www.mapbox.com/">mapbox</a>, <a href="https://mariadb.org/">MariaDB</a>, <a href="https://docs.python.org/3/">python 3</a>, <a href="https://www.rabbitmq.com/">RabbitMQ</a>, <a href="https://reactjs.org">react.js</a>, <a href="https://marmelab.com/react-admin">react-admin</a>, <a href="https://www.sqlalchemy.org/">sqlalchemy</a>, <a href="https://uwsgi-docs.readthedocs.io/en/latest/">uWSGI</a>.
+Implementation/design includes these technologies: [celery](http://www.celeryproject.org/), [CloudFront and S3](https://aws.amazon.com/cloudfront/), [docker](https://www.docker.com/), [flask](http://flask.pocoo.org/), [kubernetes](https://kubernetes.io/), [MapQuest geocoding](https://developer.mapquest.com/documentation/open/geocoding-api/), [mapbox](https://www.mapbox.com/), [MariaDB](https://mariadb.org/), [python 3](https://docs.python.org/3/), [OpenAPI](https://www.openapis.org/), [RabbitMQ](https://www.rabbitmq.com/), [react.js](https://reactjs.org/), [react-admin](https://marmelab.com/react-admin), [redis](https://redis.io/), [sqlalchemy](https://www.sqlalchemy.org/), [uWSGI](https://uwsgi-docs.readthedocs.io/en/latest/).
 
 ### Contributions
 

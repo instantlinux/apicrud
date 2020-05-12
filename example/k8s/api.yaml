@@ -23,6 +23,7 @@ spec:
         - { name: DB_USER, value: $DB_USER }
         - { name: DOMAIN, value: $DOMAIN }
         - { name: EXAMPLE_ENV, value: $EXAMPLE_ENV }
+        - { name: PUBLIC_URL, value: $REACT_APP_API_URL }
         - { name: REDIS_HOST, value: $REDIS_HOST }
         - { name: TZ, value: $TZ }
         - name: DB_AES_SECRET

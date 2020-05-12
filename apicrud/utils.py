@@ -26,7 +26,7 @@ def gen_id(length=8, prefix='x-', chars=(
         return _int2base(x // base, chars, base).lstrip(chars[0]) + chars[
             x % base] if x else chars[0]
     return (prefix +
-            _int2base((datetime.utcnow() - datetime(2018, 1, 1)).days * 8 +
+            _int2base((utcnow() - datetime(2018, 1, 1)).days * 8 +
                       random.randint(0, 8), chars) +
             ''.join(random.choice(chars) for i in range(length - 3)))
 
@@ -72,8 +72,13 @@ def render_problem(error):
 
 
 def req_duration():
-    return '%.3f' % (datetime.utcnow().timestamp() -
+    return '%.3f' % (utcnow().timestamp() -
                      g.request_start_time.timestamp())
+
+
+def utcnow():
+    """ for mocking: unittest.mock can't patch out datetime.utcnow directly """
+    return datetime.utcnow()
 
 
 def strip_tags(html):

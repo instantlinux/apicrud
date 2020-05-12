@@ -16,6 +16,7 @@ class PyTest(TestCommand):
         TestCommand.finalize_options(self)
         self.test_args = [
             '--junitxml', 'tests/test-result.xml',
+            '--ignore', 'media',
             '--cov-report', 'term-missing',
             '--cov-report', 'html',
             '--cov-report', 'xml']

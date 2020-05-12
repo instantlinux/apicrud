@@ -47,7 +47,7 @@ class ContactController(BasicCRUD):
             return dict(message='access denied'), 403
         self = singletons.controller[request.url_rule.rule.split('/')[3]]
         # Counter-measure against spammers: enforce MAX_CONTACTS_PER_USER
-        max_contacts = int(Grants(models, ttl=config.CACHE_TTL).get(
+        max_contacts = int(Grants(models, ttl=config.REDIS_TTL).get(
             'contacts', uid=body['uid']))
         if g.db.query(self.model).filter_by(uid=body[
                 'uid']).count() >= max_contacts:
