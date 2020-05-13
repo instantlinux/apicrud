@@ -39,7 +39,7 @@ setuptools.setup(
     url='https://github.com/instantlinux/apicrud',
     license='Apache License Version 2.0',
     scripts=[],
-    packages=('apicrud',),
+    packages=('apicrud', 'apicrud.media'),
     include_package_data=True,
     install_requires=[
         'alembic>=1.4.1',

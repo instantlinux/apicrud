@@ -19,7 +19,7 @@ if os.environ.get('AMQ_HOST'):
                    'port': int(os.environ.get('AMQ_PORT', 5672))})
 else:
     broker_url = os.environ.get('AMQ_URL',
-                                'pyamqp://guest:guest@10.101.1.28:5672//')
+                                'pyamqp://guest:guest@10.101.2.20:5672//')
 # TODO use SSL and auth
 broker_use_ssl = False
 enable_utc = True
