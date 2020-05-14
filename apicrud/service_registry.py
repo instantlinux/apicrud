@@ -86,12 +86,16 @@ class ServiceRegistry(object):
                 info['name'], info['id'] = instance.decode().split(':')[1:]
                 retval.append(info)
             except TypeError:
+                # A decrypt failure probably means another cluster
+                # is sharing the same redis instance (e.g. in a dev env)
+                # so skip over those service instances
                 continue
             except Exception as ex:
                 logging.warn('action=registry.find key=%s exception=%s' %
                              (instance, str(ex)))
             if not info.get('endpoints'):
                 continue
+            logging.info(dict(step=1, instance=instance, **info))
             for resource in info['endpoints']:
                 if resource not in url_map:
                     url_map[resource] = info[
@@ -99,7 +103,8 @@ class ServiceRegistry(object):
                 elif url_map[resource] != info[
                         'public_url'] + self.config.BASE_URL:
                     logging.warning(dict(
-                        action='registry.find', message='conflict',
-                        resource=resource, url1=resource['public_url'],
-                        url2=url_map[resource]))
+                        action='registry.find',
+                        message='instance serves different public URL',
+                        resource=resource, instance1=instance.decode(),
+                        url1=info['public_url'], url2=url_map[resource]))
         return dict(instances=retval, url_map=url_map)

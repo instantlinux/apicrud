@@ -62,10 +62,10 @@ LOG_LEVEL = logging.INFO
 # Adjustable parameters for login sessions
 #  Time limit of sessions (measured from session start) is 2 hours in
 #  production, 24 hours in dev; admin is limited to 15 minutes in prod
-LOGIN_ADMIN_LIMIT = 900 if os.environ.get('EXAMPLE_ENV') == 'prod' else 86400
+LOGIN_ADMIN_LIMIT = 900 if os.environ.get('APP_ENV') == 'prod' else 86400
 LOGIN_ATTEMPTS_MAX = 5
 LOGIN_LOCKOUT_INTERVAL = 600
-LOGIN_SESSION_LIMIT = (7200 if os.environ.get('EXAMPLE_ENV') == 'prod' else
+LOGIN_SESSION_LIMIT = (7200 if os.environ.get('APP_ENV') == 'prod' else
                        86400)
 
 PORT = os.environ.get('APP_PORT', 8080)
@@ -92,7 +92,7 @@ TOKEN_TIMEOUT = 43200
 
 if os.environ.get('CORS_ORIGINS'):
     CORS_ORIGINS = os.environ['CORS_ORIGINS'].split(',')
-elif os.environ.get('EXAMPLE_ENV') == 'prod':
+elif os.environ.get('APP_ENV') == 'prod':
     CORS_ORIGINS = [
         "https://example.$DOMAIN", "https://media.$DOMAIN"]
 else:

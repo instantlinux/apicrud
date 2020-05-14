@@ -52,6 +52,11 @@ Clone this repo to your local environment. To start the example application in a
   * Also in Settings tab, update the URL to match the hostname and port number you see in address bar
   * At upper right, go into Profile and select Contact Info
   * Edit the admin email address to your GMail address
+* Optional: add the media service (requires AWS S3 or compatible service)
+  * Invoke `TAG=latest make deploy_media` to bring up the media API and worker
+  * Set up an S3 bucket in your AWS or compatible account
+  * See usage instructions for [media service](https://github.com/instantlinux/apicrud-media#usage), starting with the `admin` login
+  * Subsequent logins will now have access to media features in the UI
 * Optional: if running API within a docker container, update the kubernetes secrets defined below; see instructions in [example/Makefile.sops](https://github.com/instantlinux/apicrud/blob/master/example/Makefile.sops)
 * Optional for Linux: a full ansible-based bare-metal k8s cluster management suite is published at [instantlinux/docker-tools](https://github.com/instantlinux/docker-tools)
 
@@ -83,6 +88,8 @@ example-flask-secret | Session passphrase (32 hex digits)
 example-redis-secret | Encryption passphrase for redis values (~16 bytes)
 mapquest-api-key | API key for address lookups (sign-up: [mapquest](http://developer.mapquest.com))
 mariadb-root-password | Root password for MariaDB
+
+All service instances for a given deployment must share the same db-aes and redis secrets. Rotating the redis secret simply requires relaunching all instances (which will invalidate current user sessions). Rotating the db-aes secret requires creating a migration script (which remains TODO).
 
 ### Background
 

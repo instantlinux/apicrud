@@ -62,7 +62,7 @@ endif
 	echo creation_rules: > $@
 	echo "  - pgp: $(GPG_FINGERPRINT)" >> $@
 
-SECRETS = $(basename $(wildcard example/secrets/$(EXAMPLE_ENV)/*.yml))
+SECRETS = $(basename $(wildcard example/secrets/$(APP_ENV)/*.yml))
 secrets: $(SECRETS)
 $(SECRETS): sops
 	-[ -f $@.created ] || sops -d $@.yml | envsubst | \

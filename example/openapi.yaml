@@ -5,7 +5,7 @@ info:
   description: |
     This is the backend server for a simple message board.
 servers:
-- url: http://elbrus.ci.net:8081/api/v1
+- url: http://localhost:32080/api/v1
 - url: http://localhost:8080/api/v1
 
 components:
@@ -682,12 +682,12 @@ components:
     basic:
       type: http
       scheme: basic
-      x-basicInfoFunc: example.auth.basic_auth
+      x-basicInfoFunc: apicrud.session_auth.basic
     example_apikey:
       in: header
       name: api_key
       type: apiKey
-      x-apikeyInfoFunc: example.auth.api_key
+      x-apikeyInfoFunc: apicrud.session_auth.api_key
 
 paths:
   /account:

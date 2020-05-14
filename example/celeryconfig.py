@@ -30,8 +30,8 @@ task_annotations = {
 task_default_queue = 'sandbox'
 task_routes = ([
     ('tasks.messaging.*', {'queue': 'messaging_' +
-                           os.environ.get('EXAMPLE_ENV')}),
+                           os.environ.get('APP_ENV')}),
     ('tasks.media.media_worker.*', {'queue': 'media_' +
-                                    os.environ.get('EXAMPLE_ENV')}),
+                                    os.environ.get('APP_ENV')}),
 ],)
 worker_redirect_stdouts_level = 'INFO'

@@ -48,22 +48,30 @@ deploy_k8s: example/k8s/rmq example/k8s/redis
 
 deploy_local: envsubst mariadb_adhoc redis_adhoc rmq_adhoc example/k8s/dev secrets
 ifeq ($(TAG),)
-	@echo Please specify an existing tag in form bld_abcdefg
+	@echo Please specify an existing tag, e.g. bld_abcdefg or latest
 	@exit 1
 endif
-	EXAMPLE_ENV=local TAG=$(TAG) \
+	APP_ENV=local TAG=$(TAG) \
 	make $(APPNAME)/k8s/api $(APPNAME)/k8s/worker $(APPNAME)/k8s/ui
+
+deploy_media:
+ifeq ($(TAG),)
+	@echo Please specify an existing media-image tag
+	@exit 1
+endif
+	APP_ENV=local TAG=$(TAG) \
+	make $(APPNAME)/k8s/media $(APPNAME)/k8s/media-worker
 
 deploy_dev:
 ifeq ($(TAG),)
 	@echo Please specify an existing tag in form bld_abcdefg
 	@exit 1
 endif
-	EXAMPLE_ENV=dev TAG=$(TAG) \
+	APP_ENV=dev TAG=$(TAG) \
 	make deploy_k8s $(APPNAME)/k8s/api $(APPNAME)/k8s/worker
 
 deploy_prod:  $(APPNAME)-api/tag $(APPNAME)-worker/tag
-	EXAMPLE_ENV=prod make deploy_k8s $(APPNAME)/k8s/api $(APPNAME)k8s/worker \
+	APP_ENV=prod make deploy_k8s $(APPNAME)/k8s/api $(APPNAME)k8s/worker \
 	  $(APPNAME)/k8s/ui
 
 $(APPNAME)-%/tag:

@@ -16,13 +16,13 @@ spec:
       - name: apicrud-media
         env:
         - { name: AMQ_HOST, value: $AMQ_HOST }
+        - { name: APP_ENV, value: $APP_ENV }
         - { name: CORS_ORIGINS, value: "$CORS_ORIGINS" }
         - { name: DB_CONNECTION_TIMEOUT, value: "$DB_CONNECTION_TIMEOUT" }
         - { name: DB_HOST, value: $DB_HOST }
         - { name: DB_NAME, value: $DB_NAME }
         - { name: DB_USER, value: $DB_USER }
         - { name: DOMAIN, value: $DOMAIN }
-        - { name: EXAMPLE_ENV, value: $EXAMPLE_ENV }
         - { name: PUBLIC_URL, value: $REACT_APP_API_URL }
         - { name: REDIS_HOST, value: $REDIS_HOST }
         - { name: TZ, value: $TZ }
@@ -34,8 +34,8 @@ spec:
         - name: DB_PASS
           valueFrom:
             secretKeyRef:
-              name: $SERVICE_NAME-db-password-$EXAMPLE_ENV
-              key: $SERVICE_NAME-db-password-$EXAMPLE_ENV
+              name: $SERVICE_NAME-db-password-$APP_ENV
+              key: $SERVICE_NAME-db-password-$APP_ENV
         - name: FLASK_SECRET_KEY
           valueFrom:
             secretKeyRef:

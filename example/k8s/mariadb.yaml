@@ -34,7 +34,7 @@ spec:
       - name: mariadb
         image: mariadb:$VERSION_MARIADB
         env:
-        - { name: MYSQL_DATABASE, value: ${SERVICE_NAME}_${EXAMPLE_ENV} }
+        - { name: MYSQL_DATABASE, value: ${SERVICE_NAME}_${APP_ENV} }
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -64,7 +64,7 @@ metadata:
   name: $SERVICE_NAME-initdb
 data:
   setup.sql: |
-    GRANT ALL PRIVILEGES ON `${SERVICE_NAME}_${EXAMPLE_ENV}`.* TO '$DB_USER'@'%' IDENTIFIED BY '$DB_PASS';
+    GRANT ALL PRIVILEGES ON `${SERVICE_NAME}_${APP_ENV}`.* TO '$DB_USER'@'%' IDENTIFIED BY '$DB_PASS';
   my.cnf: |
     [mysqld]
     character_set_server  = utf8

@@ -16,8 +16,8 @@ spec:
       - name: $SERVICE_NAME-worker
         env:
         - { name: AMQ_HOST, value: $AMQ_HOST }
+        - { name: APP_ENV, value: $APP_ENV }
         - { name: CELERY_APP, value: $CELERY_APP }
-        - { name: EXAMPLE_ENV, value: $EXAMPLE_ENV }
         - { name: DB_CONNECTION_TIMEOUT, value: "$DB_CONNECTION_TIMEOUT" }
         - { name: DB_HOST, value: $DB_HOST }
         - { name: DB_NAME, value: $DB_NAME }
@@ -33,8 +33,8 @@ spec:
         - name: DB_PASS
           valueFrom:
             secretKeyRef:
-              name: $SERVICE_NAME-db-password-$EXAMPLE_ENV
-              key: $SERVICE_NAME-db-password-$EXAMPLE_ENV
+              name: $SERVICE_NAME-db-password-$APP_ENV
+              key: $SERVICE_NAME-db-password-$APP_ENV
         - name: REDIS_AES_SECRET
           valueFrom:
             secretKeyRef:

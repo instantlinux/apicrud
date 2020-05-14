@@ -10,7 +10,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from apicrud.basic_crud import BasicCRUD
 from example import config
 import example.i18n_textstrings as i18n
-from apicrud.confirmation import Confirmation
+from apicrud.messaging.confirmation import Confirmation
 from apicrud.session_auth import SessionAuth
 from apicrud.utils import gen_id
 from example import models
