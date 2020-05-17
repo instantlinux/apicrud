@@ -5,6 +5,9 @@ Database session management and schema update
 created 31-mar-2019 by richb@instantlinux.net
 """
 
+import alembic.config
+import alembic.script
+from alembic.runtime.environment import EnvironmentContext
 from flask import _app_ctx_stack
 import logging
 import os.path
@@ -12,6 +15,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.event import listen
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import select, func
+import time
 
 from . import constants
 from .session_manager import Mutex
@@ -54,6 +59,41 @@ def initialize_db(models, db_url=None, engine=None, redis_conn=None,
     else:
         # just wait for schema update
         schema_update(db_engine, models)
+
+
+def alembic_migrate(models, version, script_location, migrate=False,
+                    db_session=None, schema_maxtime=0, seed_func=None):
+    cfg = alembic.config.Config()
+    cfg.set_main_option('script_location', script_location)
+    script = alembic.script.ScriptDirectory.from_config(cfg)
+    env = EnvironmentContext(cfg, script)
+    if (version == script.get_heads()[0]):
+        logging.info('action=schema_update version=%s is current' %
+                     version)
+    elif migrate:
+        def _do_upgrade(revision, context):
+            return script._upgrade_revs(script.get_heads(), revision)
+
+        conn = db_engine.connect()
+        if db_engine.dialect.name == 'sqlite' and spatialite_loaded:
+            conn.execute(select([func.InitSpatialMetaData(1)]))
+        env.configure(connection=conn, target_metadata=Base.metadata,
+                      verbose=True, fn=_do_upgrade)
+        with env.begin_transaction():
+            env.run_migrations()
+        logging.info('action=schema_update finished migration, '
+                     'version=%s' % script.get_heads()[0])
+    else:
+        # Not migrating: must wait
+        wait_time = schema_maxtime
+        while version != script.get_heads()[0] and wait_time:
+            time.sleep(5)
+            wait_time -= 5
+    if version is None and seed_func:
+        if not db_session:
+            db_session = get_session(scoped=True)
+        seed_func(db_session)
+        db_session.close()
 
 
 def _init_db(db_url=None, engine=None, connection_timeout=0,

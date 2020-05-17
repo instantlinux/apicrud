@@ -1,6 +1,6 @@
-"""_init.py
+"""__init__.py
 
-Initialize each controller
+Initialize each controller and return list of resources for service registry
 
 created 14-jan-2020 by richb@instantlinux.net
 """
@@ -9,7 +9,7 @@ from . import account, auth, category, contact, credential, grant, list, \
     location, message, person, settings, tz
 
 
-def controllers():
+def resources():
     """ Runs the __init__ function for each controller, which
     makes the resource name and object available as singletons for
     use with flask
@@ -18,7 +18,7 @@ def controllers():
       list of resources initialized
     """
 
-    resources = []
+    results = []
     for controller in [
             account.AccountController,
             auth.AuthController,
@@ -33,6 +33,5 @@ def controllers():
             # profile.ProfileController,
             settings.SettingsController,
             tz.TZController]:
-        setup = controller()
-        resources.append(setup.resource)
-    return resources
+        results.append(controller().resource)
+    return results

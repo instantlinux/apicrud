@@ -21,10 +21,8 @@ class AuthController(object):
 
     @staticmethod
     def login(body):
-        if body.get('username') and body.get('password'):
-            return SessionAuth(config=config, models=models).account_login(
-                body['username'], body['password'], roles_from=models.List)
-        return dict(message='parameters not valid'), 403
+        return SessionAuth(config=config, models=models).account_login(
+            body['username'], body['password'], roles_from=models.List)
 
     def logout():
         creds = request.authorization

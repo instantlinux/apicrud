@@ -1,4 +1,4 @@
-"""models
+"""example-app models
 
 Database model definitions for SQLalchemy
 
@@ -123,7 +123,7 @@ class Credential(Base):
     )
 
     id = Column(String(16), primary_key=True, unique=True)
-    name = Column(String(64), nullable=False, unique=True)
+    name = Column(String(64), nullable=False)
     vendor = Column(String(32), nullable=False)
     # placeholder field TODO make clear how this will be used
     #  probably to delegate to Secrets Manager / KMS
@@ -412,7 +412,7 @@ class Storage(Base):
 
     id = Column(String(16), primary_key=True, unique=True)
     name = Column(String(32), nullable=False)
-    prefix = Column(String(128), server_default="", nullable=False)
+    prefix = Column(String(128))
     bucket = Column(String(64), nullable=False)
     region = Column(String(16),
                     server_default=constants.DEFAULT_AWS_REGION)

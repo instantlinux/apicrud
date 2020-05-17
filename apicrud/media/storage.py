@@ -199,12 +199,11 @@ class StorageAPI(object):
         for react-image-gallery
         """
 
-        # TODO table-join to pick up rank of each picture
-        album = self.db.query(self.models.Album).filter_by(id=album_id).one()
+        album = self.db.query(self.models.Album).filter(
+            self.models.Album.id == album_id,
+            self.models.Picture.status == 'active').one()
         results = []
         for picture in album.pictures:
-            if picture.status != 'active':
-                continue
             orig_uri = None
             uri_path = '%s/%s' % (picture.storage.cdn_uri, picture.path)
             fmt = picture.format_original

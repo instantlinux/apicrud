@@ -5,18 +5,13 @@ Database schema update and seed functions - populate a new db with minimum data
 created 31-mar-2019 by richb@instantlinux.net
 """
 
-import alembic.config
-import alembic.script
-from alembic.runtime.environment import EnvironmentContext
 import logging
 import os
 from sqlalchemy.exc import OperationalError, ProgrammingError
 from sqlalchemy.orm import exc
-from sqlalchemy.sql import select, func
-import time
 
 from example import constants
-from apicrud.database import Base, get_session, spatialite_loaded
+from apicrud.database import alembic_migrate, get_session
 from .models import Account, AlembicVersion, Category, Contact, Location, \
     Person, Settings, TZname
 
@@ -38,36 +33,11 @@ def update(db_engine, models, migrate=False, schema_maxtime=0):
     except (exc.NoResultFound, OperationalError, ProgrammingError) as ex:
         logging.warning('DB schema does not yet exist: %s' % str(ex))
         version = None
-    cfg = alembic.config.Config()
-    cfg.set_main_option('script_location', os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'alembic'))
-    script = alembic.script.ScriptDirectory.from_config(cfg)
-    env = EnvironmentContext(cfg, script)
-    if (version == script.get_heads()[0]):
-        logging.info('action=schema_update version=%s is current' %
-                     version)
-    elif migrate:
-        def _do_upgrade(revision, context):
-            return script._upgrade_revs(script.get_heads(), revision)
-
-        conn = db_engine.connect()
-        if db_engine.dialect.name == 'sqlite' and spatialite_loaded:
-            conn.execute(select([func.InitSpatialMetaData(1)]))
-        env.configure(connection=conn, target_metadata=Base.metadata,
-                      verbose=True, fn=_do_upgrade)
-        with env.begin_transaction():
-            env.run_migrations()
-        logging.info('action=schema_update finished migration, '
-                     'version=%s' % script.get_heads()[0])
-    else:
-        # Not migrating: must wait
-        wait_time = schema_maxtime
-        while version != script.get_heads()[0] and wait_time:
-            time.sleep(5)
-            wait_time -= 5
-    if version is None:
-        _seed_new_db(db_session)
     db_session.close()
+    alembic_migrate(models, version,
+                    os.path.join(os.path.abspath(os.path.dirname(
+                        __file__)), 'alembic'), migrate=migrate,
+                    schema_maxtime=schema_maxtime, seed_func=_seed_new_db)
 
 
 def _seed_new_db(db_session):

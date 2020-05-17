@@ -34,6 +34,19 @@ class TestMain(test_base.TestBase):
             username=self.username, password=self.password))
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.get_json()['settings_id'], expected)
+        response = self.call_endpoint('/auth', 'post', data=dict(
+            username=self.username, password=''))
+        self.assertEqual(response.status_code, 400)
+
+    def test_logout(self):
+        self.authorize()
+        response = self.call_endpoint('/settings/x-75023275', 'get')
+        self.assertEqual(response.status_code, 200)
+        response = self.call_endpoint('/logout', 'get')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), dict(message='logged out'))
+        response = self.call_endpoint('/settings/x-75023275', 'get')
+        self.assertEqual(response.status_code, 401)
 
     def test_get_settings_noauth(self):
         response = self.call_endpoint('/settings/x-75023275', 'get')
