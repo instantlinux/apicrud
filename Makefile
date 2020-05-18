@@ -9,8 +9,8 @@ MAXFAIL    ?= 1000
 PYPI_URL   ?= https://upload.pypi.org/legacy/
 PYPI_USER  ?= $(USER)
 VERSION    ?= $(shell grep -o '[0-9.]*' apicrud/_version.py)
-export REGISTRY    ?= $(REGISTRY_URI)/$(CI_PROJECT_PATH)
-export APP_ENV ?= local
+export APP_ENV  ?= local
+export REGISTRY ?= $(REGISTRY_URI)/$(CI_PROJECT_PATH)
 
 include example/Makefile.vars
 include example/Makefile.dev
@@ -35,7 +35,7 @@ python_env: $(VDIR)/bin/python3
 
 $(VDIR)/bin/python3:
 	@echo "Creating virtual environment"
-	python3 -m virtualenv -p python3 --system-site-packages $(VENV)
+	python3 -m venv --system-site-packages $(VENV)
 
 flake8: test_requirements
 	@echo "Running flake8 code analysis"
@@ -77,10 +77,9 @@ dist/apicrud-$(VERSION).tar.gz: test_requirements
 	fi
 
 clean:
-	rm -rf build dist *.egg-info .cache .pytest_cache \
-	 apicrud/__pycache__ example/__pycache__ tests/__pycache__
-	find . -regextype egrep -regex \
-         '.*(coverage.xml|results.xml|\.pyc|htmlcov|\.coverage|\.created|~)' \
+	rm -rf build dist *.egg-info .cache .pytest_cache */__pycache__ \
+	 */.coverage */.proto.sqlite */coverage.xml */htmlcov */results.xml
+	find . -name '*.pyc' -or -name '*~' -or -name '*.created' \
 	 -exec rm -rf {} \;
 wipe_clean: clean
 	rm -rf python_env

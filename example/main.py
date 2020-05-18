@@ -48,7 +48,8 @@ def add_header(response):
 
 @application.app.teardown_appcontext
 def cleanup(resp_or_exc):
-    g.db.remove()
+    if hasattr(g, 'db'):
+        g.db.remove()
 
 
 if __name__ == '__main__':

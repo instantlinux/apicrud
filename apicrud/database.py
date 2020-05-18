@@ -14,6 +14,7 @@ import os.path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.event import listen
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import select, func
 import time
@@ -74,7 +75,15 @@ def alembic_migrate(models, version, script_location, migrate=False,
         def _do_upgrade(revision, context):
             return script._upgrade_revs(script.get_heads(), revision)
 
-        conn = db_engine.connect()
+        while schema_maxtime > 0:
+            try:
+                conn = db_engine.connect()
+                break
+            except OperationalError as ex:
+                logging.info('action=alembic_migrate status=waiting message=%s'
+                             % str(ex))
+            schema_maxtime -= 10
+            time.sleep(10)
         if db_engine.dialect.name == 'sqlite' and spatialite_loaded:
             conn.execute(select([func.InitSpatialMetaData(1)]))
         env.configure(connection=conn, target_metadata=Base.metadata,
@@ -115,7 +124,15 @@ def _init_db(db_url=None, engine=None, connection_timeout=0,
     if hasattr(db, 'query_property'):
         Base.query = db.query_property()
         db.remove()
-    Base.metadata.create_all(bind=db_engine)
+    connection_timeout = 20
+    while connection_timeout > 0:
+        try:
+            Base.metadata.create_all(bind=db_engine)
+            break
+        except OperationalError as ex:
+            logging.info('action=init_db status=waiting message=%s' % str(ex))
+        connection_timeout -= 10
+        time.sleep(10)
     return db_engine
 
 
