@@ -16,7 +16,7 @@ promote_images:
 	  docker pull $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) && \
 	  docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
 	    $(REGISTRY)/$(APPNAME)-$${image}:latest && \
-	  docker push $(REGISTRY)/$(IMGNAME)-$${image}:$(CI_COMMIT_TAG) && \
+	  docker push $(REGISTRY)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
 	  docker push $(REGISTRY)/$(APPNAME)-$${image}:latest \
 	;)
 ifneq ($(CI_COMMIT_TAG),)
