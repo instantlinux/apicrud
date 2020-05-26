@@ -46,9 +46,9 @@ class ServiceRegistry(object):
                  instance_id=socket.gethostname(), tcp_port=None):
         global service_data
         try:
-            ipv4=socket.gethostbyname(instance_id)
+            ipv4 = socket.gethostbyname(instance_id)
         except socket.gaierror:
-            ipv4=None
+            ipv4 = None
         service_data['info'] = dict(
             endpoints=resource_endpoints, ipv4=ipv4,
             port=tcp_port or self.config.PORT,
