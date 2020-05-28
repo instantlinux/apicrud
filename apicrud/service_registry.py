@@ -17,7 +17,7 @@ import socket
 import threading
 
 from .aes_encrypt import AESEncrypt
-from .utils import utcnow
+from . import utils
 
 refresh_thread = None
 service_data = {}
@@ -50,9 +50,11 @@ class ServiceRegistry(object):
             ipv4=socket.gethostbyname(socket.gethostname()),
             port=tcp_port or self.config.PORT,
             public_url=self.config.PUBLIC_URL,
-            created=utcnow().replace(microsecond=0).isoformat())
+            created=utils.utcnow().replace(microsecond=0).isoformat())
         service_data['name'] = service_name or self.config.SERVICE_NAME
         service_data['id'] = instance_id
+        logging.info(dict(action='service.register', id=instance_id,
+                          name=service_data['name'], **service_data['info']))
         refresh_thread = threading.Timer(1, ServiceRegistry.update, ())
         refresh_thread.start()
 
@@ -95,7 +97,6 @@ class ServiceRegistry(object):
                              (instance, str(ex)))
             if not info.get('endpoints'):
                 continue
-            logging.info(dict(step=1, instance=instance, **info))
             for resource in info['endpoints']:
                 if resource not in url_map:
                     url_map[resource] = info[

@@ -13,7 +13,7 @@ metadata:
     #   limit_req_status 429;
 spec:
   rules:
-  - host: $EXAMPLE_PUBLIC_URL
+  - host: $PUBLIC_URL
     http:
       paths:
       - path: /api
