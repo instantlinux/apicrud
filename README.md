@@ -68,6 +68,7 @@ Variable | Default | Description
 -------- | ------- | -----------
 AMQ_HOST | `example-rmq` | IP address or hostname of rabbitMQ
 API_DEV_PORT | `32080` | TCP port for API service (local dev k8s)
+API_MEDIA_DEV_PORT | `32085` | TCP port for media API service (local dev k8s)
 DB_HOST | `10.101.2.30` | IP address or hostname of MySQL-compatible database
 DB_NAME | `example_local` | Name of the database
 DOMAIN | | Domain for service URLs
@@ -75,6 +76,7 @@ EXAMPLE_API_PORT | `8080` | TCP port for API service
 KUBECONFIG | | Config credentials filename for k8s
 RABBITMQ_IP | `10.101.2.20` | IP address to use for rabbitMQ under k8s
 REDIS_IP | `10.101.2.10` | IP address for redis under k8s
+UI_DEV_PORT | `32180` | TCP port for UI (local dev k8s)
 
 ### Secrets
 

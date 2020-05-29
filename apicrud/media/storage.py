@@ -199,9 +199,12 @@ class StorageAPI(object):
         for react-image-gallery
         """
 
-        album = self.db.query(self.models.Album).filter(
-            self.models.Album.id == album_id,
-            self.models.Picture.status == 'active').one()
+        try:
+            album = self.db.query(self.models.Album).filter(
+                self.models.Album.id == album_id,
+                self.models.Picture.status == 'active').one()
+        except NoResultFound:
+            return []
         results = []
         for picture in album.pictures:
             orig_uri = None
