@@ -1,16 +1,18 @@
 # Kubernetes deployment
 #  Env var TAG must be set; it will not default to 'latest'
 
-create_image:
+.PHONY: qemu
+
+create_image: qemu
 	@echo docker build -t $(REGISTRY)/$(APPNAME)-$(CI_JOB_NAME):$(TAG)
-	@docker build -t $(REGISTRY)/$(APPNAME)-$(CI_JOB_NAME):$(TAG) . \
-	 -f $(APPNAME)/Dockerfile.$(CI_JOB_NAME) \
+	@docker buildx build \
+	 --tag $(REGISTRY)/$(APPNAME)-$(CI_JOB_NAME):$(TAG) . \
+	 --push -f $(APPNAME)/Dockerfile.$(CI_JOB_NAME) \
 	 --build-arg=VCS_REF=$(CI_COMMIT_SHA) \
 	 --build-arg=TAG=$(TAG) \
-	 --build-arg=BUILD_DATE=$(shell date +%Y-%m-%dT%H:%M:%SZ) && \
-	docker push $(REGISTRY)/$(APPNAME)-$(CI_JOB_NAME):$(TAG)
+	 --build-arg=BUILD_DATE=$(shell date +%Y-%m-%dT%H:%M:%SZ)
 
-promote_images:
+promote_images: qemu
 	$(foreach target, $(IMAGES), \
 	  image=$(shell basename $(target)) && \
 	  docker pull $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) && \
@@ -24,16 +26,24 @@ ifneq ($(CI_COMMIT_TAG),)
 ifneq ($(REGISTRY), $(USER_LOGIN))
 	docker login -u $(USER_LOGIN) -p $(DOCKER_TOKEN)
 	$(foreach target, $(IMAGES), \
+	  # image=$(shell basename $(target)) && \
+	  # docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
+	  #   $(REGISTRY)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
+	  # docker push $(REGISTRY)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
+	  # docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
+	  #   $(USER_LOGIN)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
+	  # docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
+	  #   $(USER_LOGIN)/$(APPNAME)-$${image}:latest && \
+	  # docker push $(USER_LOGIN)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
+	  # docker push $(USER_LOGIN)/$(APPNAME)-$${image}:latest \
 	  image=$(shell basename $(target)) && \
-	  docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
-	    $(REGISTRY)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
-	  docker push $(REGISTRY)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
-	  docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
-	    $(USER_LOGIN)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
-	  docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
-	    $(USER_LOGIN)/$(APPNAME)-$${image}:latest && \
-	  docker push $(USER_LOGIN)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
-	  docker push $(USER_LOGIN)/$(APPNAME)-$${image}:latest \
+	  docker buildx build \
+	    --tag $(REGISTRY)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) \
+	    --tag $(USER_LOGIN)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) \
+	    --tag $(USER_LOGIN)/$(APPNAME)-$${image}:latest \
+	    --push --file Dockerfile . \
+	    --build-arg=VCS_REF=$(CI_COMMIT_SHA) \
+	    --build-arg=BUILD_DATE=$(shell date +%Y-%m-%dT%H:%M:%SZ) \
 	;)
 	curl -X post https://hooks.microbadger.com/images/$(USER_LOGIN)/$(APPNAME)-$${image}/$(MICROBADGER_TOKEN)
 endif
@@ -42,6 +52,11 @@ endif
 clean_images:
 	docker rmi $(REGISTRY)/$(APPNAME)-api:$(TAG) || true
 	docker rmi $(REGISTRY)/$(APPNAME)-worker:$(TAG) || true
+
+qemu:
+	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+	docker buildx create --name multibuild
+	docker buildx use multibuild
 
 K8S_YAML = $(basename $(wildcard example/k8s/*.yaml))
 $(K8S_YAML):

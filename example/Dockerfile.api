@@ -1,4 +1,4 @@
-FROM instantlinux/python-wsgi:3.7.6-alpine3.11
+FROM instantlinux/python-wsgi:3.8.3-alpine3.12
 
 MAINTAINER Rich Braun "richb@instantlinux.net"
 ARG BUILD_DATE
@@ -26,4 +26,4 @@ RUN chmod -R g-w,o-w /opt/example && \
     -e "s/^__version__ =.*/__version__ = '$TAG'/" \
     -e "s/^build_date =.*/build_date = '$BUILD_DATE'/" \
     /opt/example/_version.py
-CMD ["uwsgi", "--module", "example.main", "--ini", "/usr/src/uwsgi.ini"]
+CMD ["uwsgi", "--plugin", "python3", "--module", "example.main", "--ini", "/usr/src/uwsgi.ini"]

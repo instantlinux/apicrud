@@ -2,6 +2,9 @@
 # Set these private variables in gitlab-ci environment:
 #   PYPI_PASSWORD, PYPI_USER, REGISTRY_URI
 
+variables:
+  PLATFORMS: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
+  
 stages:
   - Analyze and Unit Test
   - Images
@@ -9,7 +12,7 @@ stages:
   - Publish Packages
   - Clean
 
-image: instantlinux/python-builder:3.8.2-r0
+image: instantlinux/python-builder:3.8.3-r0
 
 before_script:
   - export TAG=bld_$CI_PIPELINE_IID_${CI_COMMIT_SHA:0:7}
