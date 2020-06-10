@@ -26,16 +26,6 @@ ifneq ($(CI_COMMIT_TAG),)
 ifneq ($(REGISTRY), $(USER_LOGIN))
 	docker login -u $(USER_LOGIN) -p $(DOCKER_TOKEN)
 	$(foreach target, $(IMAGES), \
-	  # image=$(shell basename $(target)) && \
-	  # docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
-	  #   $(REGISTRY)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
-	  # docker push $(REGISTRY)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
-	  # docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
-	  #   $(USER_LOGIN)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
-	  # docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
-	  #   $(USER_LOGIN)/$(APPNAME)-$${image}:latest && \
-	  # docker push $(USER_LOGIN)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
-	  # docker push $(USER_LOGIN)/$(APPNAME)-$${image}:latest \
 	  image=$(shell basename $(target)) && \
 	  docker buildx build \
 	    --tag $(REGISTRY)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) \
@@ -46,6 +36,17 @@ ifneq ($(REGISTRY), $(USER_LOGIN))
 	    --build-arg=BUILD_DATE=$(shell date +%Y-%m-%dT%H:%M:%SZ) \
 	;)
 	curl -X post https://hooks.microbadger.com/images/$(USER_LOGIN)/$(APPNAME)-$${image}/$(MICROBADGER_TOKEN)
+
+	  # image=$(shell basename $(target)) && \
+	  # docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
+	  #   $(REGISTRY)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
+	  # docker push $(REGISTRY)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
+	  # docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
+	  #   $(USER_LOGIN)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
+	  # docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
+	  #   $(USER_LOGIN)/$(APPNAME)-$${image}:latest && \
+	  # docker push $(USER_LOGIN)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
+	  # docker push $(USER_LOGIN)/$(APPNAME)-$${image}:latest
 endif
 endif
 
