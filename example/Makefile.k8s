@@ -13,41 +13,33 @@ create_image: qemu
 	 --build-arg=BUILD_DATE=$(shell date +%Y-%m-%dT%H:%M:%SZ)
 
 promote_images: qemu
+ifeq ($(CI_COMMIT_TAG),)
+	# On master: push to latest on registry.gitlab.com; have to run
+	# buildx in order to push multi-arch manifest
 	$(foreach target, $(IMAGES), \
 	  image=$(shell basename $(target)) && \
-	  docker pull $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) && \
-	  docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
-	    $(REGISTRY)/$(APPNAME)-$${image}:latest && \
-	  docker push $(REGISTRY)/$(APPNAME)-$${image}:latest \
+	  docker buildx build --platform $(PLATFORMS) \
+	    --tag $(REGISTRY)/$(APPNAME)-$${image}:latest \
+	    --push --file $(APPNAME)/Dockerfile.$${image} . \
+	    --build-arg=VCS_REF=$(CI_COMMIT_SHA) \
+	    --build-arg=BUILD_DATE=$(shell date +%Y-%m-%dT%H:%M:%SZ) \
 	;)
-ifneq ($(CI_COMMIT_TAG),)
+else
 	# Push tagged items to two registries: REGISTRY is gitlab,
 	# USER_LOGIN refers to docker hub
-ifneq ($(REGISTRY), $(USER_LOGIN))
 	docker login -u $(USER_LOGIN) -p $(DOCKER_TOKEN)
 	$(foreach target, $(IMAGES), \
 	  image=$(shell basename $(target)) && \
-	  docker buildx build \
+	  docker buildx build --platform $(PLATFORMS) \
 	    --tag $(REGISTRY)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) \
+	    --tag $(REGISTRY)/$(APPNAME)-$${image}:latest \
 	    --tag $(USER_LOGIN)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) \
 	    --tag $(USER_LOGIN)/$(APPNAME)-$${image}:latest \
-	    --push --file Dockerfile . \
+	    --push --file $(APPNAME)/Dockerfile.$${image} . \
 	    --build-arg=VCS_REF=$(CI_COMMIT_SHA) \
 	    --build-arg=BUILD_DATE=$(shell date +%Y-%m-%dT%H:%M:%SZ) \
 	;)
 	curl -X post https://hooks.microbadger.com/images/$(USER_LOGIN)/$(APPNAME)-$${image}/$(MICROBADGER_TOKEN)
-
-	  # image=$(shell basename $(target)) && \
-	  # docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
-	  #   $(REGISTRY)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
-	  # docker push $(REGISTRY)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
-	  # docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
-	  #   $(USER_LOGIN)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
-	  # docker tag $(REGISTRY)/$(APPNAME)-$${image}:$(TAG) \
-	  #   $(USER_LOGIN)/$(APPNAME)-$${image}:latest && \
-	  # docker push $(USER_LOGIN)/$(APPNAME)-$${image}:$(CI_COMMIT_TAG) && \
-	  # docker push $(USER_LOGIN)/$(APPNAME)-$${image}:latest
-endif
 endif
 
 clean_images:
