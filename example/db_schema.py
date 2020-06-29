@@ -10,9 +10,9 @@ import os
 from sqlalchemy.exc import OperationalError, ProgrammingError
 from sqlalchemy.orm import exc
 
-from example import constants
+import constants
 from apicrud.database import alembic_migrate, get_session
-from .models import Account, AlembicVersion, Category, Contact, Location, \
+from models import Account, AlembicVersion, Category, Contact, Location, \
     Person, Settings, TZname
 
 

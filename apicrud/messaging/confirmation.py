@@ -12,7 +12,7 @@ import random
 from sqlalchemy.orm.exc import NoResultFound
 import string
 
-from ..constants import i18n
+from ..const import i18n
 
 
 class Confirmation:

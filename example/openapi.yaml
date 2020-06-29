@@ -779,7 +779,7 @@ paths:
       tags:
       - account
       x-codegen-request-body-name: conditions
-      x-openapi-router-controller: example.controllers.account.AccountController
+      x-openapi-router-controller: controllers.account.AccountController
     post:
       summary: Create a new account
       operationId: register
@@ -796,7 +796,7 @@ paths:
       tags:
       - account
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.account.AccountController
+      x-openapi-router-controller: controllers.account.AccountController
   /account/{id}:
     get:
       summary: Find account by ID
@@ -828,7 +828,7 @@ paths:
       - basic: []
       tags:
       - account
-      x-openapi-router-controller: example.controllers.account.AccountController
+      x-openapi-router-controller: controllers.account.AccountController
     put:
       summary: Update an existing account
       operationId: update
@@ -859,7 +859,7 @@ paths:
       tags:
       - account
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.account.AccountController
+      x-openapi-router-controller: controllers.account.AccountController
   /account/{ids}:
     delete:
       summary: Delete one or more accounts
@@ -889,7 +889,7 @@ paths:
       - basic: []
       tags:
       - account
-      x-openapi-router-controller: example.controllers.account.AccountController
+      x-openapi-router-controller: controllers.account.AccountController
   /account_password/{uid}:
     put:
       summary: Change a password
@@ -919,7 +919,7 @@ paths:
       tags:
       - account
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.account.AccountController
+      x-openapi-router-controller: controllers.account.AccountController
     get:
       summary: Dummy read for editing account password
       operationId: get_password
@@ -947,7 +947,7 @@ paths:
           description: account not found
       tags:
       - account
-      x-openapi-router-controller: example.controllers.account.AccountController
+      x-openapi-router-controller: controllers.account.AccountController
   /auth:
     post:
       summary: Authenticate
@@ -965,7 +965,7 @@ paths:
       tags:
       - auth
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.auth.AuthController
+      x-openapi-router-controller: controllers.auth.AuthController
   /logout:
     get:
       summary: Log out
@@ -979,7 +979,7 @@ paths:
           description: Invalid input
       tags:
       - auth
-      x-openapi-router-controller: example.controllers.auth.AuthController
+      x-openapi-router-controller: controllers.auth.AuthController
   /category:
     get:
       summary: Find categories by conditions
@@ -1061,7 +1061,7 @@ paths:
       tags:
       - category
       x-codegen-request-body-name: conditions
-      x-openapi-router-controller: example.controllers.category.CategoryController
+      x-openapi-router-controller: controllers.category.CategoryController
     post:
       summary: Create a new category
       operationId: create
@@ -1080,7 +1080,7 @@ paths:
       tags:
       - category
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.category.CategoryController
+      x-openapi-router-controller: controllers.category.CategoryController
   /category/{id}:
     get:
       summary: Find category by ID
@@ -1112,7 +1112,7 @@ paths:
       - basic: []
       tags:
       - category
-      x-openapi-router-controller: example.controllers.category.CategoryController
+      x-openapi-router-controller: controllers.category.CategoryController
     put:
       summary: Update an existing category
       operationId: update
@@ -1143,7 +1143,7 @@ paths:
       tags:
       - category
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.category.CategoryController
+      x-openapi-router-controller: controllers.category.CategoryController
   /category/{ids}:
     delete:
       summary: Delete one or more categories
@@ -1173,7 +1173,7 @@ paths:
       - basic: []
       tags:
       - category
-      x-openapi-router-controller: example.controllers.category.CategoryController
+      x-openapi-router-controller: controllers.category.CategoryController
   /contact:
     get:
       summary: Find contacts by conditions
@@ -1246,7 +1246,7 @@ paths:
       - basic: []
       tags:
       - contact
-      x-openapi-router-controller: example.controllers.contact.ContactController
+      x-openapi-router-controller: controllers.contact.ContactController
     post:
       operationId: create
       requestBody:
@@ -1266,7 +1266,7 @@ paths:
       tags:
       - contact
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.contact.ContactController
+      x-openapi-router-controller: controllers.contact.ContactController
   /contact/{id}:
     get:
       description: Returns a single contact
@@ -1298,7 +1298,7 @@ paths:
       summary: Find contact by ID
       tags:
       - contact
-      x-openapi-router-controller: example.controllers.contact.ContactController
+      x-openapi-router-controller: controllers.contact.ContactController
     put:
       operationId: update
       requestBody:
@@ -1330,7 +1330,7 @@ paths:
       tags:
       - contact
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.contact.ContactController
+      x-openapi-router-controller: controllers.contact.ContactController
   /contact/{ids}:
     delete:
       operationId: delete
@@ -1360,7 +1360,7 @@ paths:
       summary: Deletes one or more contacts
       tags:
       - contact
-      x-openapi-router-controller: example.controllers.contact.ContactController
+      x-openapi-router-controller: controllers.contact.ContactController
   /contact/confirmation_get/{id}:
     get:
       description: Get a token for contact confirmation
@@ -1394,7 +1394,7 @@ paths:
       summary: Get a token for contact confirmation
       tags:
       - contact
-      x-openapi-router-controller: example.controllers.contact.ContactController
+      x-openapi-router-controller: controllers.contact.ContactController
   /contact/confirm/{token}:
     post:
       description: Present token for contact confirmation
@@ -1430,7 +1430,7 @@ paths:
       summary: Present token for contact confirmation
       tags:
       - contact
-      x-openapi-router-controller: example.controllers.contact.ContactController
+      x-openapi-router-controller: controllers.contact.ContactController
   /credential:
     get:
       summary: Find credentials by conditions
@@ -1520,7 +1520,7 @@ paths:
       tags:
       - credential
       x-codegen-request-body-name: conditions
-      x-openapi-router-controller: example.controllers.credential.CredentialController
+      x-openapi-router-controller: controllers.credential.CredentialController
     post:
       summary: Create a new credential
       operationId: create
@@ -1539,7 +1539,7 @@ paths:
       tags:
       - credential
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.credential.CredentialController
+      x-openapi-router-controller: controllers.credential.CredentialController
   /credential/{id}:
     get:
       summary: Find credential by ID
@@ -1571,7 +1571,7 @@ paths:
       - basic: []
       tags:
       - credential
-      x-openapi-router-controller: example.controllers.credential.CredentialController
+      x-openapi-router-controller: controllers.credential.CredentialController
     put:
       summary: Update an existing credential
       operationId: update
@@ -1602,7 +1602,7 @@ paths:
       tags:
       - credential
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.credential.CredentialController
+      x-openapi-router-controller: controllers.credential.CredentialController
   /credential/{ids}:
     delete:
       summary: Delete one or more credentials
@@ -1632,7 +1632,7 @@ paths:
       - basic: []
       tags:
       - credential
-      x-openapi-router-controller: example.controllers.credential.CredentialController
+      x-openapi-router-controller: controllers.credential.CredentialController
   /grant:
     get:
       summary: Find grants by conditions
@@ -1714,7 +1714,7 @@ paths:
       tags:
       - grant
       x-codegen-request-body-name: conditions
-      x-openapi-router-controller: example.controllers.grant.GrantController
+      x-openapi-router-controller: controllers.grant.GrantController
     post:
       summary: Create a new grant
       operationId: create
@@ -1733,7 +1733,7 @@ paths:
       tags:
       - grant
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.grant.GrantController
+      x-openapi-router-controller: controllers.grant.GrantController
   /grant/{id}:
     get:
       summary: Find grant by ID
@@ -1765,7 +1765,7 @@ paths:
       - basic: []
       tags:
       - grant
-      x-openapi-router-controller: example.controllers.grant.GrantController
+      x-openapi-router-controller: controllers.grant.GrantController
     put:
       summary: Update an existing grant
       operationId: update
@@ -1796,7 +1796,7 @@ paths:
       tags:
       - grant
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.grant.GrantController
+      x-openapi-router-controller: controllers.grant.GrantController
   /grant/{ids}:
     delete:
       summary: Delete one or more grants
@@ -1826,7 +1826,7 @@ paths:
       - basic: []
       tags:
       - grant
-      x-openapi-router-controller: example.controllers.grant.GrantController
+      x-openapi-router-controller: controllers.grant.GrantController
   /list:
     get:
       summary: Find lists by conditions
@@ -1899,7 +1899,7 @@ paths:
       - basic: []
       tags:
       - list
-      x-openapi-router-controller: example.controllers.list.ListController
+      x-openapi-router-controller: controllers.list.ListController
     post:
       operationId: create
       requestBody:
@@ -1919,7 +1919,7 @@ paths:
       tags:
       - list
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.list.ListController
+      x-openapi-router-controller: controllers.list.ListController
   /list/{id}:
     get:
       description: Returns a single list
@@ -1951,7 +1951,7 @@ paths:
       summary: Find list by ID
       tags:
       - list
-      x-openapi-router-controller: example.controllers.list.ListController
+      x-openapi-router-controller: controllers.list.ListController
     put:
       operationId: update
       requestBody:
@@ -1983,7 +1983,7 @@ paths:
       tags:
       - list
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.list.ListController
+      x-openapi-router-controller: controllers.list.ListController
   /list/{ids}:
     delete:
       operationId: delete
@@ -2013,7 +2013,7 @@ paths:
       summary: Deletes one or more lists
       tags:
       - list
-      x-openapi-router-controller: example.controllers.list.ListController
+      x-openapi-router-controller: controllers.list.ListController
   /location:
     get:
       summary: Find locations by conditions
@@ -2084,7 +2084,7 @@ paths:
           description: location not found
       tags:
       - location
-      x-openapi-router-controller: example.controllers.location.LocationController
+      x-openapi-router-controller: controllers.location.LocationController
     post:
       operationId: create
       requestBody:
@@ -2104,7 +2104,7 @@ paths:
       tags:
       - location
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.location.LocationController
+      x-openapi-router-controller: controllers.location.LocationController
   /location/{id}:
     get:
       description: Returns a single location
@@ -2136,7 +2136,7 @@ paths:
       summary: Find location by ID
       tags:
       - location
-      x-openapi-router-controller: example.controllers.location.LocationController
+      x-openapi-router-controller: controllers.location.LocationController
     put:
       operationId: update
       requestBody:
@@ -2168,7 +2168,7 @@ paths:
       tags:
       - location
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.location.LocationController
+      x-openapi-router-controller: controllers.location.LocationController
   /location/{ids}:
     delete:
       operationId: delete
@@ -2198,7 +2198,7 @@ paths:
       summary: Deletes one or more locations
       tags:
       - location
-      x-openapi-router-controller: example.controllers.location.LocationController
+      x-openapi-router-controller: controllers.location.LocationController
   /message:
     get:
       summary: Find messages by conditions
@@ -2266,7 +2266,7 @@ paths:
       - basic: []
       tags:
       - message
-      x-openapi-router-controller: example.controllers.message.MessageController
+      x-openapi-router-controller: controllers.message.MessageController
     post:
       operationId: create
       requestBody:
@@ -2286,7 +2286,7 @@ paths:
       tags:
       - message
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.message.MessageController
+      x-openapi-router-controller: controllers.message.MessageController
   /message/{id}:
     get:
       description: Returns a single message
@@ -2318,7 +2318,7 @@ paths:
       summary: Find message by ID
       tags:
       - message
-      x-openapi-router-controller: example.controllers.message.MessageController
+      x-openapi-router-controller: controllers.message.MessageController
     put:
       operationId: update
       requestBody:
@@ -2350,7 +2350,7 @@ paths:
       tags:
       - message
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.message.MessageController
+      x-openapi-router-controller: controllers.message.MessageController
   /message/{ids}:
     delete:
       operationId: delete
@@ -2380,7 +2380,7 @@ paths:
       summary: Deletes one or more messages
       tags:
       - message
-      x-openapi-router-controller: example.controllers.message.MessageController
+      x-openapi-router-controller: controllers.message.MessageController
   /person:
     get:
       summary: Find people by conditions
@@ -2453,7 +2453,7 @@ paths:
       - basic: []
       tags:
       - person
-      x-openapi-router-controller: example.controllers.person.PersonController
+      x-openapi-router-controller: controllers.person.PersonController
     post:
       operationId: create
       requestBody:
@@ -2473,7 +2473,7 @@ paths:
       tags:
       - person
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.person.PersonController
+      x-openapi-router-controller: controllers.person.PersonController
   /person/{id}:
     get:
       description: Returns a single person
@@ -2505,7 +2505,7 @@ paths:
       summary: Find person by ID
       tags:
       - person
-      x-openapi-router-controller: example.controllers.person.PersonController
+      x-openapi-router-controller: controllers.person.PersonController
     put:
       operationId: update
       requestBody:
@@ -2537,7 +2537,7 @@ paths:
       tags:
       - person
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.person.PersonController
+      x-openapi-router-controller: controllers.person.PersonController
   /person/{ids}:
     delete:
       operationId: delete
@@ -2567,7 +2567,7 @@ paths:
       summary: Deletes one or more people
       tags:
       - person
-      x-openapi-router-controller: example.controllers.person.PersonController
+      x-openapi-router-controller: controllers.person.PersonController
   /settings/{id}:
     get:
       summary: Find settings by ID
@@ -2599,7 +2599,7 @@ paths:
       - basic: []
       tags:
       - settings
-      x-openapi-router-controller: example.controllers.settings.SettingsController
+      x-openapi-router-controller: controllers.settings.SettingsController
     put:
       summary: Update existing settings
       operationId: update
@@ -2630,7 +2630,7 @@ paths:
       tags:
       - settings
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.settings.SettingsController
+      x-openapi-router-controller: controllers.settings.SettingsController
   /settings/{ids}:
     delete:
       summary: Delete one or more settings objects
@@ -2660,7 +2660,7 @@ paths:
       - basic: []
       tags:
       - settings
-      x-openapi-router-controller: example.controllers.settings.SettingsController
+      x-openapi-router-controller: controllers.settings.SettingsController
   /health:
     get:
       summary: Health Check
@@ -2685,7 +2685,7 @@ paths:
           description: Service unhealthy
       tags:
       - health
-      x-openapi-router-controller: example.controllers.health.HealthController
+      x-openapi-router-controller: controllers.health.HealthController
   /tz:
     get:
       summary: Find TZs by conditions
@@ -2767,7 +2767,7 @@ paths:
       tags:
       - tz
       x-codegen-request-body-name: conditions
-      x-openapi-router-controller: example.controllers.tz.TZController
+      x-openapi-router-controller: controllers.tz.TZController
     post:
       summary: Create a new tz
       operationId: create
@@ -2786,7 +2786,7 @@ paths:
       tags:
       - tz
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.tz.TZController
+      x-openapi-router-controller: controllers.tz.TZController
   /tz/{id}:
     get:
       summary: Find tz by ID
@@ -2818,7 +2818,7 @@ paths:
       - basic: []
       tags:
       - tz
-      x-openapi-router-controller: example.controllers.tz.TZController
+      x-openapi-router-controller: controllers.tz.TZController
     put:
       summary: Update an existing tz
       operationId: update
@@ -2849,7 +2849,7 @@ paths:
       tags:
       - tz
       x-codegen-request-body-name: body
-      x-openapi-router-controller: example.controllers.tz.TZController
+      x-openapi-router-controller: controllers.tz.TZController
   /tz/{ids}:
     delete:
       summary: Delete one or more TZs
@@ -2879,4 +2879,4 @@ paths:
       - basic: []
       tags:
       - tz
-      x-openapi-router-controller: example.controllers.tz.TZController
+      x-openapi-router-controller: controllers.tz.TZController

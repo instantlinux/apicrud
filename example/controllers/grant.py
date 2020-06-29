@@ -3,7 +3,8 @@
 created 27-may-2019 by richb@instantlinux.net
 """
 
-from example import config, models
+import config
+import models
 from apicrud.basic_crud import BasicCRUD
 from apicrud.access import AccessControl
 from apicrud.grants import Grants

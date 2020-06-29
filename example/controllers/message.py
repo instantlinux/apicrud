@@ -1,6 +1,7 @@
 from flask import g
 
-from example import config, models
+import config
+import models
 from apicrud.basic_crud import BasicCRUD
 from apicrud.access import AccessControl
 

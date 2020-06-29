@@ -19,7 +19,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import select, func
 import time
 
-from . import constants
+from .const import Constants
 from .session_manager import Mutex
 
 Base = declarative_base()
@@ -138,7 +138,7 @@ def _init_db(db_url=None, engine=None, connection_timeout=0,
 
 def _load_spatialite(dbapi_conn, connection_record):
     global spatialite_loaded
-    for lib in constants.LIB_MOD_SPATIALITE:
+    for lib in Constants.LIB_MOD_SPATIALITE:
         if os.path.exists(lib):
             dbapi_conn.enable_load_extension(True)
             dbapi_conn.load_extension(lib)

@@ -1,6 +1,6 @@
 from apicrud.basic_crud import BasicCRUD
-from example import config
-from example import models
+import config
+import models
 
 
 class CategoryController(BasicCRUD):

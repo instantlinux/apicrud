@@ -3,7 +3,8 @@ import logging
 
 from apicrud.access import AccessControl
 from apicrud.basic_crud import BasicCRUD
-from example import config, models
+import config
+import models
 from apicrud import singletons
 import apicrud.utils as utils
 

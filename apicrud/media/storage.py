@@ -20,7 +20,7 @@ from sqlalchemy.orm.exc import NoResultFound
 import uuid
 
 import apicrud.access as access
-import apicrud.constants as constants
+from apicrud.const import Constants
 import apicrud.grants as grants
 import apicrud.utils as utils
 
@@ -89,7 +89,7 @@ class StorageAPI(object):
         storage_path = ('%s/%s/%s' % (
             storage.prefix if storage.prefix else '', self.uid, id)).strip('/')
         suffix = '.' + ctype if ctype else ''
-        if ctype in constants.MIME_VIDEO_TYPES:
+        if ctype in Constants.MIME_VIDEO_TYPES:
             duration_max = grants.Grants(
                 self.models, db_session=self.db,
                 ttl=self.cache_ttl).get('video_duration_max')
@@ -212,7 +212,7 @@ class StorageAPI(object):
             fmt = picture.format_original
             sizes = [int(x) for x in album.sizes.split(',')
                      if not picture.height or int(x) <= picture.height]
-            if fmt in constants.MIME_VIDEO_TYPES:
+            if fmt in Constants.MIME_VIDEO_TYPES:
                 # TODO see line 249 of xiaolin's app.js example
                 logging.warning('resource=album action=get id=%s '
                                 'message=videos_nyi' % picture.id)
@@ -238,7 +238,7 @@ class StorageAPI(object):
                 path=picture.path,
                 size=picture.size,
                 thumbnail='%s.%d.%s' % (uri_path, thumbnail_height, fmt),
-                type='%s/%s' % ('video' if fmt in constants.MIME_VIDEO_TYPES
+                type='%s/%s' % ('video' if fmt in Constants.MIME_VIDEO_TYPES
                                 else 'image', fmt),
                 uid=picture.uid,
                 width=picture.width))
@@ -319,7 +319,7 @@ class StorageBackblaze(object):
 class StorageS3(object):
 
     def __init__(self, credential_ttl=3600, credentials=None, access_key=None,
-                 secret_key=None, region=constants.DEFAULT_AWS_REGION):
+                 secret_key=None, region=Constants.DEFAULT_AWS_REGION):
         self.credential_ttl = credential_ttl
         self.region = region
         if credentials:

@@ -17,9 +17,9 @@ from sqlalchemy import asc, desc
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import constants
 from .access import AccessControl
 from .account_settings import AccountSettings
+from .const import Constants
 from . import geocode, singletons, utils
 
 
@@ -237,7 +237,7 @@ class BasicCRUD(object):
         else:
             sortdir = asc
         query = g.db.query(self.model)
-        limit = int(kwargs.get('limit', constants.PER_PAGE_DEFAULT))
+        limit = int(kwargs.get('limit', Constants.PER_PAGE_DEFAULT))
         try:
             filter = json.loads(kwargs.get('filter', '{}'))
         except json.decoder.JSONDecodeError as ex:

@@ -5,7 +5,8 @@ Credential storage
 created 13-mar-2019 by richb@instantlinux.net
 """
 
-from example import config, models
+import config
+import models
 from apicrud.basic_crud import BasicCRUD
 
 

@@ -9,7 +9,10 @@ import connexion
 from datetime import datetime
 from flask import g
 
-from . import config, controllers, db_schema, models
+import config
+import controllers
+import db_schema
+import models
 from apicrud import database, utils
 from apicrud.service_registry import ServiceRegistry
 from apicrud.session_manager import SessionManager

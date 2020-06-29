@@ -17,9 +17,8 @@ import string
 import time
 
 from .access import AccessControl
+from .const import Constants, i18n
 from .messaging.confirmation import Confirmation
-from . import constants
-from .constants import i18n
 from .service_registry import ServiceRegistry
 
 
@@ -213,7 +212,7 @@ class SessionAuth(object):
         if not resource:
             resource = acc.primary_res
         current = set(acc.auth)
-        if force or ('%s-%s-%s' % (resource, id, constants.AUTH_INVITEE)
+        if force or ('%s-%s-%s' % (resource, id, Constants.AUTH_INVITEE)
                      not in current):
             # TODO handle privilege downgrade member/host->invitee
             current |= set(self.get_roles(acc.uid, member_model,

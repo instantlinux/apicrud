@@ -14,13 +14,13 @@ import redis
 import string
 import time
 
-from . import constants
 from .aes_encrypt import AESEncrypt
+from .const import Constants
 
 
 class SessionManager(object):
 
-    def __init__(self, config, ttl=constants.REDIS_TTL, redis_conn=None):
+    def __init__(self, config, ttl=Constants.REDIS_TTL, redis_conn=None):
         self.config = config
         self.connection = (
             redis_conn or redis.Redis(host=config.REDIS_HOST,
@@ -97,7 +97,7 @@ class Mutex:
     but ... no joy.
     """
     def __init__(self, lockname, redis_host=None, maxwait=20,
-                 ttl=constants.REDIS_TTL, redis_conn=None):
+                 ttl=Constants.REDIS_TTL, redis_conn=None):
         self.connection = (
             redis_conn or redis.Redis(host=redis_host, port=6379, db=0))
         self.ttl = ttl

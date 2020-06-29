@@ -18,8 +18,8 @@ import unittest
 
 from apicrud import database
 from apicrud.session_manager import SessionManager
-from example import config
-from example.main import application, setup_db
+import config
+from main import application, setup_db
 from models import Account, Category, Contact, Person
 
 global_fixture = {}

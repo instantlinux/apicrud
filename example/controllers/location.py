@@ -1,5 +1,6 @@
 from apicrud.basic_crud import BasicCRUD
-from example import config, models
+import config
+import models
 import apicrud.geocode as geocode
 
 fields = ('address', 'neighborhood', 'city', 'state', 'country')

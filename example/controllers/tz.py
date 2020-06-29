@@ -1,5 +1,6 @@
 from apicrud.basic_crud import BasicCRUD
-from example import config, models
+import config
+import models
 
 
 class TZController(BasicCRUD):

@@ -7,9 +7,9 @@ from flask import g, request
 import logging
 
 from apicrud.session_auth import SessionAuth
-from example import config
-from example import models
 from apicrud import singletons
+import config
+import models
 
 
 class AuthController(object):

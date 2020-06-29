@@ -17,9 +17,11 @@ import smtplib
 from sqlalchemy.orm.exc import NoResultFound
 import ssl
 
-from example import celeryconfig, config, models
-from example import i18n_textstrings as i18n
-from example.models import Account, Credential, Contact, Person, Profile
+import celeryconfig
+import config
+import i18n_textstrings as i18n
+import models
+from models import Contact, Person, Profile
 from apicrud.account_settings import AccountSettings
 from apicrud.database import get_session
 
@@ -56,7 +58,7 @@ def send(uid, recipient_ids, template, **kwargs):
         smtp.starttls(context=ssl_context)
         if settings.get.smtp_credential_id:
             try:
-                cred = db_session.query(Credential).filter_by(
+                cred = db_session.query(models.Credential).filter_by(
                     id=settings.get.smtp_credential_id).one()
                 smtp.login(cred.key, cred.secret)
             except Exception as ex:
@@ -154,7 +156,7 @@ def send_contact(frm=None, to=None, template=None, db_session=None, **kwargs):
             smtp.starttls(context=ssl_context)
             if settings.get.smtp_credential_id:
                 try:
-                    cred = db_session.query(Credential).filter_by(
+                    cred = db_session.query(models.Credential).filter_by(
                         id=settings.get.smtp_credential_id).one()
                     smtp.login(cred.key, cred.secret)
                 except Exception as ex:
@@ -229,7 +231,7 @@ def _sms_format(content, frm, to, **kwargs):
 def _get_settings(db_session, account_id=None):
     if account_id is None:
         try:
-            account_id = db_session.query(Account).filter_by(
+            account_id = db_session.query(models.Account).filter_by(
                 name='admin').one().id
         except NoResultFound:
             logging.warning('action=_get_settings message="Missing admin"')

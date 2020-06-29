@@ -5,8 +5,9 @@ from apicrud.basic_crud import BasicCRUD
 from apicrud.access import AccessControl
 from apicrud.grants import Grants
 from apicrud import singletons
-from example import config, models
-from example.models import List, ListMember
+import config
+import models
+from models import List, ListMember
 
 
 class ListController(BasicCRUD):

@@ -1,4 +1,4 @@
-"""constants.py
+"""const.py
 
 Constants for API library
 
@@ -7,14 +7,16 @@ Values that can be modified by a container restart belong in config.py
 created 31-mar-2019 by richb@instantlinux.net
 """
 
-AUTH_INVITEE = 'invitee'
-DEFAULT_AWS_REGION = 'us-east-2'
-LIB_MOD_SPATIALITE = ['/usr/lib/x86_64-linux-gnu/mod_spatialite.so',
-                      '/usr/lib/mod_spatialite.so.7']
-MIME_IMAGE_TYPES = ("gif", "heic", "jpeg", "png", "svg")
-MIME_VIDEO_TYPES = ("mp4", "mpeg")
-PER_PAGE_DEFAULT = 100
-REDIS_TTL = 3600
+
+class Constants:
+    AUTH_INVITEE = 'invitee'
+    DEFAULT_AWS_REGION = 'us-east-2'
+    LIB_MOD_SPATIALITE = ['/usr/lib/x86_64-linux-gnu/mod_spatialite.so',
+                          '/usr/lib/mod_spatialite.so.7']
+    MIME_IMAGE_TYPES = ("gif", "heic", "jpeg", "png", "svg")
+    MIME_VIDEO_TYPES = ("mp4", "mpeg")
+    PER_PAGE_DEFAULT = 100
+    REDIS_TTL = 3600
 
 
 class i18n:

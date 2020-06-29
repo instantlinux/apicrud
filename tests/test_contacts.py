@@ -18,7 +18,7 @@ class TestContacts(test_base.TestBase):
         self.authorize()
         self.adm_default_identity = 'example@instantlinux.net'
 
-    @mock.patch('example.messaging.send_contact.delay')
+    @mock.patch('messaging.send_contact.delay')
     def test_add_and_fetch_contact(self, mock_messaging):
         record = dict(
             carrier=None, label='home', type='email', privacy='invitee',
@@ -38,7 +38,7 @@ class TestContacts(test_base.TestBase):
         expected['id'] = id
         self.assertEqual(result, expected)
 
-    @mock.patch('example.messaging.send_contact.delay')
+    @mock.patch('messaging.send_contact.delay')
     def test_update_contact(self, mock_messaging):
         record = dict(
             label='work', type='email', info='testr@conclave.events',
@@ -66,7 +66,7 @@ class TestContacts(test_base.TestBase):
             mock.call(to=id, template='contact_add', token=mock.ANY,
                       type='email')])
 
-    @mock.patch('example.messaging.send_contact.delay')
+    @mock.patch('messaging.send_contact.delay')
     def test_confirm_contact(self, mock_messaging):
         record = dict(
             carrier=None, label='home', type='email', privacy='invitee',
@@ -113,7 +113,7 @@ class TestContacts(test_base.TestBase):
         self.assertEqual(result, expected)
 
     @pytest.mark.slow
-    @mock.patch('example.messaging.send_contact.delay')
+    @mock.patch('messaging.send_contact.delay')
     def test_add_too_many_contacts(self, mock_messaging):
         max_contacts = config.DEFAULT_GRANTS.get('contacts')
         account = dict(
@@ -187,7 +187,7 @@ class TestContacts(test_base.TestBase):
         self.assertEqual(response.status_code, 403, 'unexpected message=%s' %
                          response.get_json().get('message'))
 
-    @mock.patch('example.messaging.send_contact.delay')
+    @mock.patch('messaging.send_contact.delay')
     def test_update_contact_conflict_existing(self, mock_messaging):
         record = dict(
             label='work', type='email', info='conflict@conclave.events',
@@ -226,7 +226,7 @@ class TestContacts(test_base.TestBase):
         self.assertEqual(response.get_json().get('message'),
                          'invalid email address')
 
-    @mock.patch('example.messaging.send_contact.delay')
+    @mock.patch('messaging.send_contact.delay')
     def test_update_bad_email(self, mock_messaging):
         record = dict(
             label='work', type='email', info='testr2@conclave.events',

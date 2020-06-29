@@ -18,7 +18,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy_utils import EncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
-from example import config, constants
+import config
+import constants
 
 Base = declarative_base()
 aes_secret = config.DB_AES_SECRET
