@@ -1,8 +1,14 @@
 """account_settings.py
 
 Access class for account settings, with cache
+  Each account is associated with an entry in the Settings model; this
+  class provides access to these key-value pairs as read-only
+  attributes. Because these functions are called frequently, the db
+  entry is loaded into memory for a configurable expiration period
+  (config.REDIS_TTL).
 
 created 13-may-2019 by richb@instantlinux.net
+
 """
 
 from collections import namedtuple
@@ -16,6 +22,15 @@ SETTINGS = {}
 
 
 class AccountSettings(object):
+    """Account Settings - converts db record to object attributes.
+
+    Args:
+      account_id (str): ID in database of a user's account
+      config (obj): the config-file key-value object
+      models (obj): the models file object
+      db_session (obj): a session connected to datbase
+      uid (str): User ID
+    """
     def __init__(self, account_id, config, models, db_session=None, uid=None):
         """Cache per-account settings and convert to attributes"""
 
@@ -45,8 +60,7 @@ class AccountSettings(object):
             except NoResultFound:
                 category_id = account.settings.default_cat_id
             SETTINGS[account_id] = dict(
-                expires=utils.utcnow() + timedelta(
-                    seconds=config.REDIS_TTL),
+                expires=utils.utcnow() + timedelta(seconds=config.REDIS_TTL),
                 settings=dict(
                     record.as_dict(), **dict(
                         category_id=category_id,

@@ -1,5 +1,10 @@
-# Utilities
+"""utilities.py
 
+Utilities
+  Miscellaneous utility functions that don't fit elsewhere
+
+created 11-apr-2020 by richb@instantlinux.net
+"""
 import connexion
 from datetime import datetime
 from flask import g, jsonify
@@ -21,6 +26,11 @@ def gen_id(length=8, prefix='x-', chars=(
 
     First 15 bits are generated from Unix epoch to make them sortable
     by date (granularity 24 hours); rolls over after year 2107
+
+    Args:
+      length (int): length of generated portion after prefix
+      prefix (str): prefix to distinguish ID type
+      chars (str): set of characters to choose from for random portion
     """
     def _int2base(x, chars, base=64):
         return _int2base(x // base, chars, base).lstrip(chars[0]) + chars[
@@ -32,13 +42,16 @@ def gen_id(length=8, prefix='x-', chars=(
 
 
 def initialize_app(application, config, models):
-    """ Initialize the Flask app defined by openapi.yaml
+    """Initialize the Flask app defined by openapi.yaml
 
-    params:
-      application - a connexion object
-      config - a flask config object
-      models - the SQLalchemy models
-      init_func - any other function to call
+    Args:
+      application (obj): a connexion object
+      config (obj): a flask config object
+      models (obj): the SQLalchemy models
+      init_func (function): any other function to call
+
+    Returns:
+      obj: Flask app
     """
 
     logging.basicConfig(level=config.LOG_LEVEL,
@@ -60,29 +73,51 @@ def initialize_app(application, config, models):
 
 
 def render_status_400(error):
+    """Render function to provide message in dict as required for
+    react-admin to display text of message for 400 error codes
+
+    Args:
+      error (obj): the error object with name and description
+    """
+
     return jsonify(dict(
         message=error.description,
         error=dict(status=error.name, code=error.code))), error.code
 
 
 def render_problem(error):
+    """Render function to provide message in dict as required for
+    react-admin to display text of message for exception
+    connexion.ProblemException
+
+    Args:
+      error (obj): the error object with name and description
+    """
+
     return jsonify(dict(
         message=error.detail,
         error=dict(status=error.title, code=error.status))), error.status
 
 
 def req_duration():
+    """Report request duration as milliseconds """
+
     return '%.3f' % (utcnow().timestamp() -
                      g.request_start_time.timestamp())
 
 
 def utcnow():
-    """ for mocking: unittest.mock can't patch out datetime.utcnow directly """
+    """For mocking: unittest.mock can't patch out datetime.utcnow directly """
     return datetime.utcnow()
 
 
 def strip_tags(html):
-    """Convert html to plain-text by stripping tags"""
+    """Convert html to plain-text by stripping tags
+
+    Args:
+      html (str): an html document
+    """
+
     s = HtmlStripper()
     s.feed(html)
     return s.get_data()
@@ -96,7 +131,16 @@ class HtmlStripper(HTMLParser):
         self.fed = []
 
     def handle_data(self, d):
+        """ add a string to the html object
+
+        Args:
+          d (str): chunk of html
+        """
         self.fed.append(d)
 
     def get_data(self):
+        """ return the stripped html
+
+        Returns: str
+        """
         return ' '.join(self.fed)

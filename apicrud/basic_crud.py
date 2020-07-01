@@ -3,8 +3,15 @@
 Basic CRUD
   Base object for create/read/update/delete/find controller operations.
 
+  This class provides permission-based, paginated access to database
+  models behind your application's endpoints. Most endpoints need no
+  boilerplate code, and can inherit these functions directly. Some
+  endpoints only need a few lines of code before or after inheriting
+  these functions. You can always write your own custom function for
+  special-case endpoints.
 
 created 31-mar-2019 by richb@instantlinux.net
+
 """
 
 import base64
@@ -24,6 +31,14 @@ from . import geocode, singletons, utils
 
 
 class BasicCRUD(object):
+    """Controller base class
+
+    Args:
+      config (obj): the config-file key-value object
+      models (obj): the models file object
+      resource (str): a resource name (endpoint prefix)
+      model (obj): the model corresponding to the resource
+    """
 
     def __init__(self, config=None, models=None, resource=None, model=None):
         self.config = config
@@ -35,6 +50,21 @@ class BasicCRUD(object):
 
     @staticmethod
     def create(body, id_prefix='x-'):
+        """Controller for POST endpoints. This method assigns a new
+        object ID, sets the _created_ timestamp, evaluates user's
+        permissions, adds a default category_id if the model has
+        this attribute, and inserts a row to the back-end database.
+
+        Args:
+          body (dict): resource fields as defined by openapi.yaml schema
+          id_prefix (str): generated objects will be assigned a random 10-
+            to 16-character ID; you can set a unique prefix if desired
+        Returns:
+          tuple:
+            first element is a dict with the id, second element is
+            response code (201 on success)
+        """
+
         self = singletons.controller[request.url_rule.rule.split('/')[3]]
         acc = AccessControl(models=self.models, model=self.model)
         logmsg = dict(action='create', account_id=acc.account_id,
@@ -94,6 +124,19 @@ class BasicCRUD(object):
 
     @staticmethod
     def get(id):
+        """Controller for GET endpoints. This method evaluates
+        privacy settings against the user's permissions, looks up
+        category, owner and geocode values, and fetches the object
+        from back-end database.
+
+        Args:
+          id (str): ID of the desired resource
+        Returns:
+          tuple:
+            first element is a dict with the object or error
+            message, second element is response code (200 on success)
+        """
+
         self = singletons.controller[request.url_rule.rule.split('/')[3]]
         acc = AccessControl(models=self.models, model=self.model)
         try:
@@ -129,6 +172,18 @@ class BasicCRUD(object):
 
     @staticmethod
     def update(id, body, access='u'):
+        """Controller for PUT endpoints. This method looks for an existing
+        record, evaluates user's permissions, and updates the row in
+        the back-end database.
+
+        Args:
+          body (dict): fields to be updated
+          access (str): access-level required for RBAC evaluation
+        Returns:
+          dict:
+            first element is a dict with the id, second element is
+            response code (200 on success)
+        """
         if 'id' in body and body['id'] != id:
             return dict(message='id is a read-only property',
                         title='Bad Request'), 405
@@ -164,6 +219,19 @@ class BasicCRUD(object):
 
     @staticmethod
     def delete(ids, force=False):
+        """Controller for DELETE endpoints. This method looks for existing
+        records, evaluates user's permissions, and updates or removes
+        rows in the back-end database.
+
+        Args:
+          ids (list of str): record IDs to be flagged for removal
+          force (bool): flag for removal if false; remove data if true
+        Returns:
+          tuple:
+            first element is a dict with the id, second element is
+            response code (200 on success)
+        """
+
         # TODO - update auth if model could affect any session's auth
         self = singletons.controller[request.url_rule.rule.split('/')[3]]
         logmsg = dict(action='delete', resource=self.resource,
@@ -201,20 +269,20 @@ class BasicCRUD(object):
 
     @staticmethod
     def find(**kwargs):
-        """query parameters are passed from connexion by name, in
-        a dictionary that also includes user and token info
+        """Find records which match query parameters passed from
+        connexion by name, in a dictionary that also includes user
+        and token info
 
-        params:
-        cursor_next - pagination token to fetch subsequent records
-        filter (dict) - field/value pairs to query (simple queries
-            only, with string or list matching; or * for any)
-        limit (int) - max records to fetch
-        offset (int) - old-style pagination starting offset
-        sort (str) - <field>[:{asc|desc}]
-        status (str) - value is added to filter
-
-        returns:
-        dict - items (list), count(int), cursor_next (str)
+        Args:
+          cursor_next (str): pagination token to fetch subsequent records
+          filter (dict): field/value pairs to query (simple queries
+              only, with string or list matching; or * for any)
+          limit (int): max records to fetch
+          offset (int): old-style pagination starting offset
+          sort (str): <field>[:{asc|desc}]
+          status (str): value is added to filter
+        Returns:
+          dict: items (list), count(int), cursor_next (str)
         """
 
         self = singletons.controller[request.url_rule.rule.split('/')[3]]
@@ -331,4 +399,12 @@ class BasicCRUD(object):
         return base64.b64decode(bytes(text, 'utf8')).decode('ascii')
 
     def db_get(self, id):
+        """Activate a SQLalchemy query object for the specified ID in
+        the current model
+
+        Args:
+          id (str): object ID
+        Returns:
+          obj: query object
+        """
         return g.db.query(self.model).filter_by(id=id)

@@ -1,7 +1,6 @@
 """grants.py
 
 Grants
-
   An account's usage limits are specified here in the grants table;
   the free-service tier is defined and passed in via load_defaults().
   Records in grants table are owned by administrator-level user.
@@ -21,6 +20,15 @@ GRANTS = {}
 
 
 class Grants(object):
+    """
+    Account usage limits
+
+    Args:
+      models (obj): the models file object
+      db_session (obj): existing db session
+      ttl (int): how long to cache a grant in memory
+    """
+
     def __init__(self, models, db_session=None, ttl=None):
         self.ttl = ttl
         self.models = models
@@ -34,6 +42,12 @@ class Grants(object):
         """Get the cached value of a named grant, if it hasn't expired
         Note that if any grant assigned to a uid expires before
         others, the earliest expiration applies to all the uid's grants
+
+        Args:
+          name (str): name of a grant, as defined in config.py
+          uid (str): user ID
+        Returns:
+          value: granted limit
         """
         if name not in GRANTS['defaults']:
             raise AttributeError('Unknown grant %s' % name)
@@ -53,9 +67,17 @@ class Grants(object):
         return GRANTS['defaults'][name]
 
     def uncache(self, uid):
+        """Remove grants from cache, any time a user's status changes
+
+        Args:
+          uid (str): user ID
+        """
         GRANTS.pop(uid, None)
 
     def load_defaults(self, defaults):
-        """Load default values from a dict of keyword: value pairs"""
+        """Load default values from a dict of keyword: value pairs
 
+        Args:
+          defaults (dict): new defaults
+        """
         GRANTS['defaults'] = defaults

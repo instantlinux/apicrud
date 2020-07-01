@@ -3,16 +3,17 @@
 Access control
 
   Definitions:
-    principal: a user or role
-    membership: parent resource type for privacy sharing
-    model: database model name (e.g. Person)
-    resource: resource type (e.g. person)
-    rbac: role-based access control (defined in rbac.yaml)
-    role: a group name (e.g. admin or list-<id>-<level>)
-    privacy: sharing options as defined in rbac.yaml (e.g.
-      secret [default], public, invitee, member, manager)
-    actions: crudlghij (create, read, update, del, list, guest/member,
-      host/manager, invitee, join)
+
+  - principal: a user or role
+  - membership: parent resource type for privacy sharing
+  - model: database model name (e.g. Person)
+  - resource: resource type (e.g. person)
+  - rbac: role-based access control (defined in rbac.yaml)
+  - role: a group name (e.g. admin or list-<id>-<level>)
+  - privacy: sharing options as defined in rbac.yaml (e.g. \
+    secret [default], public, invitee, member, manager)
+  - actions: crudlghij (create, read, update, del, list, guest/member, \
+    host/manager, invitee, join)
 
   In rbac.yaml, define the RBAC policies for each principal/resource
   combination. That file will be parsed into a singleton variable upon initial
@@ -22,11 +23,13 @@ Access control
   ACL for read-only access by members of the object's group.
 
   Group names currently used are:
-    admin
-    user
-    pending
-    person
-    <resource>-<id>-<privacy>
+
+  - admin
+  - user
+  - pending
+  - person
+  - <resource>-<id>-<privacy>
+
   These are defined in session_auth.py's account_login() method.
 
 created 20-may-2019 by richb@instantlinux.net
@@ -47,6 +50,14 @@ PRIV_RES = {}
 
 
 class AccessControl(object):
+    """Role-based access control
+
+    Args:
+      policy_file (str): name of the yaml definitions file
+      models (obj): the models file object
+      model (obj): a model to be validated for permissions
+    """
+
     def __init__(self, policy_file=None, models=None, model=None):
         if POLICIES and request:
             self.policies = POLICIES['policies']
@@ -81,6 +92,9 @@ class AccessControl(object):
     def load_rbac(self, filename):
         """ Read RBAC default policies from rbac.yaml, process any
         string substitutions, and convert * for re.match()
+
+        Args:
+          filename (str): filename containing RBAC definitions
         """
 
         with open(filename, 'r') as f:
@@ -103,14 +117,19 @@ class AccessControl(object):
 
     def with_permission(self, access, query=None, new_uid=None,
                         membership=None, id=None):
-        """Pass in at least one of the query/uid/eid params
+        """Evaluate permission to access an object identified by
+        an open query or new uid. Pass in at least one of the
+        query/uid/eid params
 
-        params:
-          access (str) - one of lrwcd (list, read, write, create, delete)
-          query (obj) - a resource query by id in SQLalchemy
-          new_uid (str) - user id of a new record
-          membership - resource type which defines membership privacy
-          id (str) - resource ID
+        Args:
+          access (str): one of lrwcd (list, read, write, create, delete)
+          query (obj): a resource query by id in SQLalchemy
+          new_uid (str): user id of a new record
+          membership (str): resource type which defines membership privacy
+          id (str): resource ID
+
+        Returns:
+          bool: True if access allowed
         """
         rbac = self.rbac_permissions(query=query, owner_uid=new_uid,
                                      membership=membership, id=id)
@@ -128,9 +147,12 @@ class AccessControl(object):
     def with_filter(self, query, access='r'):
         """Apply RBAC and privacy to a query
 
-        params:
-          query (obj) - a resource query in SQLalchemy
-          access (str) - one of lrwcd (list, read, write, create, delete)
+        Args:
+          query (obj): a resource query in SQLalchemy
+          access (str): one of lrwcd (list, read, write, create, delete)
+
+        Returns:
+          obj: updated SQLalchemy query with filter applied
 
         TODO restrictions on contact-read by list-id
         """
@@ -169,12 +191,14 @@ class AccessControl(object):
         """Evaluate an access request for self.auth roles of
         self.uid in self.resource against defined policies
 
-        params:
-          query - an existing record (takes precedence over owner_uid)
-          owner_uid - owner-uid of a record
-          membership - resource type which defines membership privacy
-          id - the resource ID if membership is set
-        returns: set of actions available to principal
+        Args:
+          query (obj):  an existing record (takes precedence over owner_uid)
+          owner_uid (str): owner-uid of a record
+          membership (str): resource type which defines membership privacy
+          id (str): the resource ID if membership is set
+
+        Returns:
+          set: actions available to principal
         """
 
         if query:
@@ -252,6 +276,10 @@ class AccessControl(object):
     def _parse_id(role, resource):
         """Given role <res>-<id>-<level>
         Returns id if resource matches, otherwise None
+
+        Args:
+          role (str): assigned role
+          resource (str): resource type
         """
         x = role.split('-')
         if x and x[0] == resource:

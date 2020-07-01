@@ -44,6 +44,16 @@ class AccountController(BasicCRUD):
 
     @staticmethod
     def change_password(uid, body):
+        """Change password
+
+        Args:
+          body (dict):
+            Fields new_password, verify_password are required;
+            either the old_password or a reset_token can be used
+            to authorized the request.
+        Returns:
+          tuple: dict with account_id/uid/username, http response
+        """
         if (not body.get('new_password') or
                 body.get('new_password') != body.get('verify_password')):
             return dict(message='passwords do not match'), 405
@@ -56,6 +66,9 @@ class AccountController(BasicCRUD):
     def get_password(uid):
         """Dummy get_password function is needed for react-admin's
         edit workflow (a get must precede put)
+
+        Args:
+          uid (str): User ID
         """
         self = singletons.controller.get('account')
         try:
@@ -67,6 +80,20 @@ class AccountController(BasicCRUD):
 
     @staticmethod
     def register(body):
+        """Register a new account
+
+        Args:
+          body (dict):
+            If forgot_password is set, send an email with reset token.
+            Otherwise examine username, identity (email address) and
+            name fields. Reject the new account if a duplicate identity
+            or username already exists. Otherwise add the new account
+            with Person and primary Contact objects. Finally send
+            a confirmation email to the primary contact address.
+        Returns:
+          tuple: id of account created, and http status
+        """
+
         self = singletons.controller.get('account')
         if body.get('forgot_password'):
             return SessionAuth(

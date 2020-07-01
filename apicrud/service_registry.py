@@ -1,10 +1,11 @@
 """service_registry.py
 
-Services or the UI discover one another through this service registry.
-Each microservice instance submits its identity and capabilities to
-this central registry, implemented as expiring redis keys which are
-updated at a fixed frequency. Encryption provides modest protection
-against injection attacks.
+Service Registry
+  Services or the UI discover one another through this service
+  registry.  Each microservice instance submits its identity and
+  capabilities to this central registry, implemented as expiring redis
+  keys which are updated at a fixed frequency. Encryption provides
+  modest protection against injection attacks.
 
 created 8-may-2020 by richb@instantlinux.net
 
@@ -25,6 +26,15 @@ params = {}
 
 
 class ServiceRegistry(object):
+    """
+    Service registry
+
+    Args:
+      config (obj): the config-file key-value object
+      db_session (obj): existing db session
+      ttl (int): how long to cache instance's registration
+      redis_conn (obj): connection to redis
+    """
 
     def __init__(self, config, ttl=None, redis_conn=None):
         global params, refresh_thread
@@ -44,6 +54,15 @@ class ServiceRegistry(object):
 
     def register(self, resource_endpoints, service_name=None,
                  instance_id=socket.gethostname(), tcp_port=None):
+        """register an instance serving a list of endpoints
+
+        Args:
+          resource_endpoints (list of str): controller endpoints served
+          service_name (str): microservice name
+          instance_id (str): unique ID of instance
+          tcp_port (int): port number of service
+        """
+
         global service_data
         try:
             ipv4 = socket.gethostbyname(instance_id)
@@ -63,6 +82,11 @@ class ServiceRegistry(object):
 
     @staticmethod
     def update():
+        """background function to update registration at the defined
+        interval from local memory cache, until the instance
+        terminates.
+        """
+
         key = 'reg:%s:%s' % (service_data['name'], service_data['id'])
         try:
             params['connection'].set(key, params['aes'].encrypt(json.dumps(
@@ -76,7 +100,10 @@ class ServiceRegistry(object):
     def find(self, service_name=None):
         """ Finds one or all services
 
-        returns:
+        Args:
+          service_name (str): a service, or None for all
+
+        Returns:
           dict - instances (list of registered services)
                  url_map (public url for each top-level resource)
         """

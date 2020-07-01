@@ -8,14 +8,21 @@ from flask import g
 
 def healthcheck(app_name='api', service_name='main', tests=None, model=None,
                 releaseId=None, build_date=None, version=None):
-    """Returns a health check report, with optional tests, in
-    format recommended by Nadareishvili in RFC draft
+    """Support for a standardized healthcheck endpoint - returns a
+    health check report, with optional tests, in format recommended by
+    Nadareishvili in RFC draft
     https://tools.ietf.org/id/draft-inadarei-api-health-check-04.html
 
-    params:
-      service_name - microservice name for serviceId
-      tests - optional tests to run
-      model - schema model (usually AlembicVersion)
+    Args:
+      app_name (str): the application name for description
+      service_name (str): microservice name for serviceId
+      tests (list): optional tests to run
+      model (obj): schema model (usually AlembicVersion)
+      releaseId (str): a release ID string
+      build_date (str): build timestamp
+      version (str): a version string
+    Returns:
+      tuple: first element is pass or fail, second is response code
     """
 
     status = 200

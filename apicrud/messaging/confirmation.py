@@ -1,6 +1,7 @@
 """confirmation.py
 
-Handle the request and confirm actions for a contact.
+Confirmation
+  Handle the request and confirm actions for a contact.
 
 created 4-apr-2020 by richb@instantlinux.net
 """
@@ -16,6 +17,12 @@ from ..const import i18n
 
 
 class Confirmation:
+    """Functions for confirming ownership of online email/contact info
+
+    Args:
+      config (obj): the config-file key-value object
+      models (obj): the models file object
+    """
 
     def __init__(self, config, models):
         self.models = models
@@ -27,6 +34,17 @@ class Confirmation:
                 func_send=None):
         """Generate a confirmation token valid for a given period,
         and send it to the contact identified by id
+
+        Args:
+          id (str): record ID in contacts table of database
+          ttl (int): how many seconds before token expires
+          message (str): key in i18n dict for contact-add message
+          func_send (function): name of function for sending message
+
+        Returns:
+          tuple:
+            first item is dict with token and contact-ID, second is
+            the http response code
         """
 
         ttl = self.token_timeout if not ttl else ttl
@@ -52,6 +70,14 @@ class Confirmation:
 
     def confirm(self, token):
         """Confirm a contact if token is still valid
+
+        Args:
+          token (str): the token generated previously
+
+        Returns:
+          tuple:
+            first item is dict with fields as defined in SessionManager.create,
+            second item is the http response code
         """
 
         serializer = URLSafeTimedSerializer(self.token_secret)
@@ -78,9 +104,7 @@ class Confirmation:
             dict(referrer_id=None))
         g.db.commit()
 
-        """
-        Create a login session with permissions to modify a Person/Contact
-        """
+        # Create a login session with permissions to modify a Person/Contact
         logging.info('action=confirm type=%s info=%s' %
                      (contact.type, info))
         return dict(g.session.create(

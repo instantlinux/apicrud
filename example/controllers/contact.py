@@ -28,6 +28,9 @@ class ContactController(BasicCRUD):
     @staticmethod
     def create(body):
         """after creating record, send confirmation message
+
+        Args:
+          body (dict): as defined in openapi.yaml schema
         """
         logmsg = dict(action='create', resource='contact',
                       uid=body.get('uid'))
@@ -68,9 +71,13 @@ class ContactController(BasicCRUD):
     @staticmethod
     def update(id, body):
         """special cases for contacts:
+
         - validate sms carrier
         - keep person identity in sync with primary contact
         - after updating record, send confirmation message
+
+        Args:
+          body (dict): as defined in openapi.yaml
         """
 
         logmsg = dict(action='update', id=id, info=body.get('info'))
@@ -123,11 +130,21 @@ class ContactController(BasicCRUD):
 
     @staticmethod
     def confirmation_get(id):
+        """Send a confirmation message via email (or as specified)
+
+        Args:
+          id (str): id of contact model
+        """
         return Confirmation(config, models).request(
             id, func_send=send_contact.delay)
 
     @staticmethod
     def confirm(token):
+        """Record a contact as fully confirmed
+
+        Args:
+          token (str): the token that was sent in confirmation message
+        """
         # TODO parameterize this so new account gets pending role and
         # existing account gets person
         return Confirmation(config, models).confirm(token)

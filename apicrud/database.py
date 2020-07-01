@@ -29,6 +29,17 @@ spatialite_loaded = False
 
 
 def get_session(scopefunc=None, scoped=True, db_url=None, engine=None):
+    """open a db session scoped to flask context or celery thread
+
+    Args:
+      scopefunc (function): function which returns a unique thread ID
+      scoped (bool): whether to use scoped session management
+      db_url (str): URL of database
+      engine (obj): override engine object (for unit tests)
+    Returns:
+      obj: session
+    """
+
     global db_engine
     if not engine:
         # This is where init_db is invoked under celery
@@ -50,6 +61,21 @@ def get_session(scopefunc=None, scoped=True, db_url=None, engine=None):
 def initialize_db(models, db_url=None, engine=None, redis_conn=None,
                   redis_host=None, migrate=False, geo_support=False,
                   connection_timeout=0, schema_update=None, schema_maxtime=60):
+    """initialize database connectivity
+
+    Args:
+      models (obj): the models file object
+      db_url (str): URL of database
+      engine (obj): override engine object (for unit tests)
+      redis_conn (obj): redis connection object override (for unit tests)
+      redis_host (str): IP or hostname of redis service
+      migrate (bool): whether to run alembic migrations
+      geo_support (bool): whether to use GIS data types in db
+      connection_timeout (int): how long to wait for DB connection
+      schema_update (function): name of function to run for schema update
+      schema_maxtime (int): how long to wait for migration
+    """
+
     _init_db(db_url=db_url, engine=engine, geo_support=geo_support,
              connection_timeout=connection_timeout)
     if migrate:
@@ -64,6 +90,18 @@ def initialize_db(models, db_url=None, engine=None, redis_conn=None,
 
 def alembic_migrate(models, version, script_location, migrate=False,
                     db_session=None, schema_maxtime=0, seed_func=None):
+    """run schema migrations
+
+    Args:
+      models (obj): the models file object
+      version (str): schema version expected after migration
+      script_location (str): relative path name of alembic's env.py
+      db_session (obj): existing db session
+      migrate (bool): whether to run alembic migrations
+      schema_maxtime (int): how long to wait for migration
+      seed_func (function): function to seed initial records in blank db
+    """
+
     cfg = alembic.config.Config()
     cfg.set_main_option('script_location', script_location)
     script = alembic.script.ScriptDirectory.from_config(cfg)

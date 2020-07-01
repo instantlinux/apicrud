@@ -5,6 +5,7 @@
 .coverage
 .env
 build
+_build
 coverage.xml
 dist
 env-config.js
@@ -12,4 +13,5 @@ htmlcov
 node_modules
 python_env
 results.xml
+stubs
 tmp

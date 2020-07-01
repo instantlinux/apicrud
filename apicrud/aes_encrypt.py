@@ -15,15 +15,34 @@ BLOCK_SIZE = 16
 
 
 class AESEncrypt(object):
+    """AES encryption for strings
+
+    Args:
+      secret (str): passphrase (suggest at least 16 characters)
+    """
     def __init__(self, secret):
         self.private_key = hashlib.sha256(secret.encode('utf-8')).digest()
 
     def encrypt(self, raw):
+        """encrypt a string
+
+        Args:
+          raw (str): object to be encrypted
+        Returns:
+          bytes: encrypted object
+        """
         iv = get_random_bytes(AES.block_size)
         cipher = AES.new(self.private_key, AES.MODE_CBC, iv)
         return base64.b64encode(iv + cipher.encrypt(self._pad(raw).encode()))
 
     def decrypt(self, enc):
+        """decrypt an object
+
+        Args:
+          enc (bytes): encrypted object
+        Returns:
+          str: decrypted string
+        """
         enc = base64.b64decode(enc)
         iv = enc[:16]
         cipher = AES.new(self.private_key, AES.MODE_CBC, iv)

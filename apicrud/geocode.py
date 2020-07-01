@@ -17,6 +17,15 @@ def lookup(address=None, neighborhood=None, city=None, state=None,
     """Geo-code an address and get its neighbhorhood name
     To make this compatible with any database, coordinates are stored
     as integers with 7-digit decimal precision to fit in 32 bits
+
+    Args:
+      address (str): street address
+      neighborhood (str): neighborhood name
+      city (str): city
+      state (str): state
+      country (str): 2-letter country abbreviation
+    Returns:
+      tuple: lat, long, neighborhood
     """
 
     location = '%s,%s,%s' % (city, state, country)
@@ -46,7 +55,14 @@ def lookup(address=None, neighborhood=None, city=None, state=None,
 def with_privacy(record, access):
     """Convert a database record's geo values for API response
     Input is a value from model as_dict.  Evaluates uid,
-    geolat, geolong, address fields.
+    geolat, geolong, address fields. If the record is private,
+    last 4 digits are rounded off.
+
+    Args:
+      record (dict): dict of key/value pairs from database
+      access (str): access required for full location disclosure
+    Returns:
+      dict: record geolat/geolong values removed and geo tuple added
     """
 
     if access == 'r' or record['uid'] == AccessControl().uid:

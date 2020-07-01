@@ -1,6 +1,11 @@
 """storage.py
 
 Storage access
+  Files, photos and videos are stored as objects in a cloud vendor's
+  storage service (Amazon S3 or equivalent). The backend server here
+  acts as a broker for authenticating uploads and storing/retrieving
+  metadata descriptors for each object. Metadata is stored in a
+  redis cache.
 
 created 25-jan-2020 by richb@instantlinux.net
 """
@@ -26,6 +31,20 @@ import apicrud.utils as utils
 
 
 class StorageAPI(object):
+    """Storage API
+
+    Args:
+      credential_ttl (int): how long until temp credential expires
+      redis_conn (obj):
+      config (obj): the config-file key-value object
+      redis_conn (obj): connection to redis
+      redis_host (str): IP or host of redis if no existing connection
+      redis_port (int): TCP port number of redis
+      cache_ttl (int): how long to cache a grant from the database
+      uid (str): User ID
+      models (obj): the models file object
+      db_session (obj): existing db session
+    """
 
     def __init__(self, credential_ttl=None, redis_conn=None, redis_host=None,
                  redis_port=6379, cache_ttl=1200, uid=None, models=None,
@@ -39,6 +58,15 @@ class StorageAPI(object):
         self.db = db_session or g.db
 
     def get_upload_url(self, body):
+        """Get a new pre-authorized URL from the storage vendor which
+        allows the end user to upload one object to storage
+
+        Args:
+          body (dict):
+            storage_id key provides ID in storage model; other keys provide
+            metadata about the object to be uploaded, which will be stored
+            in the new object's entry in database upon upload completion
+        """
         storage_id = body.get('storage_id')
         try:
             storage = self.db.query(self.models.Storage).filter_by(
@@ -140,9 +168,12 @@ class StorageAPI(object):
                     file_id=id), status
 
     def get_file_meta(self, file_id):
-        """
-        returns:
-        dict with fid, uid, sid, pid, path, name
+        """Retrieve metadata from redis cache
+
+        Args:
+          file_id (str): ID in file model
+        Returns:
+          dict: fid, uid, sid, pid, path, name
         """
         key = 'fid:%s:%s' % (self.uid, file_id[-8:])
         try:
@@ -156,6 +187,12 @@ class StorageAPI(object):
         return meta
 
     def update_file_meta(self, file_id, meta):
+        """Update metadata in redis cache
+
+        Args:
+          file_id (str): ID in file model
+          meta (dict): keys to update
+        """
         key = 'fid:%s:%s' % (self.uid, file_id[-8:])
         try:
             self.redis_conn.set(key, json.dumps(meta), ex=self.cache_ttl,
@@ -165,6 +202,12 @@ class StorageAPI(object):
                          (self.uid, str(ex)))
 
     def del_file_meta(self, file_id, meta):
+        """Remove a metadata item from cache
+
+        Args:
+          file_id (str): ID in file model
+          meta (dict): keys to update
+        """
         key = 'fid:%s:%s' % (self.uid, file_id[-8:])
         try:
             self.redis_conn.delete(key)
@@ -173,12 +216,14 @@ class StorageAPI(object):
                          (self.uid, str(ex)))
 
     def upload_complete(self, file_id, status, func_worker):
-        """ Finalize upload - pass to the worker
+        """Finalize upload - pass to the worker
 
-        params:
-          file_id - ID of file meta in redis
-          status - completion status from frontend ('done' if OK)
-          func_worker - callback function for passing to celery worker
+        Args:
+          file_id (str): ID of file meta in redis
+          status (str): completion status from frontend ('done' if OK)
+          func_worker (function): callback for passing to celery worker
+        Returns:
+          tuple: dict with file ID and message, and http status
         """
 
         meta = self.get_file_meta(file_id)
@@ -197,6 +242,12 @@ class StorageAPI(object):
     def fetch_album_meta(self, album_id, thumbnail_height):
         """Retrieve metadata of a media album in format suitable
         for react-image-gallery
+
+        Args:
+          album_id: ID in album model
+          thumbnail_height (int): which scaled image to choose
+        Returns:
+          dict: a set of image descriptors suitable for display
         """
 
         try:
@@ -256,6 +307,12 @@ class StorageAPI(object):
         return results
 
     def get_object(self, storage_id, storage_key):
+        """Get object from bucket
+
+        Args:
+          storage_id (str): ID in storage model
+          storage_key (str): pathname within storage bucket
+        """
         try:
             storage = self.db.query(self.models.Storage).filter_by(
                 id=storage_id, status='active').one()
@@ -267,6 +324,14 @@ class StorageAPI(object):
 
     def put_object(self, storage_id, storage_key, content,
                    content_type='image/jpeg'):
+        """Send a file to the storage bucket
+
+        Args:
+          storage_id (str): ID in storage model
+          storage_key (str): pathname within storage bucket
+          content (bytes): file content
+          content_type (str): mime type
+        """
         try:
             storage = self.db.query(self.models.Storage).filter_by(
                 id=storage_id, status='active').one()
@@ -278,6 +343,12 @@ class StorageAPI(object):
                                  content_type=content_type)
 
     def del_object(self, storage_id, storage_key):
+        """Remove a file from a storage bucket
+
+        Args:
+          storage_id (str): ID in storage model
+          storage_key (str): pathname within storage bucket
+        """
         try:
             storage = self.db.query(self.models.Storage).filter_by(
                 id=storage_id, status='active').one()
@@ -289,7 +360,13 @@ class StorageAPI(object):
 
 
 class StorageBackblaze(object):
+    """Vendor-specific storage interface: Backblaze B2.
+    Not yet implemented
 
+    Args:
+      model (obj): a storage model
+      db_session (obj): existing db session
+    """
     def __init__(self, model, db_session=None):
         self.api = B2Api(InMemoryAccountInfo())
         self.db = db_session
@@ -297,6 +374,15 @@ class StorageBackblaze(object):
 
     def get_upload_url(self, storage_id, storage_key,
                        content_type='image/jpeg'):
+        """Get a presigned authorization URL for upload
+
+        Args:
+          storage_id (str): ID of storage model object
+          storage_key (str): pathname of new object to store
+          content_type (str): mime type
+        Returns:
+          tuple: dict with upload URL, http status
+        """
         try:
             storage = self.db.query(self.model).filter_by(
                 id=storage_id, status='active').one()
@@ -317,7 +403,15 @@ class StorageBackblaze(object):
 
 
 class StorageS3(object):
+    """Vendor-specific storage interface: Amazon S3
 
+    Args:
+      credential_ttl (int): how long until temp credential expires
+      credentials (obj): API key and secret
+      access_key (str): API key (if credentials object not specified)
+      secret_key (str): API secret (if credentials object not specified)
+      region (str): data center region specification
+    """
     def __init__(self, credential_ttl=3600, credentials=None, access_key=None,
                  secret_key=None, region=Constants.DEFAULT_AWS_REGION):
         self.credential_ttl = credential_ttl
@@ -337,6 +431,15 @@ class StorageS3(object):
 
     def get_upload_url(self, bucket, storage_key,
                        content_type='image/jpeg'):
+        """Get a presigned authorization URL for upload
+
+        Args:
+          bucket (str): name of bucket
+          storage_key (str): pathname of new object to store
+          content_type (str): mime type
+        Returns:
+          tuple: dict with uploadUrl, http status
+        """
         try:
             result = self.api.generate_presigned_post(
                 bucket, storage_key, ExpiresIn=self.credential_ttl)
@@ -346,15 +449,29 @@ class StorageS3(object):
         return dict(fields=result['fields'], uploadUrl=result['url']), 201
 
     def get_object(self, bucket, storage_key):
-        """Fetch the object into a byte array"""
+        """Fetch the object into a byte array
 
+        Args:
+          bucket (str): name of bucket
+          storage_key (str): pathname of new object to store
+        Returns:
+          bytes
+        """
         return self.api.get_object(Bucket=bucket,
                                    Key=storage_key)['Body'].read()
 
     def put_object(self, bucket, storage_key, content,
                    content_type='image/jpeg'):
-        """Store a byte-array object"""
+        """Store a byte-array object
 
+        Args:
+          bucket (str): name of bucket
+          storage_key (str): pathname of new object to store
+          content (bytes): object
+          content_type (str): mime type
+        Returns:
+          tuple: vendor results
+        """
         logging.debug(dict(action='put', bucket=bucket,
                            storage_key=storage_key, content_type=content_type))
         return self.api.put_object(
@@ -362,8 +479,14 @@ class StorageS3(object):
             ContentType=content_type)
 
     def del_object(self, bucket, storage_key):
-        """Delete an object"""
+        """Delete an object
 
+        Args:
+          bucket (str): name of bucket
+          storage_key (str): pathname of new object to store
+        Returns:
+          tuple: vendor results
+        """
         logging.debug(dict(action='del', bucket=bucket,
                            storage_key=storage_key))
         return self.api.delete_object(Bucket=bucket, Key=storage_key)

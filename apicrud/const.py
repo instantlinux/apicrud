@@ -1,14 +1,14 @@
 """const.py
 
 Constants for API library
-
-Values that can be modified by a container restart belong in config.py
+  Values that can be modified by a container restart belong in config.py
 
 created 31-mar-2019 by richb@instantlinux.net
 """
 
 
 class Constants:
+    """Constants for apicrud methods"""
     AUTH_INVITEE = 'invitee'
     DEFAULT_AWS_REGION = 'us-east-2'
     LIB_MOD_SPATIALITE = ['/usr/lib/x86_64-linux-gnu/mod_spatialite.so',
@@ -20,9 +20,12 @@ class Constants:
 
 
 class i18n:
-    # These are keys in a user-provided dict; see the
-    # example/i18n_textstrings.py for how to assign string
-    # templates for messaging
+    """
+    These are keys in a user-provided dict; see the
+    example/i18n_textstrings.py for how to assign string
+    templates for messaging.
+    """
+
     # TODO - update this doc when messaging code is moved
     # into this library
     CONTACT_ADDED_REQUEST = 'contact_add'

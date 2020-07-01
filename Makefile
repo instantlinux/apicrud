@@ -19,6 +19,7 @@ include example/Makefile.sops
 
 VENV=python_env
 VDIR=$(PWD)/$(VENV)
+VER_PY=$(shell python3 -V |egrep -o '[1-9]+\.[0-9]+')
 
 analysis: flake8
 package: dist/apicrud-$(VERSION).tar.gz
@@ -42,16 +43,16 @@ flake8: test_requirements
 	. $(VDIR)/bin/activate && flake8 apicrud example tests \
 	 --per-file-ignores='example/alembic/versions/*:E501,E122,E128' 
 
-$(VDIR)/lib/python3.6/site-packages/pytest.py: python_env
+$(VDIR)/lib/python$(VER_PY)/site-packages/pytest.py: python_env
 	@echo "Installing test requirements"
 	(. $(VDIR)/bin/activate && pip3 freeze && \
 	 pip3 install -r tests/requirements.txt)
-$(VDIR)/lib/python3.6/site-packages/flask/app.py: python_env
+$(VDIR)/lib/python$(VER_PY)/site-packages/flask/app.py: python_env
 	@echo "Installing main requirements"
 	(. $(VDIR)/bin/activate && \
 	 pip3 install -r requirements.txt -r example/requirements.txt)
-py_requirements: $(VDIR)/lib/python3.6/site-packages/flask/app.py
-test_requirements: $(VDIR)/lib/python3.6/site-packages/pytest.py
+py_requirements: $(VDIR)/lib/python$(VER_PY)/site-packages/flask/app.py
+test_requirements: $(VDIR)/lib/python$(VER_PY)/site-packages/pytest.py
 
 test: test_requirements py_requirements
 	@echo "Running pytest unit tests"
@@ -78,8 +79,10 @@ dist/apicrud-$(VERSION).tar.gz: test_requirements
 
 clean:
 	rm -rf build dist *.egg-info .cache .pytest_cache */__pycache__ \
-	 */.coverage */.proto.sqlite */coverage.xml */htmlcov */results.xml
+	 */.coverage */.proto.sqlite */coverage.xml */htmlcov */results.xml \
+	docs/_build
 	find . -name '*.pyc' -or -name '*~' -or -name '*.created' \
 	 -exec rm -rf {} \;
+	find example -name __pycache__ -exec rm -rf {} \;
 wipe_clean: clean
 	rm -rf python_env

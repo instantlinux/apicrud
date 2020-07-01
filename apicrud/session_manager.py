@@ -1,7 +1,8 @@
 """session_manager.py
 
-Each session is stored as an encrypted JSON dict in redis, indexed
-by sub:token
+Session Manager
+  Each login session is stored as an encrypted JSON dict in redis, indexed
+  by sub:token
 
 created 8-may-2019 by richb@instantlinux.net
 """
@@ -19,6 +20,13 @@ from .const import Constants
 
 
 class SessionManager(object):
+    """Session Manager - for active user sessions
+
+    Args:
+      config (obj): the config-file key-value object
+      ttl (int): seconds until a session expires
+      redis_conn (obj): connection to redis service
+    """
 
     def __init__(self, config, ttl=Constants.REDIS_TTL, redis_conn=None):
         self.config = config
@@ -29,14 +37,16 @@ class SessionManager(object):
         self.aes = AESEncrypt(self.config.REDIS_AES_SECRET)
 
     def create(self, uid, roles, **kwargs):
-        """create a session, which is an encrypted JSON object with the values
+        """Create a session, which is an encrypted JSON object with the values
         defined in https://tools.ietf.org/html/rfc7519 for JWT claim names:
+
         - exp - expiration time, as integer Unix epoch time
         - iss - a constant JWT_ISSUER
         - jti - JWT ID, the randomly-generated token
         - sub - the uid of a user
 
         We add these:
+
         - auth - authorized roles
         - any other key=value pairs the caller passes as kwargs
 
@@ -45,6 +55,16 @@ class SessionManager(object):
         multiple sessions. The rest of the token is encrypted, to
         secure it from replay attack in the event redis traffic
         is compromised.
+
+        Args:
+          uid: User ID
+          roles: Authorized roles
+          nonce: a unique identifier for the token (random if not specified)
+          ttl: duration of session (defaulted from class init)
+        Returns:
+          dict:
+            Keys include auth (authorized roles), exp / iss / jti / sub
+            (as above), along with parameters passed into this function
         """
 
         token = kwargs.pop('nonce', _gen_id(prefix=''))
@@ -62,6 +82,15 @@ class SessionManager(object):
             return content
 
     def get(self, uid, token, arg=None):
+        """Get one or all key-value pairs stored by session create
+
+        Args:
+          uid (str): User ID
+          token (str): The token value passed from create as 'jti'
+          arg (str): key of desired value (None to fetch all)
+        Returns:
+          dict or str: single value or dictionary of all session keys
+        """
         key = 'uid:%s:%s' % (uid, token[-3:])
         try:
             data = json.loads(self.aes.decrypt(
@@ -80,6 +109,14 @@ class SessionManager(object):
         return data
 
     def update(self, uid, token, arg, value):
+        """Update a specified session key
+
+        Args:
+          uid: User ID
+          token (str): The token value passed from create as 'jti'
+          arg (str): key to update
+          value (str): new value for key
+        """
         key = 'uid:%s:%s' % (uid, token[-3:])
         data = self.get(uid, token)
         data[arg] = value
@@ -87,6 +124,12 @@ class SessionManager(object):
             json.dumps(data)), ex=self.ttl)
 
     def delete(self, uid, token):
+        """Cancel a session
+
+        Args:
+          uid: User ID
+          token (str): The token value passed from create as 'jti'
+        """
         self.connection.delete('uid:%s:%s' % (uid, token[-3:]))
 
 
@@ -95,6 +138,13 @@ class Mutex:
 
     Tried to implement this as inner class to DRY out the init,
     but ... no joy.
+
+    Args:
+      lockname (str): a unique name for the lock
+      redis_host (str): IP or DNS name of redis service
+      maxwait (int): seconds to wait for a lock
+      ttl (int): seconds to hold lock
+      redis_conn (obj): existing redis connection
     """
     def __init__(self, lockname, redis_host=None, maxwait=20,
                  ttl=Constants.REDIS_TTL, redis_conn=None):
@@ -106,6 +156,11 @@ class Mutex:
         self.maxwait = maxwait
 
     def acquire(self):
+        """Acquire a mutex lock
+
+        Raises:
+          TimeoutError: if the resource is unavailable
+        """
         for retry in range(self.maxwait):
             if self.connection.set('mutex:%s' % self.lockname,
                                    self.lock_signature, ex=self.ttl, nx=True):
@@ -114,6 +169,8 @@ class Mutex:
         raise TimeoutError('Unable to acquire mutex=%s' % self.lockname)
 
     def release(self):
+        """Release a lock
+        """
         if ((self.connection.get('mutex:%s' % self.lockname).decode('utf-8') !=
              self.lock_signature) or
                 not self.connection.delete('mutex:%s' % self.lockname)):

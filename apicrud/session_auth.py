@@ -1,6 +1,7 @@
 """session_auth
 
-Functions for login, password and role authorization
+Session Authorization
+  Functions for login, password and role authorization
 
 created 26-mar-2020 by richb@instantlinux.net
 """
@@ -23,6 +24,14 @@ from .service_registry import ServiceRegistry
 
 
 class SessionAuth(object):
+    """Session Authorization
+
+    Args:
+      config (obj): the config-file key-value object
+      models (obj): the models file object
+      func_send(function): name of function for sending message
+    """
+
     def __init__(self, config=None, models=None, func_send=None):
         self.config = config
         self.models = models
@@ -36,11 +45,17 @@ class SessionAuth(object):
     def account_login(self, username, password, roles_from=None):
         """ Log in with username or email
 
-        parameters:
-          username - account name or email
-          password - credential
-          identity_from - model from which to find contact info
-          roles_from - model for which to look up authorizations
+        Args:
+          username (str): account name or email
+          password (str): credential
+          identity_from (obj):  model from which to find contact info
+          roles_from (obj): model for which to look up authorizations
+
+        Returns:
+          dict:
+            Fields include jwt_token (contains uid / account ID),
+            ID of entry in settings database, and a sub-dictionary
+            with mapping of endpoints registered to microservices
         """
 
         try:
@@ -118,6 +133,19 @@ class SessionAuth(object):
 
     def change_password(self, uid, new_password, reset_token,
                         old_password=None):
+        """Update a user's password, applying complexity rules; must
+        specify either the old password or a reset token
+
+        Args:
+          uid (str): User ID
+          new_password (str): the new passphrase
+          reset_token (str): a token retrieved from Confirmation.request
+          old_password (str): the old passphrase
+
+        Returns:
+          tuple: dict with account_id/uid/username, http response
+        """
+
         try:
             account = g.db.query(self.models.Account).filter_by(
                 uid=uid, status='active').one()
@@ -147,6 +175,16 @@ class SessionAuth(object):
         return dict(id=account.id, uid=uid, username=account.name), 200
 
     def forgot_password(self, identity, username):
+        """Trigger Confirmation.request; specify either the username
+        or email address
+
+        Args:
+          identity (str): account's primary identity, usual an email
+          username (str): account's username
+        Returns:
+          tuple: the Confirmation.request dict and http response
+        """
+
         logmsg = dict(action='forgot_password', identity=identity,
                       username=username)
         try:
@@ -170,11 +208,13 @@ class SessionAuth(object):
         """Get roles that match uid / id for a resource
         Each is in the form <resource>-<id>-<privacy level>
 
-        params:
-          uid - user ID
-          member_model - the DB model that defines membership in resource
-          resource - the resource that defines privacy (e.g. list)
-          id - ID of the resource (omit if all are desired)
+        Args:
+          uid (str): User ID
+          member_model (obj): the DB model that defines membership in resource
+          resource (str): the resource that defines privacy (e.g. list)
+          id (str): ID of the resource (omit if all are desired)
+        Returns:
+          list of str: authorized roles
         """
         acc = AccessControl()
         if not resource:
@@ -202,11 +242,13 @@ class SessionAuth(object):
     def update_auth(self, member_model, id, resource=None, force=False):
         """Check current access, update if recently changed
 
-        params:
-          member_model - model (e.g. Guest) which defines membership in
+        Args:
+          member_model (obj): model (e.g. Guest) which defines membership in
             resource
-          id - resource id of parent resource
-          resource - parent resource for which membership should be checked
+          id (str): resource id of parent resource
+          resource (str):
+            parent resource for which membership should be checked
+          force (bool): perform update regardless of logged-in permissions
         """
         acc = AccessControl()
         if not resource:
@@ -223,6 +265,13 @@ class SessionAuth(object):
 
     @staticmethod
     def _password_weak(password):
+        """Validate password complexity
+
+        Args:
+          password (str): Password
+        Returns:
+          bool: True if at least 3 different types of characters
+        """
         return (not set(password).intersection(string.ascii_lowercase),
                 not set(password).intersection(string.ascii_uppercase),
                 not set(password).intersection(string.digits),
@@ -243,6 +292,13 @@ def basic(username, password, required_scopes=None):
     end to end, but "good enough" until OAuth2 effort is completed.
 
     Implemented because of https://github.com/zalando/connexion/issues/791
+
+    Args:
+      username (str): Session UID
+      password (str): Session token
+      required_scopes (list): not used
+    Returns:
+      dict: uid with the username passed in
     """
 
     session = g.session.get(username, password)
@@ -265,5 +321,11 @@ def basic(username, password, required_scopes=None):
 
 
 def api_key(token, required_scopes=None):
+    """ API key authentication - not yet implemented
+
+    Args:
+      token (str): the token
+      required_scopes (list): permissions requested
+    """
     logging.info('action=api_key token=%s' % token)
     return {'sub': 'user1', 'scope': ''}

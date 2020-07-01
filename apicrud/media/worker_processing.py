@@ -1,6 +1,10 @@
 """worker_processing.py
 
 Media worker functions to process media
+  Uploaded videos and photos contain metadata fields that we can parse
+  and store in the database (plus the redis cache). Various sizes of
+  images need to be sent to the storage API for quick retrieval; these
+  functions are the background engine for such longer-running tasks.
 
 created 3-feb-2020 by richb@instantlinux.net
 """
@@ -21,6 +25,16 @@ class MediaUploadException(Exception):
 
 
 class MediaProcessing(object):
+    """Media Processing
+
+    Args:
+      uid (str): User ID
+      file_id (str): ID of record in File model
+      config (obj): the config-file key-value object
+      models (obj): the models file object
+      db_session (obj): database session
+    """
+
     def __init__(self, uid, file_id, config, models, db_session=None):
         self.api = StorageAPI(redis_host=config.REDIS_HOST, uid=uid,
                               models=models, db_session=db_session)
@@ -34,6 +48,11 @@ class MediaProcessing(object):
 
     def photo(self, uid, meta, db_session):
         """metadata and scaling for still images
+
+        Args:
+          uid (str): User ID
+          meta (dict): Image metadata
+          db_session (obj): database session
         """
 
         def _exif_get(field, max_width):
@@ -146,8 +165,13 @@ class MediaProcessing(object):
         #  and strip exif tags
 
     def video(self, uid, meta, db_session):
-        """metadata for videos - construct and save a pictures db record"""
+        """metadata for videos - construct and save a pictures db record
 
+        Args:
+          uid (str): User ID
+          meta (dict): Video metadata
+          db_session (obj): database session
+        """
         # TODO decide whether to bother with exif or thumbnail
 
         try:
@@ -203,8 +227,9 @@ class MediaProcessing(object):
         """Convert GPS exif data to fixed-decimal format. For some
         reason there"s no good standard python library for doing this.
 
-        returns: tuple (lat, long, alt)
-          first two are converted to fixed-precision int to fit in 32 bits
+        Returns:
+          tuple (lat, long, alt):
+            first two are converted to fixed-precision int to fit in 32 bits
         """
 
         for item, val in GPSTAGS.items():
