@@ -39,7 +39,7 @@ class StorageAPI(object):
       redis_conn (obj): connection to redis
       redis_host (str): IP or host of redis if no existing connection
       redis_port (int): TCP port number of redis
-      cache_ttl (int): how long to cache a grant from the database
+      cache_ttl (int): how long to cache file meta
       uid (str): User ID
       models (obj): the models file object
       db_session (obj): existing db session
@@ -93,9 +93,7 @@ class StorageAPI(object):
             except NoResultFound:
                 return dict(album_id=body.get(
                     'parent_id'), message='album not found'), 404
-            max_size = grants.Grants(self.models,
-                                     db_session=self.db,
-                                     ttl=self.cache_ttl).get('album_size')
+            max_size = grants.Grants(db_session=self.db).get('album_size')
             if album_size >= max_size:
                 msg = 'album is full (max=%d)' % max_size
                 logging.info(dict(message=msg, **logmsg))
@@ -118,15 +116,13 @@ class StorageAPI(object):
         suffix = '.' + ctype if ctype else ''
         if ctype in Constants.MIME_VIDEO_TYPES:
             duration_max = grants.Grants(
-                self.models, db_session=self.db,
-                ttl=self.cache_ttl).get('video_duration_max')
+                db_session=self.db).get('video_duration_max')
             if body.get('duration') and body['duration'] > duration_max:
                 msg = 'video exceeds maximum duration=%f' % duration_max
                 logging.warning(dict(message=msg, **logmsg))
                 return dict(message=msg), 405
         max_size = grants.Grants(
-            self.models, db_session=self.db,
-            ttl=self.cache_ttl).get('media_size_max')
+            db_session=self.db).get('media_size_max')
         if body.get('size') and body['size'] > max_size:
             msg = 'file size exceeds max=%d' % max_size
             logging.info(dict(message=msg, **logmsg))
@@ -268,9 +264,7 @@ class StorageAPI(object):
                                 'message=videos_nyi' % picture.id)
                 continue
             else:
-                max_height = grants.Grants(
-                    self.models, self.db,
-                    ttl=self.cache_ttl).get('photo_res_max')
+                max_height = grants.Grants(self.db).get('photo_res_max')
                 if not picture.height or picture.height <= max_height:
                     orig_uri = '%s.%s' % (uri_path, fmt)
                 else:

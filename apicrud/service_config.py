@@ -31,7 +31,6 @@ import logging
 import os
 import yaml
 
-from .access import AccessControl
 from .const import Constants
 
 state = {}
@@ -43,6 +42,7 @@ class ServiceConfig(object):
 
     Attributes:
       file (str): path of a YAML file defining override values
+      models (obj): sqlalchemy db models
       reset (boolean): reset cached values (for unit tests)
       **kwargs: key=value pair arguments to override values
 
@@ -50,7 +50,7 @@ class ServiceConfig(object):
       AttributeError if invalid specification
     """
 
-    def __init__(self, file=None, reset=False, **kwargs):
+    def __init__(self, file=None, models=None, reset=False, **kwargs):
         global config
 
         if reset or not config:
@@ -108,10 +108,12 @@ class ServiceConfig(object):
                 state['rbac_file'] = os.path.join(os.path.dirname(
                     os.path.abspath(file)), state['rbac_file'])
 
-            state['schema'] = openapi['components']['schemas']['Config']
             config = namedtuple('Struct', [key.upper() for key in
                                            state.keys()])(*state.values())
+            state['schema'] = openapi['components']['schemas']['Config']
+            state['models'] = models
         self.config = config
+        self.models = state['models']
 
     @staticmethod
     def _compose_db_url():
@@ -151,6 +153,8 @@ class ServiceConfig(object):
 
     @staticmethod
     def get():
+        from .access import AccessControl
+
         if not AccessControl().auth or 'admin' not in AccessControl().auth:
             return dict(message='access denied'), 403
         retval = {key: state[key]

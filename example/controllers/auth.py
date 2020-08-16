@@ -30,7 +30,7 @@ class AuthController(object):
             ID of entry in settings database, and a sub-dictionary
             with mapping of endpoints registered to microservices
         """
-        return SessionAuth(models=models).account_login(
+        return SessionAuth().account_login(
             body['username'], body['password'], roles_from=models.List)
 
     def logout():

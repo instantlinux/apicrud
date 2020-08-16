@@ -27,6 +27,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from .access import AccessControl
 from .account_settings import AccountSettings
 from .const import Constants
+from .service_config import ServiceConfig
 from . import geocode, singletons, utils
 
 
@@ -34,16 +35,18 @@ class BasicCRUD(object):
     """Controller base class
 
     Attributes:
-      models (obj): the models file object
       resource (str): a resource name (endpoint prefix)
       model (obj): the model corresponding to the resource
     """
 
-    def __init__(self, models=None, resource=None, model=None):
-        self.models = models
+    def __init__(self, resource=None, model=None):
+        self.models = ServiceConfig().models
         self.resource = resource
         if self.resource not in singletons.controller:
-            self.model = model
+            if model:
+                self.model = model
+            else:
+                self.model = getattr(self.models, resource.capitalize())
             singletons.controller[self.resource] = self
 
     @staticmethod
@@ -64,7 +67,7 @@ class BasicCRUD(object):
         """
 
         self = singletons.controller[request.url_rule.rule.split('/')[3]]
-        acc = AccessControl(models=self.models, model=self.model)
+        acc = AccessControl(model=self.model)
         logmsg = dict(action='create', account_id=acc.account_id,
                       resource=self.resource, ident=acc.identity)
         if 'id' in body:
@@ -93,7 +96,7 @@ class BasicCRUD(object):
         if not body.get('category_id') and hasattr(self.model, 'category_id'):
             if acc.account_id:
                 body['category_id'] = AccountSettings(
-                    acc.account_id, self.models, g.db).get.category_id
+                    acc.account_id, g.db).get.category_id
             elif body.get('event_id'):
                 body['category_id'] = g.db.query(self.models.Event).filter_by(
                     id=body['event_id']).one().category_id
@@ -135,7 +138,7 @@ class BasicCRUD(object):
         """
 
         self = singletons.controller[request.url_rule.rule.split('/')[3]]
-        acc = AccessControl(models=self.models, model=self.model)
+        acc = AccessControl(model=self.model)
         try:
             query = self.db_get(id)
             record = query.one()
@@ -198,7 +201,7 @@ class BasicCRUD(object):
         try:
             query = g.db.query(self.model).filter_by(id=id)
             if not AccessControl(
-                    models=self.models, model=self.model).with_permission(
+                    model=self.model).with_permission(
                         access, query=query):
                 return dict(message='access denied', id=id), 403
             current = query.one().as_dict()
@@ -240,7 +243,7 @@ class BasicCRUD(object):
             try:
                 query = g.db.query(self.model).filter_by(id=id)
                 if not AccessControl(
-                        self.models, model=self.model).with_permission(
+                        model=self.model).with_permission(
                             'd', query=query):
                     return dict(message='access denied', id=id), 403
                 if force:
@@ -283,7 +286,7 @@ class BasicCRUD(object):
         """
 
         self = singletons.controller[request.url_rule.rule.split('/')[3]]
-        acc = AccessControl(models=self.models, model=self.model)
+        acc = AccessControl(model=self.model)
         logmsg = dict(action='find', ident=acc.identity,
                       resource=self.resource)
         conditions = {item: value for item, value in kwargs.items()

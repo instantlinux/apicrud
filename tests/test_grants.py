@@ -36,7 +36,7 @@ class TestGrants(test_base.TestBase):
 
         with self.app.test_request_context():
             g.db = database.get_session()
-            self.assertEqual(Grants(models, ttl=self.config.REDIS_TTL).get(
+            self.assertEqual(Grants().get(
                 record['name'], uid=self.test_uid), record['value'])
             g.db.remove()
 
@@ -120,7 +120,7 @@ class TestGrants(test_base.TestBase):
         with self.assertRaises(AttributeError):
             with self.app.test_request_context():
                 g.db = database.get_session()
-                Grants(models, ttl=self.config.REDIS_TTL).get('invalid')
+                Grants().get('invalid')
 
     def test_get_expired_grant(self):
         record = dict(name='lists', value="20", uid=self.test_uid, expires=(
@@ -133,8 +133,7 @@ class TestGrants(test_base.TestBase):
             g.db = database.get_session()
 
             self.assertEqual(
-                Grants(models, ttl=self.config.REDIS_TTL).get(
-                    record['name'], uid=self.test_uid),
+                Grants().get(record['name'], uid=self.test_uid),
                 self.config.DEFAULT_GRANTS[record['name']])
 
             response = self.call_endpoint('/grant', 'post', data=record)
@@ -148,7 +147,6 @@ class TestGrants(test_base.TestBase):
             self.assertEqual(result, expected)
 
             self.assertEqual(
-                Grants(models, ttl=self.config.REDIS_TTL).get(
-                    record['name'], uid=self.test_uid),
+                Grants().get(record['name'], uid=self.test_uid),
                 self.config.DEFAULT_GRANTS[record['name']])
             g.db.remove()

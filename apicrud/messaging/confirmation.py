@@ -18,15 +18,18 @@ from ..service_config import ServiceConfig
 
 
 class Confirmation:
-    """Functions for confirming ownership of online email/contact info
+    """Functions for confirming ownership of online email/contact info;
+    class attributes are passed through the service config.
 
     Attributes:
-      models (obj): the models file object
+      token_salt (str): salt value for serializer token
+      token_secret (str): a secret to validate upon confirmation
+      token_timeout (int): seconds until expiration
     """
 
-    def __init__(self, models):
+    def __init__(self):
         config = ServiceConfig().config
-        self.models = models
+        self.models = ServiceConfig().models
         self.token_salt = config.TOKEN_SALT
         self.token_secret = config.TOKEN_SECRET
         self.token_timeout = config.TOKEN_TIMEOUT

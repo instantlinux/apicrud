@@ -3,7 +3,6 @@
 created 27-may-2019 by richb@instantlinux.net
 """
 
-import models
 from apicrud.basic_crud import BasicCRUD
 from apicrud.access import AccessControl
 from apicrud.grants import Grants
@@ -12,17 +11,16 @@ from apicrud.service_config import ServiceConfig
 
 class GrantController(BasicCRUD):
     def __init__(self):
-        super().__init__(resource='grant', model=models.Grant, models=models)
+        super().__init__(resource='grant')
 
     @staticmethod
     def create(body):
-        Grants(models).uncache(body.get('uid'))
+        Grants().uncache(body.get('uid'))
         return super(GrantController, GrantController).create(body)
 
     @staticmethod
     def update(id, body):
-        config = ServiceConfig().config
-        Grants(models, ttl=config.REDIS_TTL).uncache(body.get('uid'))
+        Grants().uncache(body.get('uid'))
         return super(GrantController, GrantController).update(id, body)
 
     @staticmethod
@@ -32,8 +30,7 @@ class GrantController(BasicCRUD):
         if 'name' in kwargs and retval[0]['count'] == 0:
             return dict(count=1, items=[dict(
                 name=kwargs.get('name'),
-                value=Grants(
-                    models, ttl=config.REDIS_TTL).get(kwargs.get('name')),
+                value=Grants().get(kwargs.get('name')),
                 uid=AccessControl().uid)]), 200
         response = config.DEFAULT_GRANTS.copy()
         for item in retval[0]['items']:

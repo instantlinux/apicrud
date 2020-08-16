@@ -15,9 +15,10 @@ import os
 import random
 import string
 
-from . import grants, service_config
+from . import grants
 from .access import AccessControl
 from .const import Constants
+from .service_config import ServiceConfig
 
 
 def gen_id(length=8, prefix='x-', chars=(
@@ -43,19 +44,19 @@ def gen_id(length=8, prefix='x-', chars=(
             ''.join(random.choice(chars) for i in range(length - 3)))
 
 
-def initialize_app(application, models):
+def initialize_app(application):
     """Initialize the Flask app defined by openapi.yaml
 
     Args:
       application (obj): a connexion object
-      models (obj): the SQLalchemy models
       init_func (function): any other function to call
 
     Returns:
       obj: Flask app
     """
 
-    config = service_config.ServiceConfig().config
+    config = ServiceConfig().config
+    models = ServiceConfig().models
     logging.basicConfig(level=config.LOG_LEVEL,
                         format='%(asctime)s %(levelname)s %(message)s',
                         datefmt='%m-%d %H:%M:%S')
@@ -72,7 +73,7 @@ def initialize_app(application, models):
          resources={r"/api/*": {'origins': config.CORS_ORIGINS}},
          supports_credentials=True)
     AccessControl().load_rbac(config.RBAC_FILE)
-    grants.Grants(models).load_defaults(config.DEFAULT_GRANTS)
+    grants.Grants().load_defaults(config.DEFAULT_GRANTS)
     logging.info(dict(action='initialize_app', port=config.APP_PORT))
     return application.app
 

@@ -31,16 +31,15 @@ class MediaProcessing(object):
     Attributes:
       uid (str): User ID
       file_id (str): ID of record in File model
-      models (obj): the models file object
       db_session (obj): database session
     """
 
-    def __init__(self, uid, file_id, models, db_session=None):
+    def __init__(self, uid, file_id, db_session=None):
         config = self.config = ServiceConfig().config
+        self.models = ServiceConfig().models
         self.api = StorageAPI(redis_host=config.REDIS_HOST, uid=uid,
-                              models=models, db_session=db_session)
+                              models=self.models, db_session=db_session)
         self.file_id = file_id
-        self.models = models
         self.meta = self.api.get_file_meta(file_id)
 
     def __del__(self):

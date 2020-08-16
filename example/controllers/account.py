@@ -19,8 +19,7 @@ from apicrud import singletons
 
 class AccountController(BasicCRUD):
     def __init__(self):
-        super().__init__(resource='account', model=models.Account,
-                         models=models)
+        super().__init__(resource='account')
 
     @staticmethod
     def create(body):
@@ -56,8 +55,7 @@ class AccountController(BasicCRUD):
         if (not body.get('new_password') or
                 body.get('new_password') != body.get('verify_password')):
             return dict(message='passwords do not match'), 405
-        return SessionAuth(models=models,
-                           func_send=send_contact.delay).change_password(
+        return SessionAuth(func_send=send_contact.delay).change_password(
             uid, body.get('new_password'), body.get('reset_token'),
             old_password=body.get('old_password'))
 
@@ -96,7 +94,6 @@ class AccountController(BasicCRUD):
         self = singletons.controller.get('account')
         if body.get('forgot_password'):
             return SessionAuth(
-                models=models,
                 func_send=send_contact.delay).forgot_password(
                     body.get('identity'), body.get('username'))
         if (not body.get('username') or not body.get('identity') or
@@ -143,7 +140,7 @@ class AccountController(BasicCRUD):
                                     info=identity))
             g.db.commit()
             logging.info(dict(message='person added', uid=uid, **logmsg))
-        Confirmation(models).request(cid, message=i18n.PASSWORD_RESET,
-                                     func_send=send_contact.delay)
+        Confirmation().request(cid, message=i18n.PASSWORD_RESET,
+                               func_send=send_contact.delay)
         return self._create(dict(uid=uid, name=body['username'],
                                  status='active'))

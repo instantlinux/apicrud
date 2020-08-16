@@ -3,14 +3,15 @@ import logging
 
 from apicrud.access import AccessControl
 from apicrud.basic_crud import BasicCRUD
-import models
-from apicrud import singletons
 import apicrud.utils as utils
+from apicrud import singletons
+
+from models import Contact
 
 
 class PersonController(BasicCRUD):
     def __init__(self):
-        super().__init__(resource='person', model=models.Person, models=models)
+        super().__init__(resource='person')
 
     @staticmethod
     def create(body):
@@ -25,9 +26,9 @@ class PersonController(BasicCRUD):
         if retval[1] != 201:
             return retval
         self = singletons.controller[request.url_rule.rule.split('/')[3]]
-        record = models.Contact(id=utils.gen_id(), uid=retval[0]['id'],
-                                type='email', info=body['identity'],
-                                status='unconfirmed')
+        record = Contact(id=utils.gen_id(), uid=retval[0]['id'],
+                         type='email', info=body['identity'],
+                         status='unconfirmed')
         g.db.add(record)
         try:
             g.db.commit()

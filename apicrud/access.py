@@ -44,6 +44,8 @@ from sqlalchemy import or_
 from sqlalchemy.orm.exc import NoResultFound
 import yaml
 
+from .service_config import ServiceConfig
+
 LEVELS = {}
 POLICIES = {}
 PRIV_RES = {}
@@ -54,18 +56,17 @@ class AccessControl(object):
 
     Args:
       policy_file (str): name of the yaml definitions file
-      models (obj): the models file object
       model (obj): a model to be validated for permissions
     """
 
-    def __init__(self, policy_file=None, models=None, model=None):
+    def __init__(self, policy_file=None, model=None):
         if POLICIES and request:
             self.policies = POLICIES['policies']
             self.privacy_levels = LEVELS['levels']
             self.private_res = PRIV_RES['private_res']
             creds = request.authorization
             self.model = model
-            self.models = models
+            self.models = ServiceConfig().models
             self.resource = model.__name__.lower() if model else None
             self.auth = None
             if creds:

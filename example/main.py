@@ -21,8 +21,8 @@ from apicrud.session_manager import SessionManager
 setup_db_only_once = {}
 application = connexion.FlaskApp(__name__)
 config = ServiceConfig(reset=True, file=os.path.join(os.path.dirname(
-    os.path.abspath(__file__)), 'config.yaml')).config
-utils.initialize_app(application, models)
+    os.path.abspath(__file__)), 'config.yaml'), models=models).config
+utils.initialize_app(application)
 
 
 @application.app.before_first_request

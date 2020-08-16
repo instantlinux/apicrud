@@ -14,6 +14,7 @@ from flask import g
 from datetime import timedelta
 
 from .access import AccessControl
+from .service_config import ServiceConfig
 from . import utils
 
 GRANTS = {}
@@ -24,14 +25,13 @@ class Grants(object):
     Account usage limits
 
     Attributes:
-      models (obj): the models file object
       db_session (obj): existing db session
       ttl (int): how long to cache a grant in memory
     """
 
-    def __init__(self, models, db_session=None, ttl=None):
-        self.ttl = ttl
-        self.models = models
+    def __init__(self, db_session=None, ttl=None):
+        self.ttl = ttl or ServiceConfig().config.REDIS_TTL
+        self.models = ServiceConfig().models
         try:
             self.session = db_session or g.db
         except RuntimeError as ex:

@@ -26,7 +26,7 @@ ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 app = celery.Celery()
 app.config_from_object(celeryconfig)
 config = ServiceConfig(reset=True, file=os.path.join(os.path.dirname(
-    os.path.abspath(__file__)), 'config.yaml')).config
+    os.path.abspath(__file__)), 'config.yaml'), models=models).config
 
 
 class SendException(Exception):
@@ -169,8 +169,7 @@ def send_contact(frm=None, to=None, template=None, db_session=None, **kwargs):
                 body = apicrud.messaging.format.email(
                     i18n.TPL[template], from_contact, sender_email,
                     to_contact, settings, db_session,
-                    models=models, i18n=i18n,
-                    appname=config.APPNAME,
+                    i18n=i18n, appname=config.APPNAME,
                     contact_id=to_contact.id,
                     siteurl=settings.get.url, **kwargs).as_string()
             smtp.sendmail(settings.get.sender_email, dest_email, body)
@@ -193,4 +192,4 @@ def _get_settings(db_session, account_id=None):
         except NoResultFound:
             logging.warning('action=_get_settings message="Missing admin"')
             raise SendException('Missing admin')
-    return AccountSettings(account_id, models, db_session=db_session)
+    return AccountSettings(account_id, db_session=db_session)

@@ -29,13 +29,12 @@ class SessionAuth(object):
     """Session Authorization
 
     Attributes:
-      models (obj): the models file object
       func_send(function): name of function for sending message
     """
 
-    def __init__(self, models=None, func_send=None):
+    def __init__(self, func_send=None):
         config = self.config = ServiceConfig().config
-        self.models = models
+        self.models = ServiceConfig().models
         self.jwt_secret = config.JWT_SECRET
         self.login_attempts_max = config.LOGIN_ATTEMPTS_MAX
         self.login_lockout_interval = config.LOGIN_LOCKOUT_INTERVAL
@@ -166,7 +165,7 @@ class SessionAuth(object):
                 logging.warning(dict(message=msg, **logmsg))
                 return dict(username=account.name, message=msg), 403
         else:
-            retval = Confirmation(self.models).confirm(reset_token)
+            retval = Confirmation().confirm(reset_token)
             if retval[1] != 200:
                 msg = 'invalid token'
                 logging.warning(dict(message=msg, **logmsg))
@@ -204,7 +203,7 @@ class SessionAuth(object):
             logging.warning(dict(message='not found', **logmsg))
             return dict(message='username or email not found'), 404
         logging.info(logmsg)
-        return Confirmation(self.models).request(
+        return Confirmation().request(
             id, message=i18n.PASSWORD_RESET, func_send=self.func_send)
 
     def get_roles(self, uid, member_model, resource=None, id=None):

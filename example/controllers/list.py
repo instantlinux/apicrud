@@ -4,15 +4,13 @@ import logging
 from apicrud.basic_crud import BasicCRUD
 from apicrud.access import AccessControl
 from apicrud.grants import Grants
-from apicrud.service_config import ServiceConfig
 from apicrud import singletons
-import models
-from models import List, ListMember
+from models import ListMember
 
 
 class ListController(BasicCRUD):
     def __init__(self):
-        super().__init__(resource='list', model=List, models=models)
+        super().__init__(resource='list')
 
     @staticmethod
     def create(body):
@@ -38,9 +36,7 @@ class ListController(BasicCRUD):
         return super(ListController, ListController).update(id, body)
 
     def _update_many(self, id, attr, related_ids):
-        config = ServiceConfig().config
-        max_size = int(Grants(self.models, ttl=config.REDIS_TTL).get(
-            'list_size'))
+        max_size = int(Grants().get('list_size'))
         if len(related_ids) > max_size:
             msg = 'Max list size exceeded'
             logging.warn('action=update resource=list uid=%s message=%s'

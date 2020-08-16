@@ -5,14 +5,12 @@ Credential storage
 created 13-mar-2019 by richb@instantlinux.net
 """
 
-import models
 from apicrud.basic_crud import BasicCRUD
 
 
 class CredentialController(BasicCRUD):
     def __init__(self):
-        super().__init__(resource='credential',
-                         models=models, model=models.Credential)
+        super().__init__(resource='credential')
 
     @staticmethod
     def get(id):

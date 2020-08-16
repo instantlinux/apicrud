@@ -1,14 +1,14 @@
 from flask import g
 
-import models
-from apicrud.basic_crud import BasicCRUD
 from apicrud.access import AccessControl
+from apicrud.basic_crud import BasicCRUD
+
+import models
 
 
 class MessageController(BasicCRUD):
     def __init__(self):
-        super().__init__(resource='message', model=models.Message,
-                         models=models)
+        super().__init__(resource='message')
 
     @staticmethod
     def create(body):

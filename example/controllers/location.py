@@ -1,5 +1,4 @@
 from apicrud.basic_crud import BasicCRUD
-import models
 import apicrud.geocode as geocode
 
 fields = ('address', 'neighborhood', 'city', 'state', 'country')
@@ -8,8 +7,7 @@ fields = ('address', 'neighborhood', 'city', 'state', 'country')
 class LocationController(BasicCRUD):
 
     def __init__(self):
-        super().__init__(resource='location', model=models.Location,
-                         models=models)
+        super().__init__(resource='location')
 
     @staticmethod
     def create(body):

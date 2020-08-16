@@ -16,14 +16,12 @@ from apicrud.basic_crud import BasicCRUD
 from apicrud.access import AccessControl
 from apicrud.messaging.confirmation import Confirmation
 from apicrud.grants import Grants
-from apicrud.service_config import ServiceConfig
 from apicrud import singletons
 
 
 class ContactController(BasicCRUD):
     def __init__(self):
-        super().__init__(resource='contact', model=models.Contact,
-                         models=models)
+        super().__init__(resource='contact')
 
     @staticmethod
     def create(body):
@@ -52,9 +50,7 @@ class ContactController(BasicCRUD):
             return dict(message='access denied'), 403
         self = singletons.controller[request.url_rule.rule.split('/')[3]]
         # Counter-measure against spammers: enforce MAX_CONTACTS_PER_USER
-        config = ServiceConfig().config
-        max_contacts = int(Grants(models, ttl=config.REDIS_TTL).get(
-            'contacts', uid=body['uid']))
+        max_contacts = int(Grants().get('contacts', uid=body['uid']))
         if g.db.query(self.model).filter_by(uid=body[
                 'uid']).count() >= max_contacts:
             msg = 'max contacts exceeded'
@@ -64,7 +60,7 @@ class ContactController(BasicCRUD):
             body['status'] = 'unconfirmed'
         retval = super(ContactController, ContactController).create(body)
         if retval[1] == 201:
-            result = Confirmation(models).request(
+            result = Confirmation().request(
                 retval[0]['id'], func_send=send_contact.delay)
             retval[0].update(result[0])
         return retval
@@ -99,9 +95,8 @@ class ContactController(BasicCRUD):
         body['modified'] = datetime.utcnow()
         try:
             query = g.db.query(self.model).filter_by(id=id)
-            if not AccessControl(
-                    models=models, model=self.model).with_permission(
-                        'u', query=query):
+            if not AccessControl(model=self.model).with_permission(
+                    'u', query=query):
                 return dict(message='access denied', id=id), 403
             prev_identity = query.one().info
             if body.get('status') != 'disabled':
@@ -124,7 +119,7 @@ class ContactController(BasicCRUD):
             return dict(message='conflict with existing'), 405
 
         retval = dict(id=id, message='updated'), 200
-        result = Confirmation(models).request(
+        result = Confirmation().request(
             retval[0]['id'], func_send=send_contact.delay)
         retval[0].update(result[0])
         return retval
@@ -136,7 +131,7 @@ class ContactController(BasicCRUD):
         Args:
           id (str): id of contact model
         """
-        return Confirmation(models).request(
+        return Confirmation().request(
             id, func_send=send_contact.delay)
 
     @staticmethod
@@ -148,4 +143,4 @@ class ContactController(BasicCRUD):
         """
         # TODO parameterize this so new account gets pending role and
         # existing account gets person
-        return Confirmation(models).confirm(token)
+        return Confirmation().confirm(token)

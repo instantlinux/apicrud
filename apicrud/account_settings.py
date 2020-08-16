@@ -27,11 +27,10 @@ class AccountSettings(object):
 
     Args:
       account_id (str): ID in database of a user's account
-      models (obj): the models file object
       db_session (obj): a session connected to datbase
       uid (str): User ID
     """
-    def __init__(self, account_id, models, db_session=None, uid=None):
+    def __init__(self, account_id, db_session=None, uid=None):
         """Cache per-account settings and convert to attributes"""
 
         def _convert(attrs):
@@ -39,6 +38,7 @@ class AccountSettings(object):
 
         if account_id not in SETTINGS or (
                 utils.utcnow() > SETTINGS[account_id]['expires']):
+            models = ServiceConfig().models
             try:
                 if account_id:
                     account = db_session.query(models.Account).filter_by(

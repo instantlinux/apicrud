@@ -13,11 +13,13 @@ import jinja2
 import pytz
 from sqlalchemy.orm.exc import NoResultFound
 
+from ..service_config import ServiceConfig
+
 W3_DOCTYPE = '<!DOCTYPE HTML PUBLIC “-//W3C//DTD HTML 3.2//EN”>'
 
 
 def email(content, frm, sender_email, to, settings, db_session,
-          models, i18n, **kwargs):
+          i18n, **kwargs):
     """Format an email message with mime attachment, in the user's
     profile-determined locale
 
@@ -28,7 +30,6 @@ def email(content, frm, sender_email, to, settings, db_session,
         to (Contact): contact of recipient
         settings (obj): account settings
         db_session: database session
-        models: db models (for user Profile)
         i18n: localization context
         **kwargs: other key=value pairs for jinja2 substitution
 
@@ -45,9 +46,10 @@ def email(content, frm, sender_email, to, settings, db_session,
     mime['Message-ID'] = make_msgid()
     params = dict(
         sender=frm.owner.name, **kwargs)
+    Profile = ServiceConfig().models.Profile
     try:
-        tzval = db_session.query(models.Profile).filter(
-            models.Profile.uid == to.uid, models.Profile.item == 'tz').one().tz
+        tzval = db_session.query(Profile).filter(
+            Profile.uid == to.uid, Profile.item == 'tz').one().tz
         tz = pytz.timezone(tzval)
     except NoResultFound:
         tz = pytz.timezone(settings.get.tz)
