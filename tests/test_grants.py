@@ -11,7 +11,6 @@ from flask import g
 import test_base
 
 from apicrud import database
-import models
 from apicrud.grants import Grants
 
 

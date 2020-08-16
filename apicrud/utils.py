@@ -56,7 +56,6 @@ def initialize_app(application):
     """
 
     config = ServiceConfig().config
-    models = ServiceConfig().models
     logging.basicConfig(level=config.LOG_LEVEL,
                         format='%(asctime)s %(levelname)s %(message)s',
                         datefmt='%m-%d %H:%M:%S')
