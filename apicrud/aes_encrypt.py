@@ -17,7 +17,7 @@ BLOCK_SIZE = 16
 class AESEncrypt(object):
     """AES encryption for strings
 
-    Args:
+    Attributes:
       secret (str): passphrase (suggest at least 16 characters)
     """
     def __init__(self, secret):

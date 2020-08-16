@@ -17,6 +17,7 @@ class Constants:
     MIME_VIDEO_TYPES = ("mp4", "mpeg")
     PER_PAGE_DEFAULT = 100
     REDIS_TTL = 3600
+    SERVICE_CONFIG_FILE = 'service_config.yaml'
 
 
 class i18n:

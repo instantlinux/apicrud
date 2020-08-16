@@ -21,6 +21,7 @@ Python Classes
      media
      messaging
      metrics
+     service_config
      service_registry
      session_auth
      session_manager

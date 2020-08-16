@@ -7,34 +7,26 @@ created 18-apr-2019 by richb@instantlinux.net
 
 import celery
 from datetime import datetime
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.utils import make_msgid, formatdate
-import jinja2
 import logging
-import pytz
+import os
 import smtplib
 from sqlalchemy.orm.exc import NoResultFound
 import ssl
 
 import celeryconfig
-import config
 import i18n_textstrings as i18n
 import models
 from models import Contact, Person, Profile
 from apicrud.account_settings import AccountSettings
 from apicrud.database import get_session
-
-CARRIER_GATEWAY = dict(
-    att='txt.att.net',
-    sprint='messaging.sprintpcs.com',
-    tmobile='tmomail.net',
-    verizon='vtext.com')
-W3_DOCTYPE = '<!DOCTYPE HTML PUBLIC “-//W3C//DTD HTML 3.2//EN”>'
+from apicrud.service_config import ServiceConfig
+import apicrud.messaging.format
 
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 app = celery.Celery()
 app.config_from_object(celeryconfig)
+config = ServiceConfig(reset=True, file=os.path.join(os.path.dirname(
+    os.path.abspath(__file__)), 'config.yaml')).config
 
 
 class SendException(Exception):
@@ -44,11 +36,11 @@ class SendException(Exception):
 @app.task(name='tasks.messaging.send')
 def send(uid, recipient_ids, template, **kwargs):
     """
-    params:
-      uid (Person) - uid of host
-      recipient_ids (Person) - recipients
-      template (str) - template name, jinja2 from i18n_texstrings
-      kwargs - kv pairs for template
+    Args:
+      uid (Person): uid of host
+      recipient_ids (Person): recipients
+      template (str): template name, jinja2 from i18n_textstrings
+      kwargs: kv pairs for template
     """
     db_session = get_session(scopefunc=celery.utils.threads.get_ident,
                              db_url=config.DB_URL)
@@ -99,12 +91,12 @@ def send(uid, recipient_ids, template, **kwargs):
 @app.task(name='tasks.messaging.send_contact')
 def send_contact(frm=None, to=None, template=None, db_session=None, **kwargs):
     """
-    params:
-      frm (uid) - person
-      to (Contact) - recipient
-      template (str) - template name, jinja2 from i18n_texstrings
-      kwargs - kv pairs
-    raises:
+    Args:
+      frm (uid): person
+      to (Contact): recipient
+      template (str): template name, jinja2 from i18n_texstrings
+      kwargs: kv pairs
+    Raises:
       SendException
     """
 
@@ -167,19 +159,20 @@ def send_contact(frm=None, to=None, template=None, db_session=None, **kwargs):
                          (to, to_contact.type, to_contact.info))
             if to_contact.type == 'sms':
                 dest_email = (to_contact.info + '@' +
-                              CARRIER_GATEWAY[to_contact.carrier])
-                body = _sms_format(i18n.TPL[template], from_contact,
-                                   to_contact,
-                                   appname=config.APPNAME,
-                                   siteurl=settings.get.url, **kwargs)
+                              config.carrier_gateways[to_contact.carrier])
+                body = apicrud.messaging.format.sms(
+                    i18n.TPL[template], from_contact, to_contact,
+                    appname=config.APPNAME,
+                    siteurl=settings.get.url, **kwargs)
             else:
                 dest_email = to_contact.info
-                body = _email_format(i18n.TPL[template], from_contact,
-                                     sender_email,
-                                     to_contact, settings, db_session,
-                                     appname=config.APPNAME,
-                                     contact_id=to_contact.id,
-                                     siteurl=settings.get.url, **kwargs)
+                body = apicrud.messaging.format.email(
+                    i18n.TPL[template], from_contact, sender_email,
+                    to_contact, settings, db_session,
+                    models=models, i18n=i18n,
+                    appname=config.APPNAME,
+                    contact_id=to_contact.id,
+                    siteurl=settings.get.url, **kwargs).as_string()
             smtp.sendmail(settings.get.sender_email, dest_email, body)
             to_contact.last_attempted = datetime.utcnow()
             db_session.add(to_contact)
@@ -192,42 +185,6 @@ def send_contact(frm=None, to=None, template=None, db_session=None, **kwargs):
         db_session.remove()
 
 
-def _email_format(content, frm, sender_email, to, settings, db_session,
-                  **kwargs):
-    mime = MIMEMultipart('alternative')
-    mime['From'] = '%s <%s>' % (frm.owner.name, sender_email)
-    if frm.info != sender_email:
-        mime['Reply-To'] = '%s <%s>' % (frm.owner.name, frm.info)
-    mime['To'] = '%s <%s>' % (to.owner.name, to.info)
-    mime['Date'] = formatdate()
-    mime['Subject'] = content['subject'] % kwargs
-    mime['Message-ID'] = make_msgid()
-    params = dict(
-        sender=frm.owner.name, **kwargs)
-    try:
-        tzval = db_session.query(Profile).filter(
-            Profile.uid == to.uid, Profile.item == 'tz').one().tz
-        tz = pytz.timezone(tzval)
-    except NoResultFound:
-        tz = pytz.timezone(settings.get.tz)
-    if 'starts' in kwargs:
-        params['starts_formatted'] = datetime.strftime(
-            pytz.utc.localize(datetime.strptime(
-                kwargs['starts'], '%Y-%m-%dT%H:%M:%S')).astimezone(tz),
-            '%A, %d %B %Y %-I:%M %p')
-    mime.attach(MIMEText(jinja2.Environment().from_string(
-        content['email'] + i18n.TPL_FOOTER['email']).render(params), 'plain'))
-    mime.attach(MIMEText(jinja2.Environment().from_string(
-        W3_DOCTYPE +
-        content['html'] + i18n.TPL_FOOTER['html']).render(params), 'html'))
-    return mime.as_string()
-
-
-def _sms_format(content, frm, to, **kwargs):
-    return jinja2.Environment().from_string(content['sms']).render(
-        sender=frm.owner.name, **kwargs)
-
-
 def _get_settings(db_session, account_id=None):
     if account_id is None:
         try:
@@ -236,20 +193,4 @@ def _get_settings(db_session, account_id=None):
         except NoResultFound:
             logging.warning('action=_get_settings message="Missing admin"')
             raise SendException('Missing admin')
-    return AccountSettings(account_id, config, models, db_session=db_session)
-
-
-def _replace_last_comma_and(string, lang):
-    """
-    Replace the last comma with the word 'and', dealing with translation.
-    The string is presumed to be a text array joined by ', ' -- including
-    the space.
-    """
-
-    i = string.rfind(',')
-    conjunction = dict(
-        es=u'y', de=u'und', fr=u'et', pt=u'e', zh=u'和').get(lang, u'and')
-    if i == -1:
-        return string
-    else:
-        return string[:i] + ' ' + conjunction + string[i + 1:]
+    return AccountSettings(account_id, models, db_session=db_session)

@@ -17,6 +17,7 @@ from PIL import Image
 from PIL.ExifTags import GPSTAGS, TAGS
 
 from ..account_settings import AccountSettings
+from ..service_config import ServiceConfig
 from .storage import StorageAPI
 
 
@@ -27,19 +28,18 @@ class MediaUploadException(Exception):
 class MediaProcessing(object):
     """Media Processing
 
-    Args:
+    Attributes:
       uid (str): User ID
       file_id (str): ID of record in File model
-      config (obj): the config-file key-value object
       models (obj): the models file object
       db_session (obj): database session
     """
 
-    def __init__(self, uid, file_id, config, models, db_session=None):
+    def __init__(self, uid, file_id, models, db_session=None):
+        config = self.config = ServiceConfig().config
         self.api = StorageAPI(redis_host=config.REDIS_HOST, uid=uid,
                               models=models, db_session=db_session)
         self.file_id = file_id
-        self.config = config
         self.models = models
         self.meta = self.api.get_file_meta(file_id)
 
@@ -95,7 +95,7 @@ class MediaProcessing(object):
             name=meta["name"],
             path=meta["path"],
             uid=uid,
-            category_id=AccountSettings(None, self.config, self.models,
+            category_id=AccountSettings(None, self.models,
                                         db_session=db_session,
                                         uid=meta["oid"]).get.category_id,
             compression=_exif_get("Compression", 16),
@@ -186,7 +186,7 @@ class MediaProcessing(object):
             name=meta["name"],
             path=meta["path"],
             uid=uid,
-            category_id=AccountSettings(None, self.config, self.models,
+            category_id=AccountSettings(None, self.models,
                                         db_session=db_session,
                                         uid=meta["oid"]).get.category_id,
             compression=None,

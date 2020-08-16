@@ -17,6 +17,7 @@ import logging
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import utils
+from .service_config import ServiceConfig
 
 SETTINGS = {}
 
@@ -26,12 +27,11 @@ class AccountSettings(object):
 
     Args:
       account_id (str): ID in database of a user's account
-      config (obj): the config-file key-value object
       models (obj): the models file object
       db_session (obj): a session connected to datbase
       uid (str): User ID
     """
-    def __init__(self, account_id, config, models, db_session=None, uid=None):
+    def __init__(self, account_id, models, db_session=None, uid=None):
         """Cache per-account settings and convert to attributes"""
 
         def _convert(attrs):
@@ -59,6 +59,7 @@ class AccountSettings(object):
                         name='default').one().id
             except NoResultFound:
                 category_id = account.settings.default_cat_id
+            config = ServiceConfig().config
             SETTINGS[account_id] = dict(
                 expires=utils.utcnow() + timedelta(seconds=config.REDIS_TTL),
                 settings=dict(

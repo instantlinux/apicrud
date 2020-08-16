@@ -18,11 +18,11 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy_utils import EncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
-import config
 import constants
+from apicrud.service_config import ServiceConfig
 
 Base = declarative_base()
-aes_secret = config.DB_AES_SECRET
+aes_secret = ServiceConfig().config.DB_AES_SECRET
 
 
 class Account(Base):
@@ -385,7 +385,7 @@ class Settings(Base):
                    server_default='598')
     url = Column(String(255))
     window_title = Column(String(127),
-                          server_default=constants.WINDOW_TITLE)
+                          server_default=constants.DEFAULT_WINDOW_TITLE)
     default_cat_id = Column(ForeignKey(u'categories.id'), nullable=False)
     administrator_id = Column(ForeignKey(u'people.id'), nullable=False)
     default_hostlist_id = Column(ForeignKey(u'lists.id'))

@@ -17,6 +17,9 @@ import time
 
 from .aes_encrypt import AESEncrypt
 from .const import Constants
+from .service_config import ServiceConfig
+
+saved_redis = None
 
 
 class SessionManager(object):
@@ -28,11 +31,15 @@ class SessionManager(object):
       redis_conn (obj): connection to redis service
     """
 
-    def __init__(self, config, ttl=Constants.REDIS_TTL, redis_conn=None):
-        self.config = config
+    def __init__(self, ttl=Constants.REDIS_TTL, redis_conn=None):
+        global saved_redis
+
+        self.config = ServiceConfig().config
         self.connection = (
-            redis_conn or redis.Redis(host=config.REDIS_HOST,
-                                      port=config.REDIS_PORT, db=0))
+            redis_conn or saved_redis or redis.Redis(
+                host=self.config.REDIS_HOST,
+                port=self.config.REDIS_PORT, db=0))
+        saved_redis = self.connection
         self.ttl = ttl
         self.aes = AESEncrypt(self.config.REDIS_AES_SECRET)
 

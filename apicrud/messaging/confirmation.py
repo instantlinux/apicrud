@@ -14,17 +14,18 @@ from sqlalchemy.orm.exc import NoResultFound
 import string
 
 from ..const import i18n
+from ..service_config import ServiceConfig
 
 
 class Confirmation:
     """Functions for confirming ownership of online email/contact info
 
-    Args:
-      config (obj): the config-file key-value object
+    Attributes:
       models (obj): the models file object
     """
 
-    def __init__(self, config, models):
+    def __init__(self, models):
+        config = ServiceConfig().config
         self.models = models
         self.token_salt = config.TOKEN_SALT
         self.token_secret = config.TOKEN_SECRET

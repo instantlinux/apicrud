@@ -3,7 +3,6 @@ import logging
 
 from apicrud.access import AccessControl
 from apicrud.basic_crud import BasicCRUD
-import config
 import models
 from apicrud import singletons
 import apicrud.utils as utils
@@ -11,8 +10,7 @@ import apicrud.utils as utils
 
 class PersonController(BasicCRUD):
     def __init__(self):
-        super().__init__(resource='person', model=models.Person, config=config,
-                         models=models)
+        super().__init__(resource='person', model=models.Person, models=models)
 
     @staticmethod
     def create(body):

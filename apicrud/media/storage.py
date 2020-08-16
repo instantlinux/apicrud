@@ -33,10 +33,9 @@ import apicrud.utils as utils
 class StorageAPI(object):
     """Storage API
 
-    Args:
+    Attributes:
       credential_ttl (int): how long until temp credential expires
       redis_conn (obj):
-      config (obj): the config-file key-value object
       redis_conn (obj): connection to redis
       redis_host (str): IP or host of redis if no existing connection
       redis_port (int): TCP port number of redis

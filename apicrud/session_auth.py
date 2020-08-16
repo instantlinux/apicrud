@@ -14,26 +14,27 @@ from passlib.hash import sha256_crypt
 from sqlalchemy import or_
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy_utils.types.encrypted.padding import InvalidPaddingError
 import string
 import time
 
 from .access import AccessControl
 from .const import Constants, i18n
 from .messaging.confirmation import Confirmation
+from .service_config import ServiceConfig
 from .service_registry import ServiceRegistry
 
 
 class SessionAuth(object):
     """Session Authorization
 
-    Args:
-      config (obj): the config-file key-value object
+    Attributes:
       models (obj): the models file object
       func_send(function): name of function for sending message
     """
 
-    def __init__(self, config=None, models=None, func_send=None):
-        self.config = config
+    def __init__(self, models=None, func_send=None):
+        config = self.config = ServiceConfig().config
         self.models = models
         self.jwt_secret = config.JWT_SECRET
         self.login_attempts_max = config.LOGIN_ATTEMPTS_MAX
@@ -68,6 +69,9 @@ class SessionAuth(object):
             else:
                 account = g.db.query(self.models.Account).filter_by(
                     name=username, status='active').one()
+        except InvalidPaddingError:
+            logging.error('action=login message="invalid DB_AES_SECRET"')
+            return dict(message='DB operational error'), 503
         except NoResultFound:
             return dict(username=username, message='not valid'), 403
         except OperationalError as ex:
@@ -162,8 +166,7 @@ class SessionAuth(object):
                 logging.warning(dict(message=msg, **logmsg))
                 return dict(username=account.name, message=msg), 403
         else:
-            retval = Confirmation(self.config, self.models).confirm(
-                reset_token)
+            retval = Confirmation(self.models).confirm(reset_token)
             if retval[1] != 200:
                 msg = 'invalid token'
                 logging.warning(dict(message=msg, **logmsg))
@@ -201,7 +204,7 @@ class SessionAuth(object):
             logging.warning(dict(message='not found', **logmsg))
             return dict(message='username or email not found'), 404
         logging.info(logmsg)
-        return Confirmation(self.config, self.models).request(
+        return Confirmation(self.models).request(
             id, message=i18n.PASSWORD_RESET, func_send=self.func_send)
 
     def get_roles(self, uid, member_model, resource=None, id=None):

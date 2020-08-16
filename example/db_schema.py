@@ -16,16 +16,20 @@ from models import Account, AlembicVersion, Category, Contact, Location, \
     Person, Settings, TZname
 
 
-def update(db_engine, models, migrate=False, schema_maxtime=0):
+def update(db_engine, models, migrate=False, schema_maxtime=0,
+           script_location=os.path.join(os.path.abspath(
+               os.path.dirname(__file__)), 'alembic')):
     """Run alembic migrations for updating schema
 
     Must be called with mutex for duration of update to prevent race
     conditions; begin_transaction() does not ensure mutual exclusion.
 
-    params:
-      models - models to generate or update
-      migrate - perform migrations only if True
-      schema_maxtime - maximum seconds to wait for mutex
+    Args:
+      db_engine (obj): connection to database
+      models (obj): models to generate or update
+      migrate (bool): perform migrations only if True
+      schema_maxtime (int): maximum seconds to wait for mutex
+      script_location (str): path for alembic scripts
     """
     db_session = get_session(scoped=True)
     try:
@@ -34,9 +38,8 @@ def update(db_engine, models, migrate=False, schema_maxtime=0):
         logging.warning('DB schema does not yet exist: %s' % str(ex))
         version = None
     db_session.close()
-    alembic_migrate(models, version,
-                    os.path.join(os.path.abspath(os.path.dirname(
-                        __file__)), 'alembic'), migrate=migrate,
+    alembic_migrate(models, version, script_location,
+                    migrate=migrate,
                     schema_maxtime=schema_maxtime, seed_func=_seed_new_db)
 
 
@@ -71,6 +74,7 @@ def _seed_new_db(db_session):
                       smtp_smarthost=constants.DEFAULT_SMARTHOST,
                       country=constants.DEFAULT_COUNTRY,
                       lang=constants.DEFAULT_LANG,
+                      window_title=constants.DEFAULT_WINDOW_TITLE,
                       url=constants.DEFAULT_URL)
     db_session.add(record)
     record = Location(id='x-67673434', city='San Francisco',

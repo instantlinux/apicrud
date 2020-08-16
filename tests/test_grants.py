@@ -10,7 +10,6 @@ from flask import g
 
 import test_base
 
-import config
 from apicrud import database
 import models
 from apicrud.grants import Grants
@@ -37,7 +36,7 @@ class TestGrants(test_base.TestBase):
 
         with self.app.test_request_context():
             g.db = database.get_session()
-            self.assertEqual(Grants(models, ttl=config.REDIS_TTL).get(
+            self.assertEqual(Grants(models, ttl=self.config.REDIS_TTL).get(
                 record['name'], uid=self.test_uid), record['value'])
             g.db.remove()
 
@@ -49,8 +48,8 @@ class TestGrants(test_base.TestBase):
         expected = dict(
             items=[
                 dict(name=k, value=v)
-                for k, v in config.DEFAULT_GRANTS.items()],
-            count=len(config.DEFAULT_GRANTS))
+                for k, v in self.config.DEFAULT_GRANTS.items()],
+            count=len(self.config.DEFAULT_GRANTS))
         expected['items'][5] = record.copy()
 
         response = self.call_endpoint('/person', 'post', data=person)
@@ -121,7 +120,7 @@ class TestGrants(test_base.TestBase):
         with self.assertRaises(AttributeError):
             with self.app.test_request_context():
                 g.db = database.get_session()
-                Grants(models, ttl=config.REDIS_TTL).get('invalid')
+                Grants(models, ttl=self.config.REDIS_TTL).get('invalid')
 
     def test_get_expired_grant(self):
         record = dict(name='lists', value="20", uid=self.test_uid, expires=(
@@ -134,9 +133,9 @@ class TestGrants(test_base.TestBase):
             g.db = database.get_session()
 
             self.assertEqual(
-                Grants(models, ttl=config.REDIS_TTL).get(
+                Grants(models, ttl=self.config.REDIS_TTL).get(
                     record['name'], uid=self.test_uid),
-                config.DEFAULT_GRANTS[record['name']])
+                self.config.DEFAULT_GRANTS[record['name']])
 
             response = self.call_endpoint('/grant', 'post', data=record)
             self.assertEqual(response.status_code, 201)
@@ -149,7 +148,7 @@ class TestGrants(test_base.TestBase):
             self.assertEqual(result, expected)
 
             self.assertEqual(
-                Grants(models, ttl=config.REDIS_TTL).get(record['name'],
-                                                         uid=self.test_uid),
-                config.DEFAULT_GRANTS[record['name']])
+                Grants(models, ttl=self.config.REDIS_TTL).get(
+                    record['name'], uid=self.test_uid),
+                self.config.DEFAULT_GRANTS[record['name']])
             g.db.remove()

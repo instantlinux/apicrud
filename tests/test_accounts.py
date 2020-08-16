@@ -8,8 +8,6 @@ created 4-nov-2019 by richb@instantlinux.net
 import mock
 import pytest
 
-import config
-
 import test_base
 
 
@@ -260,7 +258,7 @@ class TestAccounts(test_base.TestBase):
         self.assertEqual(response.status_code, 200, 'put failed message=%s' %
                          response.get_json().get('message'))
 
-        for i in range(config.LOGIN_ATTEMPTS_MAX):
+        for i in range(self.config.LOGIN_ATTEMPTS_MAX):
             status = self.authorize(username=record['username'],
                                     password='Disallowed',
                                     new_session=True)

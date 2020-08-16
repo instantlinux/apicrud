@@ -13,11 +13,12 @@ created 8-may-2020 by richb@instantlinux.net
 
 import json
 import logging
-import redis
 import socket
 import threading
 
 from .aes_encrypt import AESEncrypt
+from .service_config import ServiceConfig
+from .session_manager import SessionManager
 from . import utils
 
 refresh_thread = None
@@ -29,26 +30,24 @@ class ServiceRegistry(object):
     """
     Service registry
 
-    Args:
-      config (obj): the config-file key-value object
+    Attributes:
       db_session (obj): existing db session
       ttl (int): how long to cache instance's registration
       redis_conn (obj): connection to redis
     """
 
-    def __init__(self, config, ttl=None, redis_conn=None):
+    def __init__(self, ttl=None, redis_conn=None):
         global params, refresh_thread
-        self.config = config
-        if not redis_conn and hasattr(config, 'redis_conn'):
-            redis_conn = config.redis_conn
+        self.config = config = ServiceConfig().config
+        if not redis_conn:
+            redis_conn = SessionManager().connection
         if not params:
             params = dict(
-                aes=AESEncrypt(self.config.REDIS_AES_SECRET),
-                connection=(
-                    redis_conn or redis.Redis(host=config.REDIS_HOST,
-                                              port=config.REDIS_PORT, db=0)),
+                aes=AESEncrypt(config.REDIS_AES_SECRET),
                 interval=config.REGISTRY_INTERVAL,
                 ttl=ttl or config.REGISTRY_TTL)
+        # TODO why doesn't this get initialized on first pass?
+        params['connection'] = redis_conn
         if not refresh_thread:
             refresh_thread = threading.Thread()
 
@@ -70,7 +69,7 @@ class ServiceRegistry(object):
             ipv4 = None
         service_data['info'] = dict(
             endpoints=resource_endpoints, ipv4=ipv4,
-            port=tcp_port or self.config.PORT,
+            port=tcp_port or self.config.APP_PORT,
             public_url=self.config.PUBLIC_URL,
             created=utils.utcnow().replace(microsecond=0).isoformat())
         service_data['name'] = service_name or self.config.SERVICE_NAME

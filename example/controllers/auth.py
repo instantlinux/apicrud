@@ -8,7 +8,6 @@ import logging
 
 from apicrud.session_auth import SessionAuth
 from apicrud import singletons
-import config
 import models
 
 
@@ -31,7 +30,7 @@ class AuthController(object):
             ID of entry in settings database, and a sub-dictionary
             with mapping of endpoints registered to microservices
         """
-        return SessionAuth(config=config, models=models).account_login(
+        return SessionAuth(models=models).account_login(
             body['username'], body['password'], roles_from=models.List)
 
     def logout():

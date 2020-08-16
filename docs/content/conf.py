@@ -54,7 +54,7 @@ html_static_path = ['_static']
 
 autodoc_default_options = dict(members=None)
 autosummary_generate = True
-autosummary_imported_members = True
+autosummary_imported_members = False
 
 # for MarkdownParser
 

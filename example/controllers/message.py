@@ -1,6 +1,5 @@
 from flask import g
 
-import config
 import models
 from apicrud.basic_crud import BasicCRUD
 from apicrud.access import AccessControl
@@ -9,7 +8,7 @@ from apicrud.access import AccessControl
 class MessageController(BasicCRUD):
     def __init__(self):
         super().__init__(resource='message', model=models.Message,
-                         config=config, models=models)
+                         models=models)
 
     @staticmethod
     def create(body):

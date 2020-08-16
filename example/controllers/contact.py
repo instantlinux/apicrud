@@ -9,7 +9,6 @@ import logging
 import re
 from sqlalchemy.orm.exc import NoResultFound
 
-import config
 import constants
 import models
 from messaging import send_contact
@@ -17,13 +16,14 @@ from apicrud.basic_crud import BasicCRUD
 from apicrud.access import AccessControl
 from apicrud.messaging.confirmation import Confirmation
 from apicrud.grants import Grants
+from apicrud.service_config import ServiceConfig
 from apicrud import singletons
 
 
 class ContactController(BasicCRUD):
     def __init__(self):
         super().__init__(resource='contact', model=models.Contact,
-                         config=config, models=models)
+                         models=models)
 
     @staticmethod
     def create(body):
@@ -52,6 +52,7 @@ class ContactController(BasicCRUD):
             return dict(message='access denied'), 403
         self = singletons.controller[request.url_rule.rule.split('/')[3]]
         # Counter-measure against spammers: enforce MAX_CONTACTS_PER_USER
+        config = ServiceConfig().config
         max_contacts = int(Grants(models, ttl=config.REDIS_TTL).get(
             'contacts', uid=body['uid']))
         if g.db.query(self.model).filter_by(uid=body[
@@ -63,7 +64,7 @@ class ContactController(BasicCRUD):
             body['status'] = 'unconfirmed'
         retval = super(ContactController, ContactController).create(body)
         if retval[1] == 201:
-            result = Confirmation(config, models).request(
+            result = Confirmation(models).request(
                 retval[0]['id'], func_send=send_contact.delay)
             retval[0].update(result[0])
         return retval
@@ -123,7 +124,7 @@ class ContactController(BasicCRUD):
             return dict(message='conflict with existing'), 405
 
         retval = dict(id=id, message='updated'), 200
-        result = Confirmation(config, models).request(
+        result = Confirmation(models).request(
             retval[0]['id'], func_send=send_contact.delay)
         retval[0].update(result[0])
         return retval
@@ -135,7 +136,7 @@ class ContactController(BasicCRUD):
         Args:
           id (str): id of contact model
         """
-        return Confirmation(config, models).request(
+        return Confirmation(models).request(
             id, func_send=send_contact.delay)
 
     @staticmethod
@@ -147,4 +148,4 @@ class ContactController(BasicCRUD):
         """
         # TODO parameterize this so new account gets pending role and
         # existing account gets person
-        return Confirmation(config, models).confirm(token)
+        return Confirmation(models).confirm(token)

@@ -1,7 +1,7 @@
 ## Docs
 ### About
 
-This directory has files required to create open source documentation using [Sphinx](http://www.sphinx-doc.org/en/master/usage/installation.html).
+This directory has files required to create open source documentation using [Sphinx](http://www.sphinx-doc.org/en/master/usage/installation.html). The project's source code is commented using docstrings specified in [Google Python Style Guide](https://github.com/google/styleguide/blob/gh-pages/pyguide.md).
 
 ### Configuration files
 * **index.rst** - This is root of the “table of contents tree” (or toctree). This is one of the main things that Sphinx adds to reStructuredText, a way to connect multiple files to a single hierarchy of documents.

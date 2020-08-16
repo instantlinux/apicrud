@@ -79,8 +79,8 @@ dist/apicrud-$(VERSION).tar.gz: test_requirements
 
 clean:
 	rm -rf build dist *.egg-info .cache .pytest_cache */__pycache__ \
-	 */.coverage */.proto.sqlite */coverage.xml */htmlcov */results.xml \
-	docs/_build
+	 */*/__pycache__ */.coverage */.proto.sqlite */coverage.xml */htmlcov \
+	 */results.xml docs/_build docs/content/stubs
 	find . -name '*.pyc' -or -name '*~' -or -name '*.created' \
 	 -exec rm -rf {} \;
 	find example -name __pycache__ -exec rm -rf {} \;

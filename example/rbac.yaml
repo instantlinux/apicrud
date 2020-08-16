@@ -107,14 +107,14 @@ policies:
     - principal: user/{{uid}}
       resource: "{resource}:{{uid}}"
       actions: cdghjiru
-    - principal: event-{{eid}}-manager
-      resource: "{resource}:{{eid}}"
+    - principal: list-{{eid}}-manager
+      resource: "{resource}:{{list_id}}"
       actions: cdghijru
-    - principal: event-{{eid}}-member
-      resource: "{resource}:{{eid}}"
+    - principal: list-{{list_id}}-member
+      resource: "{resource}:{{list_id}}"
       actions: gijr
-    - principal: event-{{eid}}-invitee
-      resource: "{resource}:{{eid}}"
+    - principal: list-{{list_id}}-invitee
+      resource: "{resource}:{{list_id}}"
       actions: r
   message:
     - principal: admin

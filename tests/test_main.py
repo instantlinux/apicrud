@@ -7,7 +7,6 @@ created 17-oct-2019 by richb@instantlinux.net
 
 import test_base
 
-import config
 from example import _version
 
 
@@ -18,7 +17,7 @@ class TestMain(test_base.TestBase):
 
     def test_healthcheck(self):
         expected = dict(
-            description=config.APPNAME + ' - ' + 'main',
+            description=self.config.APPNAME + ' - ' + 'main',
             notes=['build_date:' + _version.build_date, 'schema:cac2000912a5'],
             releaseId='unset',
             serviceId='main',

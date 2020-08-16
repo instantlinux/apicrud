@@ -4,8 +4,7 @@ created 23-sep-2019 by richb@instantlinux.net
 """
 
 from example import _version
-import config
-from apicrud import health
+from apicrud import health, service_config
 from models import AlembicVersion
 
 
@@ -25,6 +24,7 @@ class HealthController(object):
             https://tools.ietf.org/id/draft-inadarei-api-health-check-04.html;
             second element is http response code
         """
+        config = service_config.ServiceConfig().config
         return health.healthcheck(
             app_name=config.APPNAME, service_name=config.SERVICE_NAME,
             tests=tests, model=AlembicVersion,

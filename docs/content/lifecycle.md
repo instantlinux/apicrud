@@ -30,11 +30,12 @@ Code repo | [GitHub](https://github.com), [GitLab](https://gitlab.com)
 CDN | [Cloudflare](https://www.cloudflare.com/), $ [AWS Cloudfront](https://aws.amazon.com/cloudfront/)
 CI/CD | [Gitlab-CI](https://about.gitlab.com/solutions/github/), many alternatives
 DNS | [Cloudflare](https://www.cloudflare.com/), $ UltraDNS, $ EasyDNS, several others
+Docs | [Read the Docs](https://readthedocs.org/accounts/signup/)
 Geocoding | [Mapquest](https://developer.mapquest.com/documentation/geocoding-api/)
 Javascript repo | [npmjs](https://npmjs.com)
-Python repo | [PyPI](https://pypi.org)
 Maps | [Mapbox](https://www.mapbox.com/signup/)
 Outbound mail | [GMail](https://mail.google.com), many alternatives
+Python repo | [PyPI](https://pypi.org)
 Registry | [Docker Hub](https://hub.docker.com/)
 Storage | $ [AWS S3](https://aws.amazon.com/account/), $ [Backblaze B2](https://www.backblaze.com/)
 

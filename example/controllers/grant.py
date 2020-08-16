@@ -3,17 +3,16 @@
 created 27-may-2019 by richb@instantlinux.net
 """
 
-import config
 import models
 from apicrud.basic_crud import BasicCRUD
 from apicrud.access import AccessControl
 from apicrud.grants import Grants
+from apicrud.service_config import ServiceConfig
 
 
 class GrantController(BasicCRUD):
     def __init__(self):
-        super().__init__(resource='grant', model=models.Grant,
-                         config=config, models=models)
+        super().__init__(resource='grant', model=models.Grant, models=models)
 
     @staticmethod
     def create(body):
@@ -22,12 +21,14 @@ class GrantController(BasicCRUD):
 
     @staticmethod
     def update(id, body):
+        config = ServiceConfig().config
         Grants(models, ttl=config.REDIS_TTL).uncache(body.get('uid'))
         return super(GrantController, GrantController).update(id, body)
 
     @staticmethod
     def find(**kwargs):
         retval = super(GrantController, GrantController).find(**kwargs)
+        config = ServiceConfig().config
         if 'name' in kwargs and retval[0]['count'] == 0:
             return dict(count=1, items=[dict(
                 name=kwargs.get('name'),

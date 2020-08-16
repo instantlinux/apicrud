@@ -8,7 +8,7 @@ This example serves a simple message-board. The `source code <https://github.com
     example
     ├── alembic.ini              # alembic settings
     ├── celeryconfig.py          # celery-worker parameters
-    ├── config.py                # application settings
+    ├── config.yaml              # application settings
     ├── constants.py             # global constants
     ├── db_schema.py             # db initial seed/update functions
     ├── Dockerfile.api           # container image builder scripts

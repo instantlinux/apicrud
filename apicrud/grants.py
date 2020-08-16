@@ -23,7 +23,7 @@ class Grants(object):
     """
     Account usage limits
 
-    Args:
+    Attributes:
       models (obj): the models file object
       db_session (obj): existing db session
       ttl (int): how long to cache a grant in memory
@@ -44,7 +44,7 @@ class Grants(object):
         others, the earliest expiration applies to all the uid's grants
 
         Args:
-          name (str): name of a grant, as defined in config.py
+          name (str): name of a grant, as defined in service config
           uid (str): user ID
         Returns:
           value: granted limit

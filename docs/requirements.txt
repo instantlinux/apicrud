@@ -4,6 +4,7 @@ Sphinx==3.1.1
 sphinxcontrib-mermaid==0.4.0
 sphinx-markdown-parser==0.2.3
 sphinx-markdown-tables==0.0.15
+# sphinxcontrib-openapi==0.7.0
 sphinx-rtd-theme==0.5.0
 
 -r ../requirements.txt

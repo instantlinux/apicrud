@@ -8,7 +8,6 @@ import logging
 from sqlalchemy.orm.exc import NoResultFound
 
 from apicrud.basic_crud import BasicCRUD
-import config
 import i18n_textstrings as i18n
 from apicrud.messaging.confirmation import Confirmation
 from apicrud.session_auth import SessionAuth
@@ -21,7 +20,7 @@ from apicrud import singletons
 class AccountController(BasicCRUD):
     def __init__(self):
         super().__init__(resource='account', model=models.Account,
-                         config=config, models=models)
+                         models=models)
 
     @staticmethod
     def create(body):
@@ -57,7 +56,7 @@ class AccountController(BasicCRUD):
         if (not body.get('new_password') or
                 body.get('new_password') != body.get('verify_password')):
             return dict(message='passwords do not match'), 405
-        return SessionAuth(config=config, models=models,
+        return SessionAuth(models=models,
                            func_send=send_contact.delay).change_password(
             uid, body.get('new_password'), body.get('reset_token'),
             old_password=body.get('old_password'))
@@ -97,7 +96,7 @@ class AccountController(BasicCRUD):
         self = singletons.controller.get('account')
         if body.get('forgot_password'):
             return SessionAuth(
-                config=config, models=models,
+                models=models,
                 func_send=send_contact.delay).forgot_password(
                     body.get('identity'), body.get('username'))
         if (not body.get('username') or not body.get('identity') or
@@ -144,7 +143,7 @@ class AccountController(BasicCRUD):
                                     info=identity))
             g.db.commit()
             logging.info(dict(message='person added', uid=uid, **logmsg))
-        Confirmation(config, models).request(cid, message=i18n.PASSWORD_RESET,
-                                             func_send=send_contact.delay)
+        Confirmation(models).request(cid, message=i18n.PASSWORD_RESET,
+                                     func_send=send_contact.delay)
         return self._create(dict(uid=uid, name=body['username'],
                                  status='active'))

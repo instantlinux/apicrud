@@ -8,7 +8,6 @@ created 17-oct-2019 by richb@instantlinux.net
 import mock
 import pytest
 
-import config
 import test_base
 
 
@@ -75,7 +74,7 @@ class TestContacts(test_base.TestBase):
             status='unconfirmed', muted=False, rank=1, rbac='dru',
             owner=self.test_person_name, **record)
         confirmed = dict(
-            auth='pending', info=record['info'], iss=config.JWT_ISSUER,
+            auth='pending', info=record['info'], iss=self.config.JWT_ISSUER,
             name=self.test_person_name, sub=self.test_uid, type=record['type'])
 
         response = self.call_endpoint('/contact', 'post', data=record)
@@ -115,7 +114,7 @@ class TestContacts(test_base.TestBase):
     @pytest.mark.slow
     @mock.patch('messaging.send_contact.delay')
     def test_add_too_many_contacts(self, mock_messaging):
-        max_contacts = config.DEFAULT_GRANTS.get('contacts')
+        max_contacts = self.config.DEFAULT_GRANTS.get('contacts')
         account = dict(
             name='Robin Smith', username='rsmith',
             identity='rsmith@conclave.events')

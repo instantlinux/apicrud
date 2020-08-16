@@ -1,7 +1,7 @@
 """basic_crud.py
 
 Basic CRUD
-  Base object for create/read/update/delete/find controller operations.
+  Base class for create/read/update/delete/find controller operations.
 
   This class provides permission-based, paginated access to database
   models behind your application's endpoints. Most endpoints need no
@@ -33,15 +33,13 @@ from . import geocode, singletons, utils
 class BasicCRUD(object):
     """Controller base class
 
-    Args:
-      config (obj): the config-file key-value object
+    Attributes:
       models (obj): the models file object
       resource (str): a resource name (endpoint prefix)
       model (obj): the model corresponding to the resource
     """
 
-    def __init__(self, config=None, models=None, resource=None, model=None):
-        self.config = config
+    def __init__(self, models=None, resource=None, model=None):
         self.models = models
         self.resource = resource
         if self.resource not in singletons.controller:
@@ -95,8 +93,7 @@ class BasicCRUD(object):
         if not body.get('category_id') and hasattr(self.model, 'category_id'):
             if acc.account_id:
                 body['category_id'] = AccountSettings(
-                    acc.account_id, self.config, self.models,
-                    g.db).get.category_id
+                    acc.account_id, self.models, g.db).get.category_id
             elif body.get('event_id'):
                 body['category_id'] = g.db.query(self.models.Event).filter_by(
                     id=body['event_id']).one().category_id

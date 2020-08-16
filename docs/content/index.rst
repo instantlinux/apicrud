@@ -16,6 +16,7 @@ Skip the kubernetes / python / React.js learning curve and put your ideas in pro
    lifecycle
    kubernetes
    components
+   config
    classes
    example
 

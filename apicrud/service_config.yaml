@@ -1,0 +1,208 @@
+openapi: 3.0.1
+info:
+  title: apicrud configuration
+  version: "1.0"
+  description: |
+    This defines flask config global default values and an API endpoint
+    to retrieve current values
+servers:
+- url: http://localhost:8080/api/v1
+- url: http://localhost:8080/config/v1
+- url: http://localhost:32080/config/v1
+
+components:
+  schemas:
+    Config:
+      properties:
+        app_port:
+          default: 8080
+          type: integer
+          minimum: 1
+          maximum: 65535
+        appname:
+          default: Example
+          type: string
+        approved_senders:
+          default: local-senders
+          type: string
+        base_url:
+          default: /api/v1
+          type: string
+        carrier_gateways:
+          default:
+            att: txt.att.net
+            sprint: messaging.sprintpcs.com
+            tmobile: tmomail.net
+            verizon: vtext.com
+          type: object
+        config_version:
+          default: "1.0"
+          type: string
+        cors_origins:
+          default:
+          - https://dev.example.com
+          - https://media-dev.example.com
+          type: array
+          items:
+            type: string
+        db_host:
+          type: string
+        db_name:
+          default: example_dev
+          type: string
+        db_port:
+          default: 3306
+          type: integer
+          minimum: 1
+          maximum: 65535
+        db_url:
+          type: string
+        db_aes_secret:
+          default: 6VYFX61SSx63VGw5
+          format: password
+          type: string
+          minLength: 16
+          maxLength: 16
+        db_connection_timeout:
+          default: 280
+          type: integer
+        db_geo_support:
+          default: false
+          type: boolean
+        db_schema_maxtime:
+          default: 120
+          type: integer
+        debug:
+          default: false
+          type: boolean
+        default_grants:
+          default:
+            albums: 10
+            album_size: 64
+            contacts: 8
+            daily_email: 200
+            daily_sms: 100
+            lists: 12
+            list_size: 250
+            media_size_max: 16777216
+            monthly_email: 1000
+            monthly_sms: 1000
+            photo_res_max: 1080
+            video_duration_max: 60
+          type: object
+          additionalProperties:
+            type: integer
+        flask_secret_key:
+          default: e6b6935e45ea4fb381e7a0167862788d
+          format: password
+          type: string
+          pattern: ^[a-f0-9]+$
+          minLength: 32
+          maxLength: 64
+        http_response_cache_max_age:
+          default: 30
+          type: integer
+        jwt_issuer:
+          default: dev.example.com
+          type: string
+        jwt_secret:
+          default: PY07l0g0FSqeKsyx
+          format: password
+          type: string
+        log_level:
+          default: info
+          enum: [ debug, info, warning, error, critical ]
+          type: string
+        login_admin_limit:
+          default: 900
+          type: integer
+        login_attempts_max:
+          default: 5
+          type: integer
+        login_lockout_interval:
+          default: 600
+          type: integer
+        login_session_limit:
+          default: 7200
+          type: integer
+        magic_validity_hours_min:
+          default: 504
+          type: integer
+        magic_validity_from_event:
+          default: 168
+          type: integer
+        openapi_file:
+          default: openapi.yaml
+          type: string
+        public_url:
+          default: "http://localhost"
+          type: string
+        rbac_file:
+          default: rbac.yaml
+          type: string
+        redis_aes_secret:
+          default: 5bj27gMy6Kbb37A7P
+          format: password
+          type: string
+          minLength: 16
+          maxLength: 20
+        redis_host:
+          default: redis
+          type: string
+        redis_port:
+          default: 6379
+          type: integer
+        redis_ttl:
+          default: 1200
+          type: integer
+        registry_interval:
+          default: 30
+          type: integer
+        registry_ttl:
+          default: 60
+          type: integer
+        service_name:
+          default: main
+          type: string
+        token_salt:
+          default: "YI31A26j6f4&0#X*8&7QBNF"
+          format: password
+          type: string
+          minLength: 20
+          maxLength: 32
+        token_secret:
+          default: 6OoN6JYPp3t80BMf
+          format: password
+          type: string
+          minLength: 16
+          maxLength: 16
+        token_timeout:
+          default: 43200
+          type: integer
+
+  securitySchemes:
+    basic:
+      type: http
+      scheme: basic
+      x-basicInfoFunc: apicrud.session_auth.basic
+    example_apikey:
+      in: header
+      name: api_key
+      type: apiKey
+      x-apikeyInfoFunc: apicrud.session_auth.api_key
+paths:
+  /config:
+    get:
+      summary: Get config values
+      operationId: get
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                items:
+                  type: array
+                  $ref: '#/components/schemas/Config'
+          description: successful operation
+      x-codegen-request-body-name: conditions
+      x-openapi-router-controller: apicrud.service_config.ServiceConfig

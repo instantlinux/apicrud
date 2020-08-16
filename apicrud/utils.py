@@ -11,11 +11,13 @@ from flask import g, jsonify
 from flask_cors import CORS
 from html.parser import HTMLParser
 import logging
+import os
 import random
 import string
 
-from . import grants, utils
+from . import grants, service_config
 from .access import AccessControl
+from .const import Constants
 
 
 def gen_id(length=8, prefix='x-', chars=(
@@ -41,12 +43,11 @@ def gen_id(length=8, prefix='x-', chars=(
             ''.join(random.choice(chars) for i in range(length - 3)))
 
 
-def initialize_app(application, config, models):
+def initialize_app(application, models):
     """Initialize the Flask app defined by openapi.yaml
 
     Args:
       application (obj): a connexion object
-      config (obj): a flask config object
       models (obj): the SQLalchemy models
       init_func (function): any other function to call
 
@@ -54,21 +55,25 @@ def initialize_app(application, config, models):
       obj: Flask app
     """
 
+    config = service_config.ServiceConfig().config
     logging.basicConfig(level=config.LOG_LEVEL,
                         format='%(asctime)s %(levelname)s %(message)s',
                         datefmt='%m-%d %H:%M:%S')
     logging.getLogger('werkzeug').setLevel(logging.ERROR)
     application.app.config.from_object(config)
+    application.add_api(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                     Constants.SERVICE_CONFIG_FILE), base_path='/config/v1')
     application.add_api(config.OPENAPI_FILE)
-    application.add_error_handler(400, utils.render_status_400)
+    application.add_error_handler(400, render_status_400)
     application.add_error_handler(connexion.ProblemException,
-                                  utils.render_problem)
+                                  render_problem)
     CORS(application.app,
          resources={r"/api/*": {'origins': config.CORS_ORIGINS}},
          supports_credentials=True)
     AccessControl().load_rbac(config.RBAC_FILE)
     grants.Grants(models).load_defaults(config.DEFAULT_GRANTS)
-    logging.info(dict(action='initialize_app', port=config.PORT))
+    logging.info(dict(action='initialize_app', port=config.APP_PORT))
     return application.app
 
 
@@ -121,6 +126,25 @@ def strip_tags(html):
     s = HtmlStripper()
     s.feed(html)
     return s.get_data()
+
+
+def replace_last_comma_and(string, lang):
+    """Replace the last comma with the word 'and', dealing with
+    translation.  The string is presumed to be a text array joined by
+    ', ' -- including the space.
+
+    Args:
+        string (str): comma-separated utf8 content
+        lang (str): 2-letter language code
+    """
+
+    i = string.rfind(',')
+    conjunction = dict(
+        es=u'y', de=u'und', fr=u'et', pt=u'e', zh=u'和').get(lang, u'and')
+    if i == -1:
+        return string
+    else:
+        return string[:i] + ' ' + conjunction + string[i + 1:]
 
 
 class HtmlStripper(HTMLParser):
