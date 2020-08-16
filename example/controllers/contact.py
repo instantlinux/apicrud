@@ -9,14 +9,15 @@ import logging
 import re
 from sqlalchemy.orm.exc import NoResultFound
 
-import constants
-import models
-from messaging import send_contact
 from apicrud.basic_crud import BasicCRUD
 from apicrud.access import AccessControl
 from apicrud.messaging.confirmation import Confirmation
 from apicrud.grants import Grants
 from apicrud import singletons
+
+import constants
+from messaging import send_contact
+from models import Person
 
 
 class ContactController(BasicCRUD):
@@ -104,7 +105,7 @@ class ContactController(BasicCRUD):
             query.update(body)
             try:
                 # If updating primary contact, also update identity
-                primary = g.db.query(models.Person).filter_by(
+                primary = g.db.query(Person).filter_by(
                     identity=prev_identity).one()
                 logging.info(dict(
                     resource='person', previous=prev_identity, **logmsg))

@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: apicrud configuration
   version: "1.0"
-  description: |
+  description: >
     This defines flask config global default values and an API endpoint
     to retrieve current values
 servers:
@@ -16,17 +16,25 @@ components:
       properties:
         app_port:
           default: 8080
+          description: TCP port number for flask
           type: integer
           minimum: 1
           maximum: 65535
         appname:
           default: Example
+          description: Name of application
           type: string
+          minLength: 2
+          maxLength: 32
         approved_senders:
           default: local-senders
+          description: >
+            Name of a list whose members are approved by email relay
+            provider for From headers
           type: string
         base_url:
           default: /api/v1
+          description: The API base URL
           type: string
         carrier_gateways:
           default:
@@ -34,46 +42,61 @@ components:
             sprint: messaging.sprintpcs.com
             tmobile: tmomail.net
             verizon: vtext.com
+          description: Map of SMS carrier names to their SMTP gateways
           type: object
         config_version:
           default: "1.0"
+          description: Schema version of this (service_config) file
           type: string
         cors_origins:
           default:
           - https://dev.example.com
           - https://media-dev.example.com
+          description: Allowed URLs for cross-origin http resources
           type: array
           items:
             type: string
         db_host:
           type: string
+          description: Database hostname or IP address
         db_name:
           default: example_dev
+          description: Database name
           type: string
+          minLength: 2
+          maxLength: 32
         db_port:
           default: 3306
+          description: Port number of database server
           type: integer
           minimum: 1
           maximum: 65535
         db_url:
+          description: MySQL-compatible python database URL
           type: string
         db_aes_secret:
           default: 6VYFX61SSx63VGw5
+          description: >
+            Encryption key for AES-encrypting secure fields in database
           format: password
           type: string
           minLength: 16
-          maxLength: 16
+          maxLength: 50
         db_connection_timeout:
           default: 280
+          description: Connection timeout for idle database connections
           type: integer
         db_geo_support:
           default: false
+          description: Support for spatial/geographic objects by database
           type: boolean
         db_schema_maxtime:
           default: 120
+          description: Maximum time to wait for schema updates at startup
           type: integer
         debug:
           default: false
+          description: Flask debug mode
           type: boolean
         default_grants:
           default:
@@ -89,11 +112,15 @@ components:
             monthly_sms: 1000
             photo_res_max: 1080
             video_duration_max: 60
+          description: >
+            List of quota grants and their default values for users who
+            have not upgraded to higher levels
           type: object
           additionalProperties:
             type: integer
         flask_secret_key:
           default: e6b6935e45ea4fb381e7a0167862788d
+          description: The flask session secret
           format: password
           type: string
           pattern: ^[a-f0-9]+$
@@ -101,83 +128,115 @@ components:
           maxLength: 64
         http_response_cache_max_age:
           default: 30
+          description: How long a browser should cache API objects
           type: integer
         jwt_issuer:
           default: dev.example.com
+          description: Issuer string for JSON web tokens
           type: string
         jwt_secret:
           default: PY07l0g0FSqeKsyx
+          description: A secret for generating/validating JSON web tokens
           format: password
           type: string
         log_level:
           default: info
+          description: The syslog level for container logs
           enum: [ debug, info, warning, error, critical ]
           type: string
         login_admin_limit:
           default: 900
+          description: Maximum duration of an admin login session token
           type: integer
         login_attempts_max:
           default: 5
+          description: How many password attempts are allowed for locking
           type: integer
         login_lockout_interval:
           default: 600
+          description: >
+            How long to lock out an account after unsuccessful attempts
           type: integer
         login_session_limit:
           default: 7200
+          description: Maximum duration of a regular user session
           type: integer
         magic_validity_hours_min:
           default: 504
+          description: Validity of a magic-token (for invitations)
           type: integer
         magic_validity_from_event:
           default: 168
+          description: Validity of a magic-token (after an event)
           type: integer
         openapi_file:
           default: openapi.yaml
+          description: Name of the openapi resource definition file
           type: string
         public_url:
           default: "http://localhost"
+          description: >
+            Publicly-reachable name for the service registration, used by
+            the UI to access endpoints
           type: string
         rbac_file:
           default: rbac.yaml
+          description: >
+            Name of the role-based access control definitions file,
+            relative to the openapi_file's parent directory
           type: string
         redis_aes_secret:
           default: 5bj27gMy6Kbb37A7P
+          description: Secret to use for AES-encrypting all values in redis
           format: password
           type: string
           minLength: 16
-          maxLength: 20
+          maxLength: 50
         redis_host:
           default: redis
+          description: Hostname or IP address of redis service
           type: string
         redis_port:
           default: 6379
+          description: TCP port number of redis service
           type: integer
         redis_ttl:
           default: 1200
+          description: Time-to-live for expiring entries added to redis
           type: integer
         registry_interval:
           default: 30
+          description: Refresh interval for microservice registration
           type: integer
         registry_ttl:
           default: 60
+          description: >
+            How long a registration lasts before the container is assumed dead
           type: integer
         service_name:
           default: main
+          description: Name of the microservice this container provides
           type: string
         token_salt:
           default: "YI31A26j6f4&0#X*8&7QBNF"
+          description: >
+            Salt value for JSON web tokens issued at account registration
           format: password
           type: string
           minLength: 20
           maxLength: 32
         token_secret:
           default: 6OoN6JYPp3t80BMf
+          description: >
+            Secret value for JSON web tokens issued at account registration
           format: password
           type: string
           minLength: 16
           maxLength: 16
         token_timeout:
           default: 43200
+          description: >
+            Validity period of an account registration or password-reset token
           type: integer
 
   securitySchemes:

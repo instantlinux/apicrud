@@ -24,9 +24,10 @@ import redis
 from sqlalchemy.orm.exc import NoResultFound
 import uuid
 
-import apicrud.access as access
-from apicrud.const import Constants
-import apicrud.grants as grants
+from ..access import AccessControl
+from ..const import Constants
+from ..grants import Grants
+from ..service_config import ServiceConfig
 import apicrud.utils as utils
 
 
@@ -35,25 +36,21 @@ class StorageAPI(object):
 
     Attributes:
       credential_ttl (int): how long until temp credential expires
-      redis_conn (obj):
       redis_conn (obj): connection to redis
-      redis_host (str): IP or host of redis if no existing connection
-      redis_port (int): TCP port number of redis
-      cache_ttl (int): how long to cache file meta
       uid (str): User ID
-      models (obj): the models file object
       db_session (obj): existing db session
     """
 
-    def __init__(self, credential_ttl=None, redis_conn=None, redis_host=None,
-                 redis_port=6379, cache_ttl=1200, uid=None, models=None,
-                 db_session=None):
-        self.models = models
+    def __init__(self, credential_ttl=None, redis_conn=None,
+                 uid=None, db_session=None):
+        config = ServiceConfig().config
+        self.models = ServiceConfig().models
         self.redis_conn = (
-            redis_conn or redis.Redis(host=redis_host, port=redis_port, db=0))
-        self.cache_ttl = cache_ttl
+            redis_conn or redis.Redis(host=config.REDIS_HOST,
+                                      port=config.REDIS_PORT, db=0))
+        self.cache_ttl = config.REDIS_TTL
         self.credential_ttl = credential_ttl or 86400
-        self.uid = uid or access.AccessControl().uid
+        self.uid = uid or AccessControl().uid
         self.db = db_session or g.db
 
     def get_upload_url(self, body):
@@ -93,13 +90,12 @@ class StorageAPI(object):
             except NoResultFound:
                 return dict(album_id=body.get(
                     'parent_id'), message='album not found'), 404
-            max_size = grants.Grants(db_session=self.db).get('album_size')
+            max_size = Grants(db_session=self.db).get('album_size')
             if album_size >= max_size:
                 msg = 'album is full (max=%d)' % max_size
                 logging.info(dict(message=msg, **logmsg))
                 return dict(message=msg), 405
-        if not access.AccessControl(
-                models=self.models, model=model).with_permission(
+        if not AccessControl(model=model).with_permission(
                     'u', query=record):
             msg = 'access_denied'
             logging.warning(dict(message=msg, **logmsg))
@@ -115,13 +111,13 @@ class StorageAPI(object):
             storage.prefix if storage.prefix else '', self.uid, id)).strip('/')
         suffix = '.' + ctype if ctype else ''
         if ctype in Constants.MIME_VIDEO_TYPES:
-            duration_max = grants.Grants(
+            duration_max = Grants(
                 db_session=self.db).get('video_duration_max')
             if body.get('duration') and body['duration'] > duration_max:
                 msg = 'video exceeds maximum duration=%f' % duration_max
                 logging.warning(dict(message=msg, **logmsg))
                 return dict(message=msg), 405
-        max_size = grants.Grants(
+        max_size = Grants(
             db_session=self.db).get('media_size_max')
         if body.get('size') and body['size'] > max_size:
             msg = 'file size exceeds max=%d' % max_size
@@ -264,7 +260,7 @@ class StorageAPI(object):
                                 'message=videos_nyi' % picture.id)
                 continue
             else:
-                max_height = grants.Grants(self.db).get('photo_res_max')
+                max_height = Grants(self.db).get('photo_res_max')
                 if not picture.height or picture.height <= max_height:
                     orig_uri = '%s.%s' % (uri_path, fmt)
                 else:

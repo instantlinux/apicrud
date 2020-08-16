@@ -3,7 +3,7 @@ from flask import g
 from apicrud.access import AccessControl
 from apicrud.basic_crud import BasicCRUD
 
-import models
+from models import ListMessage
 
 
 class MessageController(BasicCRUD):
@@ -20,8 +20,7 @@ class MessageController(BasicCRUD):
         retval = super(MessageController, MessageController).create(body)
         if retval[1] == 201 and list_id:
             message_id = retval[0]['id']
-            g.db.add(models.ListMessage(list_id=list_id,
-                                        message_id=message_id))
+            g.db.add(ListMessage(list_id=list_id, message_id=message_id))
             g.db.commit()
         return retval
 

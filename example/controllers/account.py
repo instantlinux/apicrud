@@ -12,9 +12,10 @@ import i18n_textstrings as i18n
 from apicrud.messaging.confirmation import Confirmation
 from apicrud.session_auth import SessionAuth
 from apicrud.utils import gen_id
-import models
-from messaging import send_contact
 from apicrud import singletons
+
+from messaging import send_contact
+from models import Account, Contact, Person, Settings
 
 
 class AccountController(BasicCRUD):
@@ -29,7 +30,7 @@ class AccountController(BasicCRUD):
     def _create(self, body, identity=None):
         try:
             body['settings_id'] = g.db.query(
-                models.Settings).filter_by(name='global').one().id
+                Settings).filter_by(name='global').one().id
         except NoResultFound:
             return dict(message='failed to read global settings'), 405
         body['password'] = ''
@@ -112,10 +113,9 @@ class AccountController(BasicCRUD):
             pass
         uid = None
         try:
-            existing = g.db.query(models.Person).filter_by(
-                identity=identity).one()
+            existing = g.db.query(Person).filter_by(identity=identity).one()
             uid = existing.id
-            g.db.query(models.Account).filter_by(uid=uid).one()
+            g.db.query(Account).filter_by(uid=uid).one()
             msg = 'that email is already registered, use forgot-password'
             logging.warning(dict(message=msg, **logmsg))
             return dict(message=msg), 405
@@ -123,21 +123,20 @@ class AccountController(BasicCRUD):
             pass
         if uid:
             try:
-                cid = g.db.query(models.Contact).filter_by(
+                cid = g.db.query(Contact).filter_by(
                     info=identity, type='email').one().id
             except Exception as ex:
                 msg = 'registration trouble, error=%s' % str(ex)
                 logging.error(dict(message=msg, **logmsg))
                 return dict(message=msg), 405
         else:
-            person = models.Person(
+            person = Person(
                 id=gen_id(prefix='u-'), name=body['name'], identity=identity,
                 status='active')
             uid = person.id
             cid = gen_id()
             g.db.add(person)
-            g.db.add(models.Contact(id=cid, uid=uid, type='email',
-                                    info=identity))
+            g.db.add(Contact(id=cid, uid=uid, type='email', info=identity))
             g.db.commit()
             logging.info(dict(message='person added', uid=uid, **logmsg))
         Confirmation().request(cid, message=i18n.PASSWORD_RESET,
