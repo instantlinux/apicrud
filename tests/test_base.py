@@ -35,8 +35,7 @@ class TestBase(unittest.TestCase):
             global_fixture['dbfile'] = tempfile.mkstemp(prefix='_db')[1]
             db_url = os.environ.get(
                 'DB_URL', 'sqlite:///%s' % global_fixture['dbfile'])
-            config = ServiceConfig(db_url=db_url)
-            global_fixture['config'] = config.config
+            global_fixture['config'] = ServiceConfig(db_url=db_url).config
             global_fixture['flask'] = global_fixture['app'].test_client()
             global_fixture['redis'] = fakeredis.FakeStrictRedis(
                 server=fakeredis.FakeServer())

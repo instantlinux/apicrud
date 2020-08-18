@@ -18,8 +18,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy_utils import EncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
-import constants
 from apicrud.service_config import ServiceConfig
+
+import constants
 
 Base = declarative_base()
 aes_secret = ServiceConfig().config.DB_AES_SECRET

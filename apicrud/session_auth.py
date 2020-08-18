@@ -23,6 +23,7 @@ from .const import Constants, i18n
 from .messaging.confirmation import Confirmation
 from .service_config import ServiceConfig
 from .service_registry import ServiceRegistry
+from .utils import gen_id
 
 
 class SessionAuth(object):
@@ -134,6 +135,66 @@ class SessionAuth(object):
         else:
             return dict(message='rejected'), 403
 
+    def register(self, identity, username, name, i18n_id):
+        """Register a new account: create related records in database
+        and send confirmation token to new user
+
+        TODO caller still has to invoke account-create function to
+        generate record in accounts table
+
+        Args:
+          identity (str): account's primary identity, usually an email
+          username (str): account's username
+          name (str): name
+          i18n_id (str): key in i18n object of reset message
+        Returns:
+          tuple: the Confirmation.request dict and http response
+        """
+        if not username or not identity or not name:
+            return dict(message='all fields required'), 400
+        identity = identity.lower()
+        logmsg = dict(action='register', identity=identity,
+                      username=username)
+        try:
+            g.db.query(self.models.Account).filter_by(name=username).one()
+            msg = 'that username is already registered'
+            logging.warning(dict(message=msg, **logmsg))
+            return dict(message=msg), 405
+        except NoResultFound:
+            pass
+        uid = None
+        try:
+            existing = g.db.query(self.models.Person).filter_by(
+                identity=identity).one()
+            uid = existing.id
+            g.db.query(self.models.Account).filter_by(uid=uid).one()
+            msg = 'that email is already registered, use forgot-password'
+            logging.warning(dict(message=msg, **logmsg))
+            return dict(message=msg), 405
+        except NoResultFound:
+            pass
+        if uid:
+            try:
+                cid = g.db.query(self.models.Contact).filter_by(
+                    info=identity, type='email').one().id
+            except Exception as ex:
+                msg = 'registration trouble, error=%s' % str(ex)
+                logging.error(dict(message=msg, **logmsg))
+                return dict(message=msg), 405
+        else:
+            person = self.models.Person(
+                id=gen_id(prefix='u-'), name=name, identity=identity,
+                status='active')
+            uid = person.id
+            cid = gen_id()
+            g.db.add(person)
+            g.db.add(self.models.Contact(id=cid, uid=uid, type='email',
+                                         info=identity))
+            g.db.commit()
+            logging.info(dict(message='person added', uid=uid, **logmsg))
+        return Confirmation().request(cid, message=i18n_id,
+                                      func_send=self.func_send)
+
     def change_password(self, uid, new_password, reset_token,
                         old_password=None):
         """Update a user's password, applying complexity rules; must
@@ -181,7 +242,7 @@ class SessionAuth(object):
         or email address
 
         Args:
-          identity (str): account's primary identity, usual an email
+          identity (str): account's primary identity, usually an email
           username (str): account's username
         Returns:
           tuple: the Confirmation.request dict and http response

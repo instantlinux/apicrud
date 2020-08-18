@@ -70,7 +70,7 @@ class Confirmation:
         if func_send:
             # TODO: stop token value from leaking into celery logs
             func_send(to=id, template=message, token=token, type=contact.type)
-        return dict(token=token, id=id), 200
+        return dict(token=token, id=id, uid=contact.uid), 200
 
     def confirm(self, token):
         """Confirm a contact if token is still valid

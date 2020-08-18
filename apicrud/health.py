@@ -5,6 +5,8 @@ created 28-mar-2020 by richb@instantlinux.net
 
 from flask import g
 
+from _version import __version__
+
 
 def healthcheck(app_name='api', service_name='main', tests=None, model=None,
                 releaseId=None, build_date=None, version=None):
@@ -38,6 +40,8 @@ def healthcheck(app_name='api', service_name='main', tests=None, model=None,
         try:
             retval['notes'].append(
                 'schema:%s' % g.db.query(model).one().version_num)
+            retval['notes'].append(
+                'apicrud_version:%s' % __version__)
         except Exception as ex:
             retval['output'] = str(ex)
             status = 503

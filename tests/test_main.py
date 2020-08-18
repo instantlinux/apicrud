@@ -7,6 +7,7 @@ created 17-oct-2019 by richb@instantlinux.net
 
 import test_base
 
+import apicrud._version as apiver
 from example import _version
 
 
@@ -18,7 +19,9 @@ class TestMain(test_base.TestBase):
     def test_healthcheck(self):
         expected = dict(
             description=self.config.APPNAME + ' - ' + 'main',
-            notes=['build_date:' + _version.build_date, 'schema:cac2000912a5'],
+            notes=['build_date:' + _version.build_date,
+                   'schema:cac2000912a5',
+                   'apicrud_version:' + apiver.__version__],
             releaseId='unset',
             serviceId='main',
             status='pass',

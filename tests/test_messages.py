@@ -17,7 +17,7 @@ class TestMessages(test_base.TestBase):
         self.list = dict(
             name='My Message Board', description='For message testing',
             uid=self.test_uid)
-        patcher = mock.patch('messaging.send.delay')
+        patcher = mock.patch('messaging.send_contact.delay')
         self.mock_send = patcher.start()
         response = self.call_endpoint('/list', 'post', data=self.list)
         if response.status_code != 405 or (

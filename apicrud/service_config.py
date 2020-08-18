@@ -96,7 +96,7 @@ class ServiceConfig(object):
             jsonschema.validate(instance=state, schema=openapi['components'][
                 'schemas']['Config'])
             # Special cases
-            state['flask_secret_key'] = binascii.unhexlify(
+            state['secret_key'] = binascii.unhexlify(
                 state['flask_secret_key'])
             state['log_level'] = self._compose_loglevel(state['log_level'])
             if os.environ.get('APP_ENV') != 'prod':
