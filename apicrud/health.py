@@ -5,7 +5,7 @@ created 28-mar-2020 by richb@instantlinux.net
 
 from flask import g
 
-from _version import __version__
+from ._version import __version__
 
 
 def healthcheck(app_name='api', service_name='main', tests=None, model=None,

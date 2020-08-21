@@ -47,7 +47,7 @@ class Grants(object):
           name (str): name of a grant, as defined in service config
           uid (str): user ID
         Returns:
-          value: granted limit
+          str: granted limit
         """
         if name not in GRANTS['defaults']:
             raise AttributeError('Unknown grant %s' % name)

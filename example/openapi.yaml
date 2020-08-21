@@ -355,7 +355,7 @@ components:
         id:
           type: string
           minLength: 10
-          maxLength: 10
+          maxLength: 35
         name:
           type: string
           enum:
@@ -368,8 +368,8 @@ components:
           - monthly_sms
         value:
           type: string
+          pattern: ^[a-z0-9@_.-]+$
           maxLength: 64
-          pattern: ^[a-zA-Z0-9@_.+-]+$
         uid:
           $ref: '#/components/schemas/base/properties/id'
         owner:
@@ -1747,7 +1747,7 @@ paths:
         schema:
           type: string
           minLength: 10
-          maxLength: 10
+          maxLength: 35
       responses:
         200:
           content:
@@ -1783,7 +1783,7 @@ paths:
         schema:
           type: string
           minLength: 10
-          maxLength: 10
+          maxLength: 35
       responses:
         404:
           content: {}
@@ -1810,7 +1810,7 @@ paths:
           items:
             type: string
             minLength: 10
-            maxLength: 10
+            maxLength: 35
           type: array
       - description: force-delete instead of disable
         in: query

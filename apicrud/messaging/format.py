@@ -34,7 +34,7 @@ def email(content, frm, sender_email, to, settings, db_session,
         **kwargs: other key=value pairs for jinja2 substitution
 
     Returns:
-        mime object (the as_string() method will convert to message)
+        obj: mime object (use .as_string() to convert to message)
     """
     mime = MIMEMultipart('alternative')
     mime['From'] = '%s <%s>' % (frm.owner.name, sender_email)
@@ -68,10 +68,14 @@ def email(content, frm, sender_email, to, settings, db_session,
 
 def sms(content, frm, to, **kwargs):
     """Format an SMS message
+
+    Args:
         content (str): i18n dict
         frm (Contact): contact of sender
         to (Contact): contact of recipient
         **kwargs: other key=value pairs for jinja2 substitution
+    Returns:
+        str: Formatted string content
     """
     content
     return jinja2.Environment().from_string(content['sms']).render(

@@ -39,29 +39,46 @@ class TestGrants(test_base.TestBase):
                 record['name'], uid=self.test_uid), record['value'])
             g.db.remove()
 
-    """
-    TODO: grants test isn't working, figure out why
     def test_get_multiple_grants(self):
         person = dict(name='Ulysses Grant III', identity='grant3@aol.com')
-        record = dict(name='lists', value=12)
-        expected = dict(
-            items=[
-                dict(name=k, value=v)
-                for k, v in self.config.DEFAULT_GRANTS.items()],
-            count=len(self.config.DEFAULT_GRANTS))
-        expected['items'][5] = record.copy()
+        record = dict(name='lists', value='12')
 
         response = self.call_endpoint('/person', 'post', data=person)
         self.assertEqual(response.status_code, 201)
         record['uid'] = response.get_json()['id']
-        response = self.call_endpoint('/grant', 'post', data=record)
+
+        # Update a single grant
+        response = self.call_endpoint(
+            '/grant/%s:%s' % (record['uid'], record['name']), 'put',
+            data=record)
         self.assertEqual(response.status_code, 201)
+        id = response.get_json()['id']
+        response = self.call_endpoint('/grant/%s' % id, 'get')
+        self.assertEqual(response.status_code, 200)
+        updated = response.get_json()
+        updated['modified'] = None
+
+        expected = dict(
+            items=[
+                dict(id='%s:%s' % (record['uid'], k), name=k, value=str(v),
+                     uid=record['uid'], rbac='cdru', status='active')
+                for k, v in self.config.DEFAULT_GRANTS.items()],
+            count=len(self.config.DEFAULT_GRANTS))
+        # Confirm that updated grant is no longer default value
+        expected['items'][5] = updated
+
         response = self.call_endpoint('/grant?filter={"uid":"%s"}' %
                                       record['uid'], 'get')
         self.assertEqual(response.status_code, 200)
         result = response.get_json()
         self.assertEqual(result, expected)
-    """
+
+        # Apply name filter and verify
+        response = self.call_endpoint('/grant?filter={"uid":"%s","name":"%s"}'
+                                      % (record['uid'], record['name']), 'get')
+        self.assertEqual(response.status_code, 200)
+        result = response.get_json()
+        self.assertEqual(result, dict(items=[updated], count=1))
 
     def test_update_grant(self):
         record = dict(name='list_size', value='300', uid=self.test_uid)
@@ -111,6 +128,16 @@ class TestGrants(test_base.TestBase):
         response = self.call_endpoint('/grant/%s' % id, 'get')
         result = response.get_json()
         self.assertEqual(response.status_code, 404)
+
+    def test_default_grant(self):
+        expected = dict(
+            id='%s:%s' % (self.test_uid, 'list_size'), name='list_size',
+            uid=self.test_uid, value='250', rbac='cdru', status='active')
+
+        response = self.call_endpoint('/grant/%s:%s' %
+                                      (self.test_uid, expected['name']), 'get')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), expected)
 
     def test_invalid_grant(self):
         response = self.call_endpoint('/grant?name=invalid', 'get')
