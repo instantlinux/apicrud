@@ -135,10 +135,12 @@ class TestContacts(test_base.TestBase):
         self.authorize(username=account['username'],
                        password=password['new_password'], new_session=True)
 
-        response = self.call_endpoint('/grant?name=contacts', 'get')
+        response = self.call_endpoint('/grant?filter={"name":"contacts"}',
+                                      'get')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()['items'], [dict(
-            name='contacts', value=8, uid=uid)])
+            id='%s:contacts' % uid, name='contacts', value='8', uid=uid,
+            rbac='r', status='active')])
 
         # TODO clarify why this reset_mock mock?
         mock_messaging.reset_mock()

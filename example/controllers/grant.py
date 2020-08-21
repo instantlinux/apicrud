@@ -5,10 +5,8 @@ created 27-may-2019 by richb@instantlinux.net
 
 from flask import g
 import json
-import logging
 
 from apicrud.access import AccessControl
-from apicrud.account_settings import AccountSettings
 from apicrud.basic_crud import BasicCRUD
 from apicrud.grants import Grants
 from apicrud.service_config import ServiceConfig
@@ -51,13 +49,10 @@ class GrantController(BasicCRUD):
         retval = super(GrantController, GrantController).get(id)
         if retval[1] == 200 or ':' not in id:
             return retval
-        logging.info(retval)
         models = ServiceConfig().models
         acc = AccessControl(model=models.Grant)
         uid, grantname = id.split(':')
-        admin_id = AccountSettings(
-            account_id=acc.account_id, db_session=g.db).get.administrator_id
-        rbac = ''.join(sorted(list(acc.rbac_permissions(owner_uid=admin_id))))
+        rbac = ''.join(sorted(list(acc.rbac_permissions(owner_uid=uid))))
         if 'r' not in rbac:
             return dict('access denied'), 403
         return dict(id=id,  uid=uid, name=grantname, value=str(Grants(
@@ -67,16 +62,15 @@ class GrantController(BasicCRUD):
     def find(**kwargs):
         retval = super(GrantController, GrantController).find(**kwargs)
         filter = json.loads(kwargs.get('filter', '{}'))
+        by_name = kwargs.get('name') or filter.get('name')
         config = ServiceConfig().config
         models = ServiceConfig().models
         acc = AccessControl(model=models.Grant)
         uid = filter.get('uid') or acc.uid
-        admin_id = AccountSettings(
-            account_id=acc.account_id, db_session=g.db).get.administrator_id
-        rbac = ''.join(sorted(list(acc.rbac_permissions(owner_uid=admin_id))))
+        rbac = ''.join(sorted(list(acc.rbac_permissions(owner_uid=uid))))
         result = []
         for key, val in config.DEFAULT_GRANTS.items():
-            if 'name' in filter and key != filter.get('name'):
+            if by_name and key != by_name:
                 continue
             for row in retval[0]['items']:
                 if row['name'] == key:
