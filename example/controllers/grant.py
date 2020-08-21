@@ -3,7 +3,6 @@
 created 27-may-2019 by richb@instantlinux.net
 """
 
-from flask import g
 import json
 
 from apicrud.access import AccessControl
