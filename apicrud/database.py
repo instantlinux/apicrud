@@ -18,9 +18,11 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import select, func
 import time
+import yaml
 
 from .const import Constants
 from .session_manager import Mutex
+from .service_config import ServiceConfig
 
 Base = declarative_base()
 db_engine = None
@@ -143,6 +145,31 @@ def alembic_migrate(models, version, script_location, migrate=False,
         db_session.close()
 
 
+def seed_new_db(db_session):
+    """Seed a new db with admin account and related records
+
+    Args:
+      db_session (obj): existing db session
+    """
+
+    if db_session.bind.dialect.name == 'sqlite':
+        cmd = 'pragma foreign_keys'
+    else:
+        cmd = 'SET FOREIGN_KEY_CHECKS'
+    db_session.execute('%s=off' % cmd)
+    with open(ServiceConfig().config.DB_SEED_FILE, 'r') as f:
+        records = yaml.safe_load(f)
+    models = ServiceConfig().models
+    for resource, record in records.items():
+        if 'geolat' in record:
+            record['geolat'] *= 1e7
+            record['geolong'] *= 1e7
+        db_session.add(getattr(models, resource.capitalize())(**record))
+    _seed_tz_table(db_session, models.TZname)
+    db_session.execute('%s=on' % cmd)
+    db_session.commit()
+
+
 def _init_db(db_url=None, engine=None, connection_timeout=0,
              geo_support=True):
     global db_engine
@@ -183,3 +210,53 @@ def _load_spatialite(dbapi_conn, connection_record):
             logging.info('action=load_spatialite message=geo_support_added')
             spatialite_loaded = True
             return
+
+
+def _seed_tz_table(db_session, model):
+    """Add standard timezone names to the timezone table.
+    Most of the ID values are from:
+      https://code2care.org/pages/java-timezone-list-utc-gmt-offset
+
+    Args:
+        db_session (obj): an open session
+        model (obj): the TZ table model definition
+    """
+    db_session.add(model(id=262, name='Asia/Dubai'))
+    db_session.add(model(id=269, name='Asia/Hong_Kong'))
+    db_session.add(model(id=272, name='Asia/Istanbul'))
+    db_session.add(model(id=273, name='Asia/Jakarta'))
+    db_session.add(model(id=275, name='Asia/Jerusalem'))
+    db_session.add(model(id=276, name='Asia/Kabul'))
+    db_session.add(model(id=278, name='Asia/Karachi'))
+    db_session.add(model(id=287, name='Asia/Kuwait'))
+    db_session.add(model(id=292, name='Asia/Manila'))
+    db_session.add(model(id=306, name='Asia/Riyadh'))
+    db_session.add(model(id=307, name='Asia/Saigon'))
+    db_session.add(model(id=308, name='Asia/Seoul'))
+    db_session.add(model(id=309, name='Asia/Shanghai'))
+    db_session.add(model(id=314, name='Asia/Taipei'))
+    db_session.add(model(id=315, name='Asia/Tehran'))
+    db_session.add(model(id=319, name='Asia/Tokyo'))
+    db_session.add(model(id=360, name='Australia/North'))
+    db_session.add(model(id=362, name='Australia/Queensland'))
+    db_session.add(model(id=363, name='Australia/South'))
+    db_session.add(model(id=364, name='Australia/Sydney'))
+    db_session.add(model(id=365, name='Australia/Tasmania'))
+    db_session.add(model(id=366, name='Australia/Victoria'))
+    db_session.add(model(id=367, name='Australia/West'))
+    db_session.add(model(id=371, name='Brazil/East'))
+    db_session.add(model(id=372, name='Brazil/West'))
+    db_session.add(model(id=375, name='Canada/Atlantic'))
+    db_session.add(model(id=444, name='Europe/Istanbul'))
+    db_session.add(model(id=457, name='Europe/Moscow'))
+    db_session.add(model(id=460, name='Europe/Paris'))
+    db_session.add(model(id=464, name='Europe/Rome'))
+    db_session.add(model(id=586, name='US/Arizona'))
+    db_session.add(model(id=590, name='US/Hawaii'))
+    db_session.add(model(id=591, name='US/Central'))
+    db_session.add(model(id=593, name='US/Eastern'))
+    db_session.add(model(id=596, name='US/Samoa'))
+    db_session.add(model(id=597, name='US/Mountain'))
+    db_session.add(model(id=598, name='US/Pacific'))
+    db_session.add(model(id=601, name='UTC'))
+    db_session.add(model(id=619, name='IST'))

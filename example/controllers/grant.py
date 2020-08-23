@@ -3,12 +3,8 @@
 created 27-may-2019 by richb@instantlinux.net
 """
 
-import json
-
-from apicrud.access import AccessControl
 from apicrud.basic_crud import BasicCRUD
 from apicrud.grants import Grants
-from apicrud.service_config import ServiceConfig
 
 
 class GrantController(BasicCRUD):
@@ -38,45 +34,20 @@ class GrantController(BasicCRUD):
 
     @staticmethod
     def get(id):
-        """If the id is found in database, perform the standard CRUD
-        get(). Otherwise, look for a hybrid id in form uid:grant and
-        return the cached Grant value.
+        """Get one grant
 
         Args:
             id (str): Database or hybrid grant ID
         """
-        retval = super(GrantController, GrantController).get(id)
-        if retval[1] == 200 or ':' not in id:
-            return retval
-        models = ServiceConfig().models
-        acc = AccessControl(model=models.Grant)
-        uid, grantname = id.split(':')
-        rbac = ''.join(sorted(list(acc.rbac_permissions(owner_uid=uid))))
-        if 'r' not in rbac:
-            return dict('access denied'), 403
-        return dict(id=id,  uid=uid, name=grantname, value=str(Grants(
-            ).get(grantname, uid=uid)), rbac=rbac, status='active'), 200
+        return Grants().crud_get(
+            super(GrantController, GrantController).get(id), id)
 
     @staticmethod
     def find(**kwargs):
-        retval = super(GrantController, GrantController).find(**kwargs)
-        filter = json.loads(kwargs.get('filter', '{}'))
-        by_name = kwargs.get('name') or filter.get('name')
-        config = ServiceConfig().config
-        models = ServiceConfig().models
-        acc = AccessControl(model=models.Grant)
-        uid = filter.get('uid') or acc.uid
-        rbac = ''.join(sorted(list(acc.rbac_permissions(owner_uid=uid))))
-        result = []
-        for key, val in config.DEFAULT_GRANTS.items():
-            if by_name and key != by_name:
-                continue
-            for row in retval[0]['items']:
-                if row['name'] == key:
-                    result.append(row)
-                    break
-            else:
-                result.append(dict(id='%s:%s' % (uid, key), uid=uid,
-                                   name=key, value=str(val), rbac=rbac,
-                                   status='active'))
-        return dict(items=result, count=len(result)), retval[1]
+        """Find multiple grants
+
+        Args:
+            kwargs: as defined in openapi.yaml
+        """
+        return Grants().find(super(GrantController, GrantController).find(
+            **kwargs), **kwargs)

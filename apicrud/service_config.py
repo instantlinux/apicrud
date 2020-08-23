@@ -104,9 +104,13 @@ class ServiceConfig(object):
                     state['login_admin_limit'], 86400)
                 state['login_session_limit'] = max(
                     state['login_admin_limit'], 86400)
-            if file and '/' not in state['rbac_file']:
-                state['rbac_file'] = os.path.join(os.path.dirname(
-                    os.path.abspath(file)), state['rbac_file'])
+            if file:
+                if '/' not in state['rbac_file']:
+                    state['rbac_file'] = os.path.join(os.path.dirname(
+                        os.path.abspath(file)), state['rbac_file'])
+                if '/' not in state['db_seed_file']:
+                    state['db_seed_file'] = os.path.join(os.path.dirname(
+                        os.path.abspath(file)), state['db_seed_file'])
 
             config = namedtuple('Struct', [key.upper() for key in
                                            state.keys()])(*state.values())

@@ -148,7 +148,8 @@ class Credential(Base):
 
     def as_dict(self):
         return {col.name: getattr(self, col.name)
-                for col in self.__table__.columns}
+                for col in self.__table__.columns
+                if col.name not in ['secret', 'otherdata']}
 
 
 class DirectMessage(Base):

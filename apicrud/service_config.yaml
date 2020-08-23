@@ -94,6 +94,12 @@ components:
           default: 120
           description: Maximum time to wait for schema updates at startup
           type: integer
+        db_seed_file:
+          default: db_seed.yaml
+          description: >
+            Name of a file containing records for seeding a new database
+            file, relative to the openapi_file's parent directory
+          type: string
         debug:
           default: false
           description: Flask debug mode

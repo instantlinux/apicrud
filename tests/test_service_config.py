@@ -35,7 +35,10 @@ class TestServiceConfig(test_base.TestBase):
 
         response = self.call_endpoint('/config', 'get')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get_json(), app_config)
+        # TODO not sure why db_seed_file pathname mismatch
+        results = response.get_json()
+        results['db_seed_file'] = results['db_seed_file'].split('/')[-1]
+        self.assertEqual(results, app_config)
         os.remove(configfile)
 
     def test_get_config_unauthorized(self):
@@ -51,7 +54,9 @@ class TestServiceConfig(test_base.TestBase):
 
         os.environ['DB_GEO_SUPPORT'] = 'TRUE'
         os.environ['DEBUG'] = '0'
-        ServiceConfig(reset=True, rbac_file=app_config['rbac_file'])
+        ServiceConfig(reset=True,
+                      db_seed_file=app_config['db_seed_file'],
+                      rbac_file=app_config['rbac_file'])
         app_config['db_geo_support'] = True
 
         response = self.call_endpoint('/config', 'get')

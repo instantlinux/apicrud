@@ -212,7 +212,8 @@ class BasicCRUD(object):
             return dict(message='exception %s' % str(ex)), 405
 
         updated = {key: body[key] for key, val in body.items()
-                   if current[key] != val and key not in ('name', 'modified')}
+                   if key in current and current[key] != val and
+                   key not in ('name', 'modified')}
         logging.info(dict(name=body.get('name'), duration=utils.req_duration(),
                           **logmsg, **updated))
         return dict(id=id, message='updated'), 200

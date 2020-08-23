@@ -12,6 +12,7 @@ created 27-may-2019 by richb@instantlinux.net
 
 from flask import g
 from datetime import timedelta
+import json
 
 from .access import AccessControl
 from .service_config import ServiceConfig
@@ -65,6 +66,52 @@ class Grants(object):
         if name in GRANTS[uid] and utils.utcnow() < GRANTS[uid]['expires']:
             return GRANTS[uid][name]
         return GRANTS['defaults'][name]
+
+    def crud_get(self, crud_results, id):
+        """Process results from BasicCRUD.get() for grants endpoint.
+        If the id is found in database, perform the standard CRUD
+        get(). Otherwise, look for a hybrid id in form uid:grant and
+        return the cached Grant value.
+
+        Args:
+            crud_results (tuple): preliminary response
+            name (str): name filter, if specified
+        """
+        if crud_results[1] == 200 or ':' not in id:
+            return crud_results
+        acc = AccessControl(model=self.models.Grant)
+        uid, grantname = id.split(':')
+        rbac = ''.join(sorted(list(acc.rbac_permissions(owner_uid=uid))))
+        if 'r' not in rbac:
+            return dict('access denied'), 403
+        return dict(id=id,  uid=uid, name=grantname, value=str(self.get(
+            grantname, uid=uid)), rbac=rbac, status='active'), 200
+
+    def find(self, crud_results, **kwargs):
+        """Process results from BasicCRUD.find() for grants endpoint
+
+        Args:
+            crud_results (tuple): preliminary response
+            name (str): name filter, if specified
+        """
+        filter = json.loads(kwargs.get('filter', '{}'))
+        name = kwargs.get('name') or filter.get('name')
+        acc = AccessControl(model=self.models.Grant)
+        uid = filter.get('uid') or acc.uid
+        rbac = ''.join(sorted(list(acc.rbac_permissions(owner_uid=uid))))
+        result = []
+        for key, val in GRANTS['defaults'].items():
+            if name and key != name:
+                continue
+            for row in crud_results[0]['items']:
+                if row['name'] == key:
+                    result.append(row)
+                    break
+            else:
+                result.append(dict(id='%s:%s' % (uid, key), uid=uid,
+                                   name=key, value=str(val), rbac=rbac,
+                                   status='active'))
+        return dict(items=result, count=len(result)), crud_results[1]
 
     def uncache(self, uid):
         """Remove grants from cache, any time a user's status changes

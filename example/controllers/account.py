@@ -46,16 +46,14 @@ class AccountController(BasicCRUD):
           body (dict):
             Fields new_password, verify_password are required;
             either the old_password or a reset_token can be used
-            to authorized the request.
+            to authorize the request.
         Returns:
           tuple: dict with account_id/uid/username, http response
         """
-        if (not body.get('new_password') or
-                body.get('new_password') != body.get('verify_password')):
-            return dict(message='passwords do not match'), 405
         return SessionAuth(func_send=send_contact.delay).change_password(
             uid, body.get('new_password'), body.get('reset_token'),
-            old_password=body.get('old_password'))
+            old_password=body.get('old_password'),
+            verify_password=body.get('verify_password'))
 
     @staticmethod
     def get_password(uid):

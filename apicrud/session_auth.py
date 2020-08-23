@@ -196,7 +196,7 @@ class SessionAuth(object):
                                       func_send=self.func_send)
 
     def change_password(self, uid, new_password, reset_token,
-                        old_password=None):
+                        old_password=None, verify_password=None):
         """Update a user's password, applying complexity rules; must
         specify either the old password or a reset token
 
@@ -210,6 +210,8 @@ class SessionAuth(object):
           tuple: dict with account_id/uid/username, http response
         """
 
+        if not new_password or new_password != verify_password:
+            return dict(message='passwords do not match'), 405
         try:
             account = g.db.query(self.models.Account).filter_by(
                 uid=uid, status='active').one()

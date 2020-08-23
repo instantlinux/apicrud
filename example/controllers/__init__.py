@@ -30,7 +30,6 @@ def resources():
             location.LocationController,
             message.MessageController,
             person.PersonController,
-            # profile.ProfileController,
             settings.SettingsController,
             tz.TZController]:
         results.append(controller().resource)

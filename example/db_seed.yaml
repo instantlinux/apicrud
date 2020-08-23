@@ -1,0 +1,53 @@
+---
+# Seed records for a new database
+category:
+  id: x-3423ceaf
+  name: default
+  uid: x-23450001
+person:
+  id: x-23450001
+  name: Example User
+  identity: example@instantlinux.net
+  privacy: public
+  status: active
+contact:
+  id: x-4566a239
+  uid: x-23450001
+  type: email
+  info: example@instantlinux.net
+  muted: True
+  privacy: public
+  status: active
+account:
+  id: x-54320001
+  name: admin
+  is_admin: True
+  uid: x-23450001
+  settings_id: x-75023275
+  password_must_change: False
+  # This is the developer p@ssw0rd
+  password: $5$rounds=535000$YPzbABo4IekfjkMO$mWiN711ak8D16YNyc/x.K8FBfQBp1J3q8yrokRheSy7
+  status: active
+settings:
+  id: x-75023275
+  administrator_id: x-23450001
+  name: global
+  country: US
+  lang: en_US
+  smtp_smarthost: smtp.gmail.com
+  tz_id: 598
+  url: "http://localhost:3000"
+  window_title: Example apicrud Application
+  default_cat_id: x-3423ceaf
+location:
+  id: x-67673434
+  address: 800 Dolores St.
+  city: San Francisco
+  state: CA
+  country: US
+  geolat: 37.756503
+  geolong: -122.425671
+  neighborhood: Mission District
+  category_id: x-3423ceaf
+  uid: x-23450001
+  status: active
