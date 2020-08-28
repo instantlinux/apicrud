@@ -13,8 +13,9 @@ import logging
 import os.path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.event import listen
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import OperationalError, ProgrammingError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import select, func
 import time
@@ -145,11 +146,39 @@ def alembic_migrate(models, version, script_location, migrate=False,
         db_session.close()
 
 
-def seed_new_db(db_session):
-    """Seed a new db with admin account and related records
+def schema_update(db_engine, models, migrate=False, schema_maxtime=0):
+    """Run alembic migrations for updating schema
+
+    Must be called with mutex for duration of update to prevent race
+    conditions; begin_transaction() does not ensure mutual exclusion.
+
+    Args:
+      db_engine (obj): connection to database
+      models (obj): models to generate or update
+      script_location (str): path for alembic scripts
+      migrate (bool): perform migrations only if True
+      schema_maxtime (int): maximum seconds to wait for mutex
+    """
+    db_session = get_session(scoped=True)
+    script_location = ServiceConfig().config.DB_MIGRATIONS
+    try:
+        version = db_session.query(models.AlembicVersion).one().version_num
+    except (NoResultFound, OperationalError, ProgrammingError) as ex:
+        logging.warning('DB schema does not yet exist: %s' % str(ex))
+        version = None
+    db_session.close()
+    alembic_migrate(models, version, script_location, migrate=migrate,
+                    schema_maxtime=schema_maxtime, seed_func=seed_new_db)
+
+
+def seed_new_db(db_session, tz_model=None):
+    """Seed a new db with admin account and related records. Reads
+    records defined in a file db_seed.yaml (or as otherwise specified
+    in the main config.yaml) and places them in the database.
 
     Args:
       db_session (obj): existing db session
+      tz_model (obj): timezone model [default models.Tz]
     """
 
     if db_session.bind.dialect.name == 'sqlite':
@@ -157,15 +186,18 @@ def seed_new_db(db_session):
     else:
         cmd = 'SET FOREIGN_KEY_CHECKS'
     db_session.execute('%s=off' % cmd)
-    with open(ServiceConfig().config.DB_SEED_FILE, 'r') as f:
+    with open(ServiceConfig().config.DB_SEED_FILE, 'rt', encoding='utf8') as f:
         records = yaml.safe_load(f)
     models = ServiceConfig().models
+    if not tz_model:
+        tz_model = models.Tz
     for resource, record in records.items():
         if 'geolat' in record:
+            # Store lat/long as fixed-precision integers
             record['geolat'] *= 1e7
             record['geolong'] *= 1e7
         db_session.add(getattr(models, resource.capitalize())(**record))
-    _seed_tz_table(db_session, models.TZname)
+    _seed_tz_table(db_session, tz_model)
     db_session.execute('%s=on' % cmd)
     db_session.commit()
 
@@ -216,11 +248,25 @@ def _seed_tz_table(db_session, model):
     """Add standard timezone names to the timezone table.
     Most of the ID values are from:
       https://code2care.org/pages/java-timezone-list-utc-gmt-offset
+    ID values don't really matter, but they should remain as
+    unchanging and universal as possible. This list is curated to
+    be short enough for a user to quickly select from a dropdown,
+    but long enough to represent almost all of the world's timezones.
+
+    Note that additions can be made to the db_seed.yaml (resource
+    type 'tz').
 
     Args:
         db_session (obj): an open session
         model (obj): the TZ table model definition
     """
+    db_session.add(model(id=14, name='Africa/Cairo'))
+    db_session.add(model(id=15, name='Africa/Casablanca'))
+    db_session.add(model(id=26, name='Africa/Johannesburg'))
+    db_session.add(model(id=32, name='Africa/Lagos'))
+    db_session.add(model(id=44, name='Africa/Nairobi'))
+    db_session.add(model(id=247, name='Asia/Bangkok'))
+    db_session.add(model(id=259, name='Asia/Damascus'))
     db_session.add(model(id=262, name='Asia/Dubai'))
     db_session.add(model(id=269, name='Asia/Hong_Kong'))
     db_session.add(model(id=272, name='Asia/Istanbul'))
@@ -237,6 +283,7 @@ def _seed_tz_table(db_session, model):
     db_session.add(model(id=314, name='Asia/Taipei'))
     db_session.add(model(id=315, name='Asia/Tehran'))
     db_session.add(model(id=319, name='Asia/Tokyo'))
+    db_session.add(model(id=334, name='Atlantic/Azores'))
     db_session.add(model(id=360, name='Australia/North'))
     db_session.add(model(id=362, name='Australia/Queensland'))
     db_session.add(model(id=363, name='Australia/South'))
@@ -244,13 +291,22 @@ def _seed_tz_table(db_session, model):
     db_session.add(model(id=365, name='Australia/Tasmania'))
     db_session.add(model(id=366, name='Australia/Victoria'))
     db_session.add(model(id=367, name='Australia/West'))
+    db_session.add(model(id=370, name='Brazil/DeNoronha'))
     db_session.add(model(id=371, name='Brazil/East'))
     db_session.add(model(id=372, name='Brazil/West'))
     db_session.add(model(id=375, name='Canada/Atlantic'))
+    db_session.add(model(id=376, name='Canada/Central'))
+    db_session.add(model(id=377, name='Canada/Eastern'))
+    db_session.add(model(id=378, name='Canada/Mountain'))
+    db_session.add(model(id=379, name='Canada/Newfoundland'))
+    db_session.add(model(id=380, name='Canada/Pacific'))
+    db_session.add(model(id=383, name='Chile/Continental'))
+    db_session.add(model(id=428, name='Europe/Athens'))
     db_session.add(model(id=444, name='Europe/Istanbul'))
     db_session.add(model(id=457, name='Europe/Moscow'))
     db_session.add(model(id=460, name='Europe/Paris'))
     db_session.add(model(id=464, name='Europe/Rome'))
+    db_session.add(model(id=520, name='PRC'))
     db_session.add(model(id=586, name='US/Arizona'))
     db_session.add(model(id=590, name='US/Hawaii'))
     db_session.add(model(id=591, name='US/Central'))

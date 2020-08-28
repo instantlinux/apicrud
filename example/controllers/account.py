@@ -7,7 +7,6 @@ from flask import g, request
 from sqlalchemy.orm.exc import NoResultFound
 
 from apicrud.basic_crud import BasicCRUD
-import i18n_textstrings as i18n
 from apicrud.session_auth import SessionAuth
 from apicrud import singletons
 
@@ -92,8 +91,7 @@ class AccountController(BasicCRUD):
             return SessionAuth(func_send=send_contact.delay).forgot_password(
                     body.get('identity'), body.get('username'))
         retval = SessionAuth(func_send=send_contact.delay).register(
-            body.get('identity'), body.get('username'), body.get('name'),
-            i18n_id=i18n.PASSWORD_RESET)
+            body.get('identity'), body.get('username'), body.get('name'))
         if retval[1] > 201:
             return retval
         body['identity'] = body.get('identity').lower()

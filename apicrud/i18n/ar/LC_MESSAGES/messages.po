@@ -1,0 +1,254 @@
+# Arabic translations for apicrud.
+# Copyright (C) 2020 Richard Braun
+# This file is distributed under the same license as the apicrud project.
+# FIRST AUTHOR <docker@instantlinux.net>, 2020.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: apicrud VERSION\n"
+"Report-Msgid-Bugs-To: docker@instantlinux.net\n"
+"POT-Creation-Date: 2020-08-24 20:17-0700\n"
+"PO-Revision-Date: 2020-08-25 07:40-0700\n"
+"Last-Translator: FULL NAME <docker@instantlinux.net>\n"
+"Language: ar\n"
+"Language-Team: ar <LL@li.org>\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : "
+"n%100>=3 && n%100<=10 ? 3 : n%100>=0 && n%100<=2 ? 4 : 5)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: apicrud/access.py:143 apicrud/basic_crud.py:100 apicrud/basic_crud.py:112
+#: apicrud/basic_crud.py:171 apicrud/basic_crud.py:179
+#: apicrud/basic_crud.py:214 apicrud/basic_crud.py:257
+#: apicrud/basic_crud.py:425 apicrud/basic_crud.py:426
+#: apicrud/basic_crud.py:471 apicrud/service_config.py:175
+msgid "access denied"
+msgstr "تم الرفض"
+
+#: apicrud/basic_crud.py:153
+msgid "not found"
+msgstr ""
+
+#: apicrud/basic_crud.py:227 apicrud/basic_crud.py:492
+msgid "updated"
+msgstr "محدث"
+
+#: apicrud/basic_crud.py:321 apicrud/basic_crud.py:363
+msgid "invalid filter specified"
+msgstr ""
+
+#: apicrud/basic_crud.py:413 apicrud/basic_crud.py:454
+msgid "carrier required for sms"
+msgstr "الناقل المطلوب للرسائل القصيرة"
+
+#: apicrud/basic_crud.py:415 apicrud/basic_crud.py:456
+msgid "invalid mobile number"
+msgstr "الناقل المطلوب للرسائل القصيرة"
+
+#: apicrud/basic_crud.py:420 apicrud/basic_crud.py:461
+msgid "invalid email address"
+msgstr "عنوان البريد الإلكتروني غير صالح"
+
+#: apicrud/basic_crud.py:432
+msgid "max allowed contacts exceeded"
+msgstr "تم تجاوز الحد الأقصى المسموح به من جهات الاتصال"
+
+#: apicrud/basic_crud.py:490
+msgid "conflict with existing"
+msgstr ""
+
+#: apicrud/const.py:30
+msgid "email"
+msgstr "البريد الإلكتروني"
+
+#: apicrud/const.py:30
+msgid "messenger"
+msgstr "رسول"
+
+#: apicrud/const.py:30
+msgid "sms"
+msgstr "رسالة قصيرة"
+
+#: apicrud/const.py:31
+msgid "voice"
+msgstr "صوت"
+
+#: apicrud/const.py:31
+msgid "whatsapp"
+msgstr "ال WhatsApp"
+
+#: apicrud/session_auth.py:75
+msgid "DB operational error"
+msgstr "خطأ تشغيلي في قاعدة البيانات"
+
+#: apicrud/session_auth.py:80
+msgid "DB operational error, try again"
+msgstr "خطأ تشغيلي في قاعدة البيانات ، يرجى المحاولة مرة أخرى"
+
+#: apicrud/session_auth.py:85
+msgid "locked out"
+msgstr "اقفل"
+
+#: apicrud/session_auth.py:88
+msgid "no password"
+msgstr "لا توجد كلمة مرور"
+
+#: apicrud/session_auth.py:96
+msgid "not valid"
+msgstr "غير صالح"
+
+#: apicrud/session_auth.py:137
+msgid "rejected"
+msgstr "مرفوض"
+
+#: apicrud/session_auth.py:155
+msgid "all fields required"
+msgstr "جميع الحقول مطلوبة"
+
+#: apicrud/session_auth.py:161
+msgid "that username is already registered"
+msgstr "اسم المستخدم هذا مسجل بالفعل"
+
+#: apicrud/session_auth.py:172
+msgid "that email is already registered, use forgot-password"
+msgstr "هذا البريد الإلكتروني مسجل بالفعل ، استخدم نسيت كلمة المرور"
+
+#: apicrud/session_auth.py:195
+msgid "person added"
+msgstr "أضاف شخص"
+
+#: apicrud/session_auth.py:215
+msgid "passwords do not match"
+msgstr "كلمة المرور غير مطابقة"
+
+#: apicrud/session_auth.py:220
+msgid "account not found"
+msgstr "الحساب غير موجود"
+
+#: apicrud/session_auth.py:225
+msgid "rejected weak password"
+msgstr "رفض كلمة مرور ضعيفة"
+
+#: apicrud/session_auth.py:234
+msgid "invalid token"
+msgstr "رمز غير صالح"
+
+#: apicrud/session_auth.py:240
+msgid "changed"
+msgstr "تغير"
+
+#: apicrud/session_auth.py:271 apicrud/session_auth.py:272
+msgid "username or email not found"
+msgstr "اسم المستخدم أو البريد الإلكتروني غير موجود"
+
+#: apicrud/utils.py:146
+msgid "and"
+msgstr ""
+
+#: apicrud/templates/confirm_new.j2:2
+msgid "Welcome and please confirm your"
+msgstr "مرحبا بك ويرجى تأكيد الخاص بك"
+
+#: apicrud/templates/confirm_new.j2:6
+#, python-format
+msgid "Welcome to %(appname)s!"
+msgstr "مرحبًا بك في %(appname)s!"
+
+#: apicrud/templates/confirm_new.j2:7 apicrud/templates/confirm_new.j2:24
+#: apicrud/templates/contact_add.j2:6 apicrud/templates/contact_add.j2:22
+msgid "Your contact info"
+msgstr "معلومات الاتصال الخاصة بك"
+
+#: apicrud/templates/confirm_new.j2:7 apicrud/templates/confirm_new.j2:24
+#: apicrud/templates/contact_add.j2:6 apicrud/templates/contact_add.j2:22
+#, python-format
+msgid "was added to %(siteurl)s by"
+msgstr "تمت إضافته إلى %(siteurl)s بواسطة"
+
+#: apicrud/templates/confirm_new.j2:8 apicrud/templates/confirm_new.j2:25
+msgid "The next step is to set a password."
+msgstr "الخطوة التالية هي تعيين كلمة مرور."
+
+#: apicrud/templates/confirm_new.j2:9 apicrud/templates/contact_add.j2:7
+#: apicrud/templates/contact_add.j2:23
+msgid "Click to confirm this is you:"
+msgstr "انقر لتأكيد هويتك:"
+
+#: apicrud/templates/confirm_new.j2:18 apicrud/templates/password_reset.j2:16
+msgid "Set your password"
+msgstr "ضع كلمة مرور"
+
+#: apicrud/templates/confirm_new.j2:22 apicrud/templates/confirm_new.j2:28
+#: apicrud/templates/contact_add.j2:20 apicrud/templates/contact_add.j2:26
+#: apicrud/templates/password_reset.j2:20
+#: apicrud/templates/password_reset.j2:25 apicrud/templates/reset_invalid.j2:8
+#: apicrud/templates/reset_invalid.j2:12
+msgid "Ignore this message if you don't wish to receive further correspondence."
+msgstr "تجاهل هذه الرسالة إذا كنت لا ترغب في تلقي المزيد من المراسلات."
+
+#: apicrud/templates/confirm_new.j2:25 apicrud/templates/password_reset.j2:7
+#: apicrud/templates/password_reset.j2:22
+msgid "Go to"
+msgstr "اذهب إلى"
+
+#: apicrud/templates/confirm_new.j2:30 apicrud/templates/contact_add.j2:28
+#: apicrud/templates/password_reset.j2:27
+#, python-format
+msgid "See %(siteurl)s/#/confirm?token=%(token)s to confirm request by"
+msgstr "نرى %(siteurl)s/#/confirm?token=%(token)s لتأكيد الطلب عن طريق"
+
+#: apicrud/templates/contact_add.j2:2
+msgid "Please confirm your"
+msgstr "يرجى تأكيد الخاص بك"
+
+#: apicrud/templates/contact_add.j2:16
+msgid "Confirm contact info"
+msgstr "تأكيد معلومات الاتصال"
+
+#: apicrud/templates/footer.j2:3 apicrud/templates/footer.j2:24
+#, python-format
+msgid "This message was generated by %(appname)s hosted at"
+msgstr "تم إنشاء هذه الرسالة بواسطة %(appname)s المستضافة في"
+
+#: apicrud/templates/footer.j2:5 apicrud/templates/footer.j2:26
+msgid "You can adjust your communication preferences by visiting this link:"
+msgstr "يمكنك ضبط تفضيلات الاتصال الخاصة بك عن طريق زيارة هذا الرابط:"
+
+#: apicrud/templates/footer.j2:15
+msgid "Messaging Preferences"
+msgstr "تفضيلات المراسلة"
+
+#: apicrud/templates/footer.j2:20 apicrud/templates/footer.j2:29
+msgid "Software copyright"
+msgstr "حقوق التأليف والنشر البرمجيات"
+
+#: apicrud/templates/moderator.j2:6 apicrud/templates/moderator.j2:11
+msgid "List:"
+msgstr "قائمة:"
+
+#: apicrud/templates/moderator.j2:15
+msgid "Host message from"
+msgstr "رسالة مضيفة من"
+
+#: apicrud/templates/password_reset.j2:2 apicrud/templates/reset_invalid.j2:2
+msgid "Password reset request for"
+msgstr "طلب إعادة تعيين كلمة المرور لـ"
+
+#: apicrud/templates/password_reset.j2:6 apicrud/templates/password_reset.j2:22
+#: apicrud/templates/reset_invalid.j2:6 apicrud/templates/reset_invalid.j2:10
+msgid "We received a request to reset your password for"
+msgstr "لقد تلقينا طلبًا لإعادة تعيين كلمة المرور الخاصة بـ"
+
+#: apicrud/templates/reset_invalid.j2:7 apicrud/templates/reset_invalid.j2:11
+msgid "However, no registered account was found matching this address."
+msgstr "ومع ذلك ، لم يتم العثور على حساب مسجل يطابق هذا العنوان."
+
+#: apicrud/templates/reset_invalid.j2:14
+msgid "No account is registered for this number at"
+msgstr "لا يوجد حساب مسجل لهذا الرقم في"
+
+#~ msgid "invalid filter string"
+#~ msgstr ""
+

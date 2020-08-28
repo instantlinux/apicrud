@@ -18,8 +18,10 @@ import base64
 from connexion import NoContent
 from datetime import datetime, timedelta
 from flask import g, request
+from flask_babel import _
 import json
 import logging
+import re
 from sqlalchemy import asc, desc
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 from sqlalchemy.orm.exc import NoResultFound
@@ -27,6 +29,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from .access import AccessControl
 from .account_settings import AccountSettings
 from .const import Constants
+from .grants import Grants
 from .service_config import ServiceConfig
 from . import geocode, singletons, utils
 
@@ -67,6 +70,10 @@ class BasicCRUD(object):
         """
 
         self = singletons.controller[request.url_rule.rule.split('/')[3]]
+        if self.resource == 'contact':
+            retval = self._create_contact(body)
+            if retval[1] != 201:
+                return retval
         acc = AccessControl(model=self.model)
         logmsg = dict(action='create', account_id=acc.account_id,
                       resource=self.resource, ident=acc.identity)
@@ -90,7 +97,7 @@ class BasicCRUD(object):
                                    id=body.get('event_id')):
             logging.warning(dict(
                 message='access denied', uid=uid, **logmsg))
-            return dict(message='access denied'), 403
+            return dict(message=_(u'access denied')), 403
         logmsg['uid'] = body.get('uid')
         logging.info(dict(id=body['id'], name=body.get('name'), **logmsg))
         if not body.get('category_id') and hasattr(self.model, 'category_id'):
@@ -102,7 +109,7 @@ class BasicCRUD(object):
                     id=body['event_id']).one().category_id
             else:
                 logging.warning(dict(message='unexpected no creds', **logmsg))
-                return dict(message='access denied'), 403
+                return dict(message=_(u'access denied')), 403
         if hasattr(self.model, 'status'):
             body['status'] = body.get('status', 'active')
         try:
@@ -143,7 +150,8 @@ class BasicCRUD(object):
             query = self.db_get(id)
             record = query.one()
         except NoResultFound as ex:
-            return dict(id=id, message=str(ex)), 404
+            msg = _(u'not found') if 'No row was found' in str(ex) else str(ex)
+            return dict(id=id, message=msg), 404
 
         retval = record.as_dict()
         if hasattr(self.model, 'uid') and hasattr(self.model, 'owner'):
@@ -160,7 +168,7 @@ class BasicCRUD(object):
         if 'geolat' in retval:
             access = 'r' if 'r' in retval['rbac'] else None
             if retval['privacy'] == 'secret' and not access:
-                return dict(message='access denied'), 403
+                return dict(message=_(u'access denied')), 403
             return geocode.with_privacy(retval, access), 200
         if 'r' in retval['rbac']:
             logging.info(dict(
@@ -168,7 +176,7 @@ class BasicCRUD(object):
                 ident=acc.identity, duration=utils.req_duration()))
             return retval, 200
         else:
-            return dict(message='access denied', id=id), 403
+            return dict(message=_(u'access denied'), id=id), 403
 
     @staticmethod
     def update(id, body, access='u'):
@@ -203,7 +211,7 @@ class BasicCRUD(object):
             if not AccessControl(
                     model=self.model).with_permission(
                         access, query=query):
-                return dict(message='access denied', id=id), 403
+                return dict(message=_(u'access denied'), id=id), 403
             current = query.one().as_dict()
             query.update(body)
             g.db.commit()
@@ -216,7 +224,7 @@ class BasicCRUD(object):
                    key not in ('name', 'modified')}
         logging.info(dict(name=body.get('name'), duration=utils.req_duration(),
                           **logmsg, **updated))
-        return dict(id=id, message='updated'), 200
+        return dict(id=id, message=_(u'updated')), 200
 
     @staticmethod
     def delete(ids, force=False):
@@ -246,7 +254,7 @@ class BasicCRUD(object):
                 if not AccessControl(
                         model=self.model).with_permission(
                             'd', query=query):
-                    return dict(message='access denied', id=id), 403
+                    return dict(message=_(u'access denied'), id=id), 403
                 if force:
                     if query.delete():
                         logging.info(dict(id=id, **logmsg))
@@ -310,7 +318,7 @@ class BasicCRUD(object):
         try:
             filter = json.loads(kwargs.get('filter', '{}'))
         except json.decoder.JSONDecodeError as ex:
-            msg = 'invalid filter string=%s' % str(ex)
+            msg = _(u'invalid filter specified') + '=%s' % str(ex)
             logging.error(dict(message=msg, **logmsg))
             return dict(message=msg), 405
         if 'id' in filter:
@@ -352,7 +360,7 @@ class BasicCRUD(object):
                 sortdir(getattr(self.model, sort)))
         except InvalidRequestError as ex:
             logging.warning(dict(message=str(ex), **logmsg))
-            return dict(message='invalid filter specified'), 405
+            return dict(message=_(u'invalid filter specified')), 405
         if 'status' in conditions and conditions['status'] == 'disabled':
             query = query.filter(self.model.status == 'disabled')
         else:
@@ -390,6 +398,98 @@ class BasicCRUD(object):
             offset=offset, limit=limit,
             duration=utils.req_duration(), **conditions, **logmsg))
         return retval, 200
+
+    def _create_contact(self, body):
+        """Perform pre-checks against fields for contact resource
+        prior to rest of contact-create
+
+        Args:
+            body (dict): as defined in openapi.yaml schema
+        """
+        logmsg = dict(action='create', resource='contact',
+                      uid=body.get('uid'))
+        if body.get('type') == 'sms':
+            if body['carrier'] is None:
+                return dict(message=_(u'carrier required for sms')), 405
+            elif not re.match(Constants.REGEX_PHONE, body['info']):
+                return dict(message=_(u'invalid mobile number')), 405
+            body['info'] = re.sub('[- ()]', '', body['info'])
+        elif body.get('type') == 'email':
+            body['info'] = body['info'].strip().lower()
+            if not re.match(Constants.REGEX_EMAIL, body['info']):
+                return dict(message=_(u'invalid email address')), 405
+        elif 'type' in body and body.get('type') not in ['sms', 'email']:
+            return dict(message='contact type not yet supported'), 405
+        if (body.get('uid') != AccessControl().uid and
+                'admin' not in AccessControl().auth):
+            logging.warning(dict(message=_(u'access denied'), **logmsg))
+            return dict(message=_(u'access denied')), 403
+        self = singletons.controller[request.url_rule.rule.split('/')[3]]
+        # Counter-measure against spammers: enforce MAX_CONTACTS_PER_USER
+        max_contacts = int(Grants().get('contacts', uid=body['uid']))
+        if g.db.query(self.model).filter_by(uid=body[
+                'uid']).count() >= max_contacts:
+            msg = _(u'max allowed contacts exceeded')
+            logging.warning(dict(message=msg, allowed=max_contacts, **logmsg))
+            return dict(message=msg, allowed=max_contacts), 405
+        if not body.get('status'):
+            body['status'] = 'unconfirmed'
+        return dict(status='ok'), 201
+
+    @staticmethod
+    def update_contact(id, body):
+        """This is a special-case function for the contact-update resource
+
+        - validate sms carrier
+        - keep person identity in sync with primary contact
+
+        Args:
+          id (str): resource ID
+          body (dict): as defined in openapi.yaml
+        """
+
+        logmsg = dict(action='update', id=id, info=body.get('info'))
+        if body.get('type') == 'sms':
+            if body['carrier'] is None:
+                return dict(message=_(u'carrier required for sms')), 405
+            if not re.match(Constants.REGEX_PHONE, body['info']):
+                return dict(message=_(u'invalid mobile number')), 405
+            body['info'] = re.sub('[- ()]', '', body['info'])
+        elif body.get('type') == 'email':
+            body['info'] = body['info'].strip().lower()
+            if not re.match(Constants.REGEX_EMAIL, body['info']):
+                return dict(message=_(u'invalid email address')), 405
+        if 'id' in body and body['id'] != id:
+            return dict(message='id is a read-only property',
+                        title='Bad Request'), 405
+        self = singletons.controller[request.url_rule.rule.split('/')[3]]
+        body['modified'] = datetime.utcnow()
+        try:
+            query = g.db.query(self.model).filter_by(id=id)
+            if not AccessControl(model=self.model).with_permission(
+                    'u', query=query):
+                return dict(message=_(u'access denied'), id=id), 403
+            prev_identity = query.one().info
+            if body.get('status') != 'disabled':
+                body['status'] = 'unconfirmed'
+            query.update(body)
+            try:
+                # If updating primary contact, also update identity
+                primary = g.db.query(self.models.Person).filter_by(
+                    identity=prev_identity).one()
+                logging.info(dict(
+                    resource='person', previous=prev_identity, **logmsg))
+                primary.identity = body.get('info')
+            except NoResultFound:
+                pass
+            g.db.commit()
+            logging.info(dict(resource=self.resource, **logmsg))
+        except Exception as ex:
+            logging.warning(dict(message=str(ex), **logmsg))
+            g.db.rollback()
+            return dict(message=_(u'conflict with existing')), 405
+
+        return dict(id=id, message=_(u'updated')), 200
 
     @staticmethod
     def _tob64(text):

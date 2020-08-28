@@ -1,0 +1,259 @@
+# Filipino translations for apicrud.
+# Copyright (C) 2020 Richard Braun
+# This file is distributed under the same license as the apicrud project.
+# FIRST AUTHOR <docker@instantlinux.net>, 2020.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: apicrud VERSION\n"
+"Report-Msgid-Bugs-To: docker@instantlinux.net\n"
+"POT-Creation-Date: 2020-08-24 20:17-0700\n"
+"PO-Revision-Date: 2020-08-24 23:09-0700\n"
+"Last-Translator: FULL NAME <docker@instantlinux.net>\n"
+"Language: fil\n"
+"Language-Team: fil <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: apicrud/access.py:143 apicrud/basic_crud.py:100 apicrud/basic_crud.py:112
+#: apicrud/basic_crud.py:171 apicrud/basic_crud.py:179
+#: apicrud/basic_crud.py:214 apicrud/basic_crud.py:257
+#: apicrud/basic_crud.py:425 apicrud/basic_crud.py:426
+#: apicrud/basic_crud.py:471 apicrud/service_config.py:175
+msgid "access denied"
+msgstr "walang pahintulot"
+
+#: apicrud/basic_crud.py:153
+msgid "not found"
+msgstr "hindi mahanap"
+
+#: apicrud/basic_crud.py:227 apicrud/basic_crud.py:492
+msgid "updated"
+msgstr "na-update"
+
+#: apicrud/basic_crud.py:321 apicrud/basic_crud.py:363
+msgid "invalid filter specified"
+msgstr "di-wastong tinukoy na filter"
+
+#: apicrud/basic_crud.py:413 apicrud/basic_crud.py:454
+msgid "carrier required for sms"
+msgstr "kinakailangan ng carrier para sa sms"
+
+#: apicrud/basic_crud.py:415 apicrud/basic_crud.py:456
+msgid "invalid mobile number"
+msgstr "Di-wastong numero ng mobile"
+
+#: apicrud/basic_crud.py:420 apicrud/basic_crud.py:461
+msgid "invalid email address"
+msgstr "maling email address"
+
+#: apicrud/basic_crud.py:432
+msgid "max allowed contacts exceeded"
+msgstr "lumampas ang pinakamataas na pinapayagan na contact"
+
+#: apicrud/basic_crud.py:490
+msgid "conflict with existing"
+msgstr "salungatan sa umiiral na"
+
+#: apicrud/const.py:30
+msgid "email"
+msgstr "email"
+
+#: apicrud/const.py:30
+msgid "messenger"
+msgstr "messenger"
+
+#: apicrud/const.py:30
+msgid "sms"
+msgstr "sms"
+
+#: apicrud/const.py:31
+msgid "voice"
+msgstr "boses"
+
+#: apicrud/const.py:31
+msgid "whatsapp"
+msgstr ""
+
+#: apicrud/session_auth.py:75
+msgid "DB operational error"
+msgstr "error sa pagpapatakbo ng database"
+
+#: apicrud/session_auth.py:80
+msgid "DB operational error, try again"
+msgstr "error sa pagpapatakbo ng database, mangyaring subukang muli"
+
+#: apicrud/session_auth.py:85
+msgid "locked out"
+msgstr "naka-lock out"
+
+#: apicrud/session_auth.py:88
+msgid "no password"
+msgstr "walang password"
+
+#: apicrud/session_auth.py:96
+msgid "not valid"
+msgstr "hindi wasto"
+
+#: apicrud/session_auth.py:137
+msgid "rejected"
+msgstr "tinanggihan"
+
+#: apicrud/session_auth.py:155
+msgid "all fields required"
+msgstr "kinakailangan ang lahat ng mga patlang"
+
+#: apicrud/session_auth.py:161
+msgid "that username is already registered"
+msgstr "nakarehistro na ang username na iyon"
+
+#: apicrud/session_auth.py:172
+msgid "that email is already registered, use forgot-password"
+msgstr "nakarehistro na ang email na iyon, gamitin ang nakalimutan na password"
+
+#: apicrud/session_auth.py:195
+msgid "person added"
+msgstr "idinagdag ang tao"
+
+#: apicrud/session_auth.py:215
+msgid "passwords do not match"
+msgstr "hindi tumutugma ang mga password"
+
+#: apicrud/session_auth.py:220
+msgid "account not found"
+msgstr "hindi mahanap ang account"
+
+#: apicrud/session_auth.py:225
+msgid "rejected weak password"
+msgstr "tinanggihan mahina password"
+
+#: apicrud/session_auth.py:234
+msgid "invalid token"
+msgstr "hindi wastong tanda"
+
+#: apicrud/session_auth.py:240
+msgid "changed"
+msgstr "nagbago"
+
+#: apicrud/session_auth.py:271 apicrud/session_auth.py:272
+msgid "username or email not found"
+msgstr "username o email na hindi nahanap"
+
+#: apicrud/utils.py:146
+msgid "and"
+msgstr "at"
+
+#: apicrud/templates/confirm_new.j2:2
+msgid "Welcome and please confirm your"
+msgstr "Maligayang pagdating at mangyaring kumpirmahin ang iyong"
+
+#: apicrud/templates/confirm_new.j2:6
+#, python-format
+msgid "Welcome to %(appname)s!"
+msgstr "Maligayang pagdating sa %(appname)s!"
+
+#: apicrud/templates/confirm_new.j2:7 apicrud/templates/confirm_new.j2:24
+#: apicrud/templates/contact_add.j2:6 apicrud/templates/contact_add.j2:22
+msgid "Your contact info"
+msgstr "Ang iyong impormasyon sa pakikipag-ugnay"
+
+#: apicrud/templates/confirm_new.j2:7 apicrud/templates/confirm_new.j2:24
+#: apicrud/templates/contact_add.j2:6 apicrud/templates/contact_add.j2:22
+#, python-format
+msgid "was added to %(siteurl)s by"
+msgstr "ay idinagdag sa %(siteurl)s ni"
+
+#: apicrud/templates/confirm_new.j2:8 apicrud/templates/confirm_new.j2:25
+msgid "The next step is to set a password."
+msgstr "Ang susunod na hakbang ay upang magtakda ng isang password."
+
+#: apicrud/templates/confirm_new.j2:9 apicrud/templates/contact_add.j2:7
+#: apicrud/templates/contact_add.j2:23
+msgid "Click to confirm this is you:"
+msgstr "Mag-click upang kumpirmahin ito ay ikaw:"
+
+#: apicrud/templates/confirm_new.j2:18 apicrud/templates/password_reset.j2:16
+msgid "Set your password"
+msgstr "Itakda ang iyong password"
+
+#: apicrud/templates/confirm_new.j2:22 apicrud/templates/confirm_new.j2:28
+#: apicrud/templates/contact_add.j2:20 apicrud/templates/contact_add.j2:26
+#: apicrud/templates/password_reset.j2:20
+#: apicrud/templates/password_reset.j2:25 apicrud/templates/reset_invalid.j2:8
+#: apicrud/templates/reset_invalid.j2:12
+msgid "Ignore this message if you don't wish to receive further correspondence."
+msgstr ""
+"Balewalain ang mensaheng ito kung hindi mo nais na makatanggap ng "
+"karagdagang sulat."
+
+#: apicrud/templates/confirm_new.j2:25 apicrud/templates/password_reset.j2:7
+#: apicrud/templates/password_reset.j2:22
+msgid "Go to"
+msgstr "Pumunta sa"
+
+#: apicrud/templates/confirm_new.j2:30 apicrud/templates/contact_add.j2:28
+#: apicrud/templates/password_reset.j2:27
+#, python-format
+msgid "See %(siteurl)s/#/confirm?token=%(token)s to confirm request by"
+msgstr ""
+"Tingnan %(siteurl)s/#/confirm?token=%(token)s upang kumpirmahin ang "
+"kahilingan sa pamamagitan ng"
+
+#: apicrud/templates/contact_add.j2:2
+msgid "Please confirm your"
+msgstr "Mangyaring kumpirmahin ang iyong"
+
+#: apicrud/templates/contact_add.j2:16
+msgid "Confirm contact info"
+msgstr "Kumpirmahin ang impormasyon sa pakikipag-ugnay"
+
+#: apicrud/templates/footer.j2:3 apicrud/templates/footer.j2:24
+#, python-format
+msgid "This message was generated by %(appname)s hosted at"
+msgstr "Ang mensaheng ito ay nilikha ng %(appname)s host sa"
+
+#: apicrud/templates/footer.j2:5 apicrud/templates/footer.j2:26
+msgid "You can adjust your communication preferences by visiting this link:"
+msgstr ""
+"Maaari mong ayusin ang iyong mga kagustuhan sa komunikasyon sa "
+"pamamagitan ng pagbisita sa link na ito:"
+
+#: apicrud/templates/footer.j2:15
+msgid "Messaging Preferences"
+msgstr "Mga Kagustuhan sa Pagmemensahe"
+
+#: apicrud/templates/footer.j2:20 apicrud/templates/footer.j2:29
+msgid "Software copyright"
+msgstr ""
+
+#: apicrud/templates/moderator.j2:6 apicrud/templates/moderator.j2:11
+msgid "List:"
+msgstr "Listahan:"
+
+#: apicrud/templates/moderator.j2:15
+msgid "Host message from"
+msgstr "Mensahe ng host mula sa"
+
+#: apicrud/templates/password_reset.j2:2 apicrud/templates/reset_invalid.j2:2
+msgid "Password reset request for"
+msgstr "Humiling ng password para sa"
+
+#: apicrud/templates/password_reset.j2:6 apicrud/templates/password_reset.j2:22
+#: apicrud/templates/reset_invalid.j2:6 apicrud/templates/reset_invalid.j2:10
+msgid "We received a request to reset your password for"
+msgstr "Nakatanggap kami ng isang kahilingan upang i-reset ang iyong password ford"
+
+#: apicrud/templates/reset_invalid.j2:7 apicrud/templates/reset_invalid.j2:11
+msgid "However, no registered account was found matching this address."
+msgstr ""
+"Gayunpaman, walang nakitang rehistradong account na tumutugma sa address "
+"na ito."
+
+#: apicrud/templates/reset_invalid.j2:14
+msgid "No account is registered for this number at"
+msgstr "Walang account ang nakarehistro para sa numerong ito sa"
+
+

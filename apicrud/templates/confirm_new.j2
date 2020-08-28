@@ -1,0 +1,32 @@
+{% if selector == 'subject' -%}
+{{ _('Welcome and please confirm your') }} {{ _(type) }}
+{% elif selector == 'html' -%}
+<!DOCTYPE HTML PUBLIC “-//W3C//DTD HTML 3.2//EN”>
+<html>
+  {{ _('Welcome to %(appname)s!')|format(appname=appname) }}
+  {{ _('Your contact info') }} {{ _(info) }} {{ _('was added to %(siteurl)s by')|format(siteurl=siteurl) }} {{ sender }}.
+  {{ _('The next step is to set a password.') }}
+  {{ _('Click to confirm this is you:') }}
+  <table width="100%" cellspacing="0" cellpadding="0">
+    <tr><td><table cellspacing="0" cellpadding="0">
+      <tr><td style="border-radius: 2px;" bgcolor="#43BBC1">
+	  <a href="{{ siteurl }}/#/confirm?token={{ token }}"
+	  target="_blank" style="padding: 8px 12px; border: 1px solid
+	  #43BBC1;border-radius: 2px;font-family: Helvetica, Arial,
+	  sans-serif;font-size: 14px; color: #ffffff;text-decoration:
+	  none;font-weight:bold;display: inline-block;">
+	  {{ _('Set your password') }}</a>
+      </td></tr>
+    </table></td></tr>
+  </table>
+  {{ _("Ignore this message if you don't wish to receive further correspondence.") }}
+{% elif selector == 'email' -%}
+{{ _('Your contact info') }} {{ _(info) }} {{ _('was added to %(siteurl)s by')|format(siteurl=siteurl) }} {{ sender }}.
+{{ _('The next step is to set a password.') }} {{ _('Go to') }}
+{{ siteurl }}/#/confirm?token={{ token }}.
+
+{{ _("Ignore this message if you don't wish to receive further correspondence.") }}
+{% elif selector == 'sms' -%}
+{{ _('See %(siteurl)s/#/confirm?token=%(token)s to confirm request by')|
+  format(siteurl=siteurl, token=token) }} {{ sender }}
+{% endif -%}

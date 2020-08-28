@@ -1,0 +1,15 @@
+{% if selector == 'subject' -%}
+{{ _('Password reset request for') }} {{ appname }}
+{% elif selector == 'html' -%}
+<!DOCTYPE HTML PUBLIC “-//W3C//DTD HTML 3.2//EN”>
+<html>
+  {{ _('We received a request to reset your password for') }} {{ siteurl }}.
+  {{ _('However, no registered account was found matching this address.') }}
+  {{ _("Ignore this message if you don't wish to receive further correspondence.") }}
+{% elif selector == 'email' -%}
+{{ _('We received a request to reset your password for') }} {{ siteurl }}.
+{{ _('However, no registered account was found matching this address.') }}
+{{ _("Ignore this message if you don't wish to receive further correspondence.") }}
+{% elif selector == 'sms' -%}
+{{ _('No account is registered for this number at') }} {{ siteurl }}
+{% endif -%}

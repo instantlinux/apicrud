@@ -332,7 +332,7 @@ class Person(Base):
 
     lists = relationship('List', secondary='listmembers',
                          backref=backref('lists'), lazy='dynamic')
-    profile = relationship('Profile')
+    profileitems = relationship('Profile')
 
     def as_dict(self):
         retval = {col.name: getattr(self, col.name)
@@ -361,8 +361,8 @@ class Profile(Base):
 
     location = relationship('Location')
     owner = relationship('Person', foreign_keys=[uid], backref=backref(
-        'profileitems', cascade='all, delete-orphan'))
-    tz = relationship('TZname')
+        'profile', cascade='all, delete-orphan'))
+    tz = relationship('Tz')
 
     def as_dict(self):
         return {col.name: getattr(self, col.name)
@@ -400,7 +400,7 @@ class Settings(Base):
     administrator = relationship('Person')
     default_hostlist = relationship('List',
                                     foreign_keys=[default_hostlist_id])
-    tz = relationship('TZname')
+    tz = relationship('Tz')
 
     def as_dict(self):
         return {col.name: getattr(self, col.name)
@@ -438,7 +438,7 @@ class Storage(Base):
                 for col in self.__table__.columns}
 
 
-class TZname(Base):
+class Tz(Base):
     __tablename__ = 'time_zone_name'
 
     id = Column(INTEGER, primary_key=True, unique=True)

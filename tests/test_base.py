@@ -171,12 +171,13 @@ class TestBase(unittest.TestCase):
                 ).decode('utf-8'))
         self.authuser = guest_id
 
-    def call_endpoint(self, endpoint, method, data=None):
+    def call_endpoint(self, endpoint, method, data=None, extraheaders={}):
         """call an endpoint with flask.g context
 
         params:
           endpoint(str): endpoint path (after base_url)
           method(str): get, post, put etc
+          extraheaders(dict): additional headers
         returns:
           http response
         """
@@ -184,8 +185,8 @@ class TestBase(unittest.TestCase):
         base_url = '/config/v1' if endpoint == '/config' else self.base_url
         with self.app.test_request_context():
             g.db = database.get_session()
-            g.session = SessionManager(self.config, redis_conn=self.redis)
-            headers = {}
+            g.session = SessionManager(redis_conn=self.redis)
+            headers = extraheaders.copy()
             if self.authuser:
                 headers['Authorization'] = self.credentials[
                     self.authuser]['auth']

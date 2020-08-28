@@ -35,9 +35,12 @@ class TestServiceConfig(test_base.TestBase):
 
         response = self.call_endpoint('/config', 'get')
         self.assertEqual(response.status_code, 200)
-        # TODO not sure why db_seed_file pathname mismatch
+        # TODO not sure why db_seed_file, babel pathnames mismatch
         results = response.get_json()
+        results['db_migrations'] = results['db_migrations'].split('/')[-1]
         results['db_seed_file'] = results['db_seed_file'].split('/')[-1]
+        results['babel_translation_directories'] = results[
+            'babel_translation_directories'].split('/')[-1]
         self.assertEqual(results, app_config)
         os.remove(configfile)
 
@@ -56,6 +59,7 @@ class TestServiceConfig(test_base.TestBase):
         os.environ['DEBUG'] = '0'
         ServiceConfig(reset=True,
                       db_seed_file=app_config['db_seed_file'],
+                      db_migrations=app_config['db_migrations'],
                       rbac_file=app_config['rbac_file'])
         app_config['db_geo_support'] = True
 

@@ -32,6 +32,25 @@ components:
             Name of a list whose members are approved by email relay
             provider for From headers
           type: string
+        babel_default_locale:
+          default: en
+          description: Locale default
+          type: string
+          pattern: ^[a-zA-Z0-9_-]+$
+          minLength: 2
+          maxLength: 12
+        babel_default_timezone:
+          default: UTC
+          description: Timezone default
+          type: string
+          minLength: 3
+          maxLength: 24
+        babel_translation_directories:
+          default: i18n
+          description: >
+            List of directories in which to find LC_MESSAGES translations,
+            semicolon-delimited
+          type: string
         base_url:
           default: /api/v1
           description: The API base URL
@@ -90,6 +109,10 @@ components:
           default: false
           description: Support for spatial/geographic objects by database
           type: boolean
+        db_migrations:
+          default: alembic
+          description: Parent directory containing alembic migration scripts
+          type: string
         db_schema_maxtime:
           default: 120
           description: Maximum time to wait for schema updates at startup
@@ -147,6 +170,15 @@ components:
           description: A secret for generating/validating JSON web tokens
           format: password
           type: string
+        languages:
+          default: [ ar, de, en, es, fil, fr, it, ja, ko, pt, ru, vi, zh,
+                     zh_Hans, zh_Hant ]
+          description: List of supported languages
+          type: array
+          items:
+            type: string
+            minLength: 2
+            maxLength: 12
         log_level:
           default: info
           description: The syslog level for container logs
@@ -225,6 +257,12 @@ components:
           default: main
           description: Name of the microservice this container provides
           type: string
+        template_folders:
+          default: [ 'templates' ]
+          description: Paths containing Jinja2 templates
+          type: array
+          items:
+            type: string
         token_salt:
           default: "YI31A26j6f4&0#X*8&7QBNF"
           description: >

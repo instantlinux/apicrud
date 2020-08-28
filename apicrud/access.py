@@ -38,6 +38,7 @@ refactored 6-mar-2020
 
 from datetime import datetime
 from flask import g, request
+from flask_babel import _
 import logging
 import re
 from sqlalchemy import or_
@@ -58,7 +59,6 @@ class AccessControl(object):
       policy_file (str): name of the yaml definitions file
       model (obj): a model to be validated for permissions
     """
-
     def __init__(self, policy_file=None, model=None):
         if POLICIES and request:
             self.policies = POLICIES['policies']
@@ -98,7 +98,7 @@ class AccessControl(object):
           filename (str): filename containing RBAC definitions
         """
 
-        with open(filename, 'r') as f:
+        with open(filename, 'rt', encoding='utf8') as f:
             rbac = yaml.safe_load(f)
             self.policies = {}
         for res, policy in rbac['policies'].items():
@@ -140,7 +140,7 @@ class AccessControl(object):
             duration = (datetime.utcnow().timestamp() -
                         g.request_start_time.timestamp())
             logging.info(dict(
-                action='with_permission', message='access denied',
+                action='with_permission', message=_('access denied'),
                 resource=self.resource, uid=self.uid, ident=self.identity,
                 access=access, rbac=rbac, duration='%.3f' % duration))
         return False

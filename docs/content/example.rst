@@ -10,13 +10,17 @@ This example serves a simple message-board. The `source code <https://github.com
     ├── celeryconfig.py          # celery-worker parameters
     ├── config.yaml              # application settings
     ├── constants.py             # global constants
-    ├── db_schema.py             # db initial seed/update functions
+    ├── db_seed.yaml             # db initial seed records
     ├── Dockerfile.api           # container image builder scripts
     ├── Dockerfile.worker
     ├── entrypoint-worker.sh     # container startup script
-    ├── i18n_textstrings.py      # application language translations
+    ├── i18n                     # application language translations
+    │   ├── messages.pot         # extracted language strings
+    │   ├── ar                   # arabic message mappings
+    │   └── de (...)             # german messages (and so on)
     ├── main.py                  # top-level startup
     ├── Makefile.dev             # administrative utilities
+    ├── Makefile.i18n
     ├── Makefile.k8s
     ├── Makefile.sops
     ├── Makefile.vars

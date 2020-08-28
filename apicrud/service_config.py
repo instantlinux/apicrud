@@ -26,6 +26,7 @@ created 12-aug-2020 by docker@instantlinux.net
 
 import binascii
 from collections import namedtuple
+from flask_babel import gettext as _
 import jsonschema
 import logging
 import os
@@ -40,7 +41,7 @@ config = None
 class ServiceConfig(object):
     """Service config for flask application
 
-    Attributes:
+    Args:
       file (str): path of a YAML file defining override values
       models (obj): sqlalchemy db models
       reset (boolean): reset cached values (for unit tests)
@@ -55,12 +56,13 @@ class ServiceConfig(object):
 
         if reset or not config:
             with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                   Constants.SERVICE_CONFIG_FILE), 'r') as f:
+                                   Constants.SERVICE_CONFIG_FILE), 'rt',
+                      encoding='utf8') as f:
                 openapi = yaml.safe_load(f)
 
             overrides = {}
             if file:
-                with open(file, 'r') as f:
+                with open(file, 'rt', encoding='utf8') as f:
                     overrides = yaml.safe_load(f)
                 if not overrides:
                     raise AttributeError('No values found in %s' % file)
@@ -104,16 +106,29 @@ class ServiceConfig(object):
                     state['login_admin_limit'], 86400)
                 state['login_session_limit'] = max(
                     state['login_admin_limit'], 86400)
+            if '/' not in state['babel_translation_directories']:
+                state['babel_translation_directories'] = (
+                    os.path.join(os.path.dirname(__file__),
+                                 state['babel_translation_directories']))
+            if len(state['template_folders']) == 1 and (
+                    '/' not in state['template_folders'][0]):
+                state['template_folders'][0] = (
+                    os.path.join(os.path.dirname(__file__),
+                                 state['template_folders'][0]))
             if file:
                 if '/' not in state['rbac_file']:
                     state['rbac_file'] = os.path.join(os.path.dirname(
                         os.path.abspath(file)), state['rbac_file'])
+                if '/' not in state['db_migrations']:
+                    state['db_migrations'] = os.path.join(os.path.dirname(
+                        os.path.abspath(file)), state['db_migrations'])
                 if '/' not in state['db_seed_file']:
                     state['db_seed_file'] = os.path.join(os.path.dirname(
                         os.path.abspath(file)), state['db_seed_file'])
-
-            config = namedtuple('Struct', [key.upper() for key in
-                                           state.keys()])(*state.values())
+            state.pop('schema', None)
+            state.pop('models', None)
+            config = namedtuple('Struct', [
+                key.upper() for key in state.keys()])(*state.values())
             state['schema'] = openapi['components']['schemas']['Config']
             state['models'] = models
         self.config = config
@@ -160,7 +175,7 @@ class ServiceConfig(object):
         from .access import AccessControl
 
         if not AccessControl().auth or 'admin' not in AccessControl().auth:
-            return dict(message='access denied'), 403
+            return dict(message=_(u'access denied')), 403
         retval = {key: state[key]
                   for key, props in state['schema']['properties'].items()
                   if key not in ('db_url') and

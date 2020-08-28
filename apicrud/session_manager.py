@@ -16,7 +16,6 @@ import string
 import time
 
 from .aes_encrypt import AESEncrypt
-from .const import Constants
 from .service_config import ServiceConfig
 
 saved_redis = None
@@ -26,12 +25,10 @@ class SessionManager(object):
     """Session Manager - for active user sessions
 
     Args:
-      config (obj): the config-file key-value object
       ttl (int): seconds until a session expires
       redis_conn (obj): connection to redis service
     """
-
-    def __init__(self, ttl=Constants.REDIS_TTL, redis_conn=None):
+    def __init__(self, ttl=None, redis_conn=None):
         global saved_redis
 
         self.config = ServiceConfig().config
@@ -40,7 +37,7 @@ class SessionManager(object):
                 host=self.config.REDIS_HOST,
                 port=self.config.REDIS_PORT, db=0))
         saved_redis = self.connection
-        self.ttl = ttl
+        self.ttl = ttl or self.config.REDIS_TTL
         self.aes = AESEncrypt(self.config.REDIS_AES_SECRET)
 
     def create(self, uid, roles, **kwargs):
@@ -154,10 +151,12 @@ class Mutex:
       redis_conn (obj): existing redis connection
     """
     def __init__(self, lockname, redis_host=None, maxwait=20,
-                 ttl=Constants.REDIS_TTL, redis_conn=None):
+                 ttl=0, redis_conn=None):
+        config = ServiceConfig().config
         self.connection = (
-            redis_conn or redis.Redis(host=redis_host, port=6379, db=0))
-        self.ttl = ttl
+            redis_conn or redis.Redis(host=redis_host,
+                                      port=config.REDIS_PORT, db=0))
+        self.ttl = ttl or config.REDIS_TTL
         self.lock_signature = _gen_id()
         self.lockname = lockname
         self.maxwait = maxwait

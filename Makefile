@@ -14,6 +14,7 @@ export REGISTRY ?= $(REGISTRY_URI)/$(CI_PROJECT_PATH)
 
 include example/Makefile.vars
 include example/Makefile.dev
+include example/Makefile.i18n
 include example/Makefile.k8s
 include example/Makefile.sops
 
@@ -54,7 +55,7 @@ $(VDIR)/lib/python$(VER_PY)/site-packages/flask/app.py: python_env
 py_requirements: $(VDIR)/lib/python$(VER_PY)/site-packages/flask/app.py
 test_requirements: $(VDIR)/lib/python$(VER_PY)/site-packages/pytest.py
 
-test: test_requirements py_requirements
+test: test_requirements py_requirements apicrud/i18n/en/LC_MESSAGES/messages.mo
 	@echo "Running pytest unit tests"
 	cd apicrud && \
 	(. $(VDIR)/bin/activate && \
@@ -68,7 +69,7 @@ test: test_requirements py_requirements
 	 --cov ../example \
 	 --cov .)
 
-dist/apicrud-$(VERSION).tar.gz: test_requirements
+dist/apicrud-$(VERSION).tar.gz: i18n_compile test_requirements
 	@echo "Building package"
 	pip show wheel >/dev/null; \
 	if [ $$? -ne 0 ]; then \
@@ -76,6 +77,9 @@ dist/apicrud-$(VERSION).tar.gz: test_requirements
 	else \
 	  python setup.py sdist bdist_wheel ; \
 	fi
+
+apicrud/i18n/en/LC_MESSAGES/messages.mo:
+	make i18n_compile
 
 clean:
 	rm -rf build dist *.egg-info .cache .pytest_cache */__pycache__ \

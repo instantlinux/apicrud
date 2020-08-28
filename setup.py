@@ -1,3 +1,4 @@
+import glob
 import io
 import os.path
 import setuptools
@@ -9,6 +10,7 @@ with open('apicrud/_version.py') as file:
 
 __long_desc__ = io.open(os.path.join(os.path.dirname(
     os.path.abspath(__file__)), 'README.md'), encoding='utf-8').read()
+__mo_files__ = [mo for mo in glob.glob('apicrud/i18n/*/LC_MESSAGES/*.mo')]
 
 
 class PyTest(TestCommand):
@@ -39,7 +41,7 @@ setuptools.setup(
     url='https://github.com/instantlinux/apicrud',
     license='Apache License Version 2.0',
     scripts=[],
-    package_data=dict(apicrud=['*.yaml']),
+    package_data=dict(apicrud=['*.yaml', __mo_files__]),
     packages=('apicrud', 'apicrud.media', 'apicrud.messaging'),
     include_package_data=True,
     install_requires=[

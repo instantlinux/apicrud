@@ -1,0 +1,252 @@
+# Vietnamese translations for apicrud.
+# Copyright (C) 2020 Richard Braun
+# This file is distributed under the same license as the apicrud project.
+# Rich Braun <docker@instantlinux.net>, 2020.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: apicrud VERSION\n"
+"Report-Msgid-Bugs-To: docker@instantlinux.net\n"
+"POT-Creation-Date: 2020-08-24 20:17-0700\n"
+"PO-Revision-Date: 2020-08-29 15:39-0700\n"
+"Last-Translator: Rich Braun <docker@instantlinux.net>\n"
+"Language: vi\n"
+"Language-Team: Lang <docker@instantlinux.net>\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: apicrud/access.py:143 apicrud/basic_crud.py:100 apicrud/basic_crud.py:112
+#: apicrud/basic_crud.py:171 apicrud/basic_crud.py:179
+#: apicrud/basic_crud.py:214 apicrud/basic_crud.py:257
+#: apicrud/basic_crud.py:425 apicrud/basic_crud.py:426
+#: apicrud/basic_crud.py:471 apicrud/service_config.py:175
+msgid "access denied"
+msgstr "truy cập bị từ chối"
+
+#: apicrud/basic_crud.py:153
+msgid "not found"
+msgstr "không tìm thấy"
+
+#: apicrud/basic_crud.py:227 apicrud/basic_crud.py:492
+msgid "updated"
+msgstr "cập nhật"
+
+#: apicrud/basic_crud.py:321 apicrud/basic_crud.py:363
+msgid "invalid filter specified"
+msgstr "bộ lọc không hợp lệ được chỉ định"
+
+#: apicrud/basic_crud.py:413 apicrud/basic_crud.py:454
+msgid "carrier required for sms"
+msgstr "nhà cung cấp dịch vụ cần thiết cho sms"
+
+#: apicrud/basic_crud.py:415 apicrud/basic_crud.py:456
+msgid "invalid mobile number"
+msgstr "Số điện thoại di động không hợp lệ"
+
+#: apicrud/basic_crud.py:420 apicrud/basic_crud.py:461
+msgid "invalid email address"
+msgstr "địa chỉ email không hợp lệ"
+
+#: apicrud/basic_crud.py:432
+msgid "max allowed contacts exceeded"
+msgstr "đã vượt quá địa chỉ liên hệ tối đa được phép"
+
+#: apicrud/basic_crud.py:490
+msgid "conflict with existing"
+msgstr "xung đột với hiện tại"
+
+#: apicrud/const.py:30
+msgid "email"
+msgstr "e-mail"
+
+#: apicrud/const.py:30
+msgid "messenger"
+msgstr "tin nhắn"
+
+#: apicrud/const.py:30
+msgid "sms"
+msgstr "tin nhắn văn bản"
+
+#: apicrud/const.py:31
+msgid "voice"
+msgstr "tiếng nói"
+
+#: apicrud/const.py:31
+msgid "whatsapp"
+msgstr ""
+
+#: apicrud/session_auth.py:75
+msgid "DB operational error"
+msgstr "lỗi hoạt động cơ sở dữ liệu"
+
+#: apicrud/session_auth.py:80
+msgid "DB operational error, try again"
+msgstr "lỗi hoạt động cơ sở dữ liệu, hãy thử lại"
+
+#: apicrud/session_auth.py:85
+msgid "locked out"
+msgstr "bị khóa"
+
+#: apicrud/session_auth.py:88
+msgid "no password"
+msgstr "không mật khẩu"
+
+#: apicrud/session_auth.py:96
+msgid "not valid"
+msgstr "không hợp lệ"
+
+#: apicrud/session_auth.py:137
+msgid "rejected"
+msgstr "từ chối"
+
+#: apicrud/session_auth.py:155
+msgid "all fields required"
+msgstr "tất cả các trường bắt buộc"
+
+#: apicrud/session_auth.py:161
+msgid "that username is already registered"
+msgstr "tên người dùng đó đã được đăng ký"
+
+#: apicrud/session_auth.py:172
+msgid "that email is already registered, use forgot-password"
+msgstr "email đó đã được đăng ký, sử dụng mật khẩu quên"
+
+#: apicrud/session_auth.py:195
+msgid "person added"
+msgstr "người được thêm vào"
+
+#: apicrud/session_auth.py:215
+msgid "passwords do not match"
+msgstr "Mật khẩu không phù hợp"
+
+#: apicrud/session_auth.py:220
+msgid "account not found"
+msgstr "Tài khoản không được tìm thấy"
+
+#: apicrud/session_auth.py:225
+msgid "rejected weak password"
+msgstr "từ chối mật khẩu yếu"
+
+#: apicrud/session_auth.py:234
+msgid "invalid token"
+msgstr "Mã không hợp lệ"
+
+#: apicrud/session_auth.py:240
+msgid "changed"
+msgstr "đã thay đổi"
+
+#: apicrud/session_auth.py:271 apicrud/session_auth.py:272
+msgid "username or email not found"
+msgstr "tên người dùng hoặc email không được tìm thấy"
+
+#: apicrud/utils.py:146
+msgid "and"
+msgstr "và"
+
+#: apicrud/templates/confirm_new.j2:2
+msgid "Welcome and please confirm your"
+msgstr "Chào mừng bạn và vui lòng xác nhận"
+
+#: apicrud/templates/confirm_new.j2:6
+#, python-format
+msgid "Welcome to %(appname)s!"
+msgstr "Chào mừng bạn đến với %(appname)s!"
+
+#: apicrud/templates/confirm_new.j2:7 apicrud/templates/confirm_new.j2:24
+#: apicrud/templates/contact_add.j2:6 apicrud/templates/contact_add.j2:22
+msgid "Your contact info"
+msgstr "thông tin liên lạc của bạn"
+
+#: apicrud/templates/confirm_new.j2:7 apicrud/templates/confirm_new.j2:24
+#: apicrud/templates/contact_add.j2:6 apicrud/templates/contact_add.j2:22
+#, python-format
+msgid "was added to %(siteurl)s by"
+msgstr "đã được thêm vào %(siteurl)s bởi"
+
+#: apicrud/templates/confirm_new.j2:8 apicrud/templates/confirm_new.j2:25
+msgid "The next step is to set a password."
+msgstr "Bước tiếp theo là đặt mật khẩu."
+
+#: apicrud/templates/confirm_new.j2:9 apicrud/templates/contact_add.j2:7
+#: apicrud/templates/contact_add.j2:23
+msgid "Click to confirm this is you:"
+msgstr "Bấm để xác nhận đây là bạn:"
+
+#: apicrud/templates/confirm_new.j2:18 apicrud/templates/password_reset.j2:16
+msgid "Set your password"
+msgstr "Đặt mật khẩu của bạn"
+
+#: apicrud/templates/confirm_new.j2:22 apicrud/templates/confirm_new.j2:28
+#: apicrud/templates/contact_add.j2:20 apicrud/templates/contact_add.j2:26
+#: apicrud/templates/password_reset.j2:20
+#: apicrud/templates/password_reset.j2:25 apicrud/templates/reset_invalid.j2:8
+#: apicrud/templates/reset_invalid.j2:12
+msgid "Ignore this message if you don't wish to receive further correspondence."
+msgstr "Bỏ qua thông báo này nếu bạn không muốn nhận thêm thư từ."
+
+#: apicrud/templates/confirm_new.j2:25 apicrud/templates/password_reset.j2:7
+#: apicrud/templates/password_reset.j2:22
+msgid "Go to"
+msgstr "Đi đến"
+
+#: apicrud/templates/confirm_new.j2:30 apicrud/templates/contact_add.j2:28
+#: apicrud/templates/password_reset.j2:27
+#, python-format
+msgid "See %(siteurl)s/#/confirm?token=%(token)s to confirm request by"
+msgstr "Xem %(siteurl)s/#/confirm?token=%(token)s để xác nhận yêu cầu bằng"
+
+#: apicrud/templates/contact_add.j2:2
+msgid "Please confirm your"
+msgstr "Vui lòng xác nhận của bạn"
+
+#: apicrud/templates/contact_add.j2:16
+msgid "Confirm contact info"
+msgstr "Xác nhận liên hệ ino"
+
+#: apicrud/templates/footer.j2:3 apicrud/templates/footer.j2:24
+#, python-format
+msgid "This message was generated by %(appname)s hosted at"
+msgstr "Tin nhắn này được tạo bởi %(appname)s được lưu trữ tại"
+
+#: apicrud/templates/footer.j2:5 apicrud/templates/footer.j2:26
+msgid "You can adjust your communication preferences by visiting this link:"
+msgstr ""
+"Bạn có thể điều chỉnh tùy chọn liên lạc của mình bằng cách truy cập liên "
+"kết này:"
+
+#: apicrud/templates/footer.j2:15
+msgid "Messaging Preferences"
+msgstr "Tùy chọn nhắn tin"
+
+#: apicrud/templates/footer.j2:20 apicrud/templates/footer.j2:29
+msgid "Software copyright"
+msgstr "Bản quyền phần mềm"
+
+#: apicrud/templates/moderator.j2:6 apicrud/templates/moderator.j2:11
+msgid "List:"
+msgstr "Danh sách:"
+
+#: apicrud/templates/moderator.j2:15
+msgid "Host message from"
+msgstr "Lưu trữ tin nhắn từ"
+
+#: apicrud/templates/password_reset.j2:2 apicrud/templates/reset_invalid.j2:2
+msgid "Password reset request for"
+msgstr "Yêu cầu đặt lại mật khẩu cho"
+
+#: apicrud/templates/password_reset.j2:6 apicrud/templates/password_reset.j2:22
+#: apicrud/templates/reset_invalid.j2:6 apicrud/templates/reset_invalid.j2:10
+msgid "We received a request to reset your password for"
+msgstr "Yêu cầu đặt lại mật khẩu cho"
+
+#: apicrud/templates/reset_invalid.j2:7 apicrud/templates/reset_invalid.j2:11
+msgid "However, no registered account was found matching this address."
+msgstr "Tuy nhiên, không tìm thấy tài khoản đã đăng ký nào khớp với địa chỉ này."
+
+#: apicrud/templates/reset_invalid.j2:14
+msgid "No account is registered for this number at"
+msgstr "Không có tài khoản nào được đăng ký cho số này tại"
+

@@ -13,7 +13,6 @@ from apicrud.service_config import ServiceConfig
 import apicrud.messaging.send
 
 import celeryconfig
-import i18n_textstrings as i18n
 import models
 
 # TODO add function to send to a recipients list
@@ -30,7 +29,7 @@ def send_contact(frm=None, to=None, template=None, db_session=None, **kwargs):
     Args:
       frm (uid): person
       to (Contact): recipient
-      template (str): template name, jinja2 from i18n_texstrings
+      template (str): jinja2 template name
       kwargs: kv pairs
     Raises:
       SendException
@@ -38,6 +37,6 @@ def send_contact(frm=None, to=None, template=None, db_session=None, **kwargs):
 
     db_session = get_session(scopefunc=celery.utils.threads.get_ident,
                              db_url=config.DB_URL)
-    apicrud.messaging.send.to_contact(db_session, i18n, frm=frm, to=to,
+    apicrud.messaging.send.to_contact(db_session, frm=frm, to=to,
                                       template=template, **kwargs)
     db_session.remove()

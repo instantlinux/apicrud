@@ -1,0 +1,16 @@
+{% if selector == 'subject' -%}
+{{ subject }}
+{% elif selector == 'html' -%}
+<!DOCTYPE HTML PUBLIC “-//W3C//DTD HTML 3.2//EN”>
+<html>
+{{ _('List:') }} {{ list }}<br>
+<p>
+{{ message }}
+</html>
+{% elif selector == 'email' -%}
+{{ _('List:') }} {{ list }}
+
+{{ message }}
+{% elif selector == 'sms' -%}
+{{ _('Host message from') }} {{ appname }}: {{ message }}
+{% endif -%}

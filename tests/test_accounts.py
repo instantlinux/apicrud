@@ -8,6 +8,9 @@ created 4-nov-2019 by richb@instantlinux.net
 import mock
 import pytest
 
+from apicrud import database
+from models import Profile
+
 import test_base
 
 
@@ -68,7 +71,7 @@ class TestAccounts(test_base.TestBase):
                          % response.get_json().get('message'))
 
         mock_messaging.assert_has_calls([
-            mock.call(to=mock.ANY, template='password_reset', token=mock.ANY,
+            mock.call(to=mock.ANY, template='confirm_new', token=mock.ANY,
                       type='email')])
         for call in mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
@@ -103,6 +106,46 @@ class TestAccounts(test_base.TestBase):
         self.assertEqual(result, expected)
 
     @mock.patch('messaging.send_contact.delay')
+    def test_get_account_lang_es(self, mock_messaging):
+        expected = dict(id=self.adm_contact_2, message=u'acceso denegado')
+
+        record = dict(
+            name='Guillermo Morales', identity='gm@sistema.es',
+            username='diablocachondo')
+        password = dict(
+            new_password='6.1480j0', verify_password='6.1480j0')
+
+        response = self.call_endpoint('/account', 'post', data=record)
+        self.assertEqual(response.status_code, 201)
+        uid = response.get_json()['uid']
+
+        for call in mock_messaging.call_args_list:
+            password['reset_token'] = call.kwargs.get('token')
+
+        # Set the password with put, and confirm it's present with get
+        response = self.call_endpoint(
+            '/account_password/%s' % uid, 'put', data=password)
+        self.assertEqual(response.status_code, 200, 'put failed message=%s'
+                         % response.get_json().get('message'))
+        response = self.call_endpoint(
+            '/account_password/%s' % uid, 'get', data=password)
+        self.assertEqual(response.status_code, 200, 'get failed message=%s'
+                         % response.get_json().get('message'))
+        # Set lang profile
+        db_session = database.get_session(db_url=self.config.DB_URL)
+        db_session.add(Profile(id='x-fb3M81e7', uid=uid, item='lang',
+                               value='es_ES', status='active'))
+        db_session.commit()
+        db_session.remove()
+        self.authorize(username=record['username'],
+                       password=password['new_password'])
+        response = self.call_endpoint(
+            '/contact/%s' % self.adm_contact_2, 'get',
+            extraheaders={'Accept-Language': 'es_ES'})
+        self.assertEqual(response.get_json(), expected)
+        self.assertEqual(response.status_code, 403)
+
+    @mock.patch('messaging.send_contact.delay')
     def test_register_existing_person(self, mock_messaging):
         person = dict(name='Edgar Rodriguez', identity='edgar@conclave.events')
         username = 'eddie'
@@ -119,7 +162,7 @@ class TestAccounts(test_base.TestBase):
         uid = response.get_json()['uid']
 
         mock_messaging.assert_has_calls([
-            mock.call(to=mock.ANY, template='password_reset', token=mock.ANY,
+            mock.call(to=mock.ANY, template='confirm_new', token=mock.ANY,
                       type='email')])
         for call in mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
@@ -147,6 +190,9 @@ class TestAccounts(test_base.TestBase):
         response = self.call_endpoint('/account', 'post', data=record)
         self.assertEqual(response.status_code, 201)
         uid = response.get_json()['uid']
+        mock_messaging.assert_has_calls([
+            mock.call(to=mock.ANY, template='confirm_new', token=mock.ANY,
+                      type='email')])
         for call in mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
 
@@ -160,6 +206,9 @@ class TestAccounts(test_base.TestBase):
             forgot_password=True, username=record['username']))
         self.assertEqual(response.status_code, 200, 'post failed message=%s' %
                          response.get_json().get('message'))
+        mock_messaging.assert_has_calls([
+            mock.call(to=mock.ANY, template='password_reset', token=mock.ANY,
+                      type='email')])
         for call in mock_messaging.call_args_list:
             reset_token = call.kwargs.get('token')
         response = self.call_endpoint(

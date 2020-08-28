@@ -22,15 +22,14 @@ class SendException(Exception):
     pass
 
 
-def to_contact(db_session, i18n, frm=None, to=None, template=None,
+def to_contact(db_session, frm=None, to=None, template=None,
                account_id=None, **kwargs):
     """
     Args:
       db_session (obj): open session to database
-      i18n (obj): text strings
       frm (uid): person
       to (Contact): recipient
-      template (str): template name, jinja2 from i18n_texstrings
+      template (str): jinja2 template name
       account_id (str): ID of logged-in account
       kwargs: kv pairs
     Raises:
@@ -95,15 +94,15 @@ def to_contact(db_session, i18n, frm=None, to=None, template=None,
                 dest_email = (to_contact.info + '@' +
                               config.CARRIER_GATEWAYS[to_contact.carrier])
                 body = apicrud.messaging.format.sms(
-                    i18n.TPL[template], from_contact, to_contact,
-                    appname=config.APPNAME,
+                    template, from_contact, to_contact, settings,
+                    db_session, appname=config.APPNAME,
                     siteurl=settings.get.url, **kwargs)
             else:
                 dest_email = to_contact.info
                 body = apicrud.messaging.format.email(
-                    i18n.TPL[template], from_contact, sender_email,
+                    template, from_contact, sender_email,
                     to_contact, settings, db_session,
-                    i18n=i18n, appname=config.APPNAME,
+                    appname=config.APPNAME,
                     contact_id=to_contact.id,
                     siteurl=settings.get.url, **kwargs).as_string()
             smtp.sendmail(settings.get.sender_email, dest_email, body)

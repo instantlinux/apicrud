@@ -8,6 +8,7 @@ created 26-mar-2020 by richb@instantlinux.net
 
 from datetime import datetime, timedelta
 from flask import g, request
+from flask_babel import _
 import jwt
 import logging
 from passlib.hash import sha256_crypt
@@ -19,7 +20,7 @@ import string
 import time
 
 from .access import AccessControl
-from .const import Constants, i18n
+from .const import Constants
 from .messaging.confirmation import Confirmation
 from .service_config import ServiceConfig
 from .service_registry import ServiceRegistry
@@ -29,7 +30,7 @@ from .utils import gen_id
 class SessionAuth(object):
     """Session Authorization
 
-    Attributes:
+    Args:
       func_send(function): name of function for sending message
     """
 
@@ -71,20 +72,20 @@ class SessionAuth(object):
                     name=username, status='active').one()
         except InvalidPaddingError:
             logging.error('action=login message="invalid DB_AES_SECRET"')
-            return dict(message='DB operational error'), 503
+            return dict(message=_(u'DB operational error')), 503
         except NoResultFound:
             return dict(username=username, message='not valid'), 403
         except OperationalError as ex:
             logging.error('action=login message=%s' % str(ex))
-            return dict(message='DB operational error, try again'), 403
+            return dict(message=_(u'DB operational error, try again')), 403
         if (account.invalid_attempts >= self.login_attempts_max and
             account.last_invalid_attempt + timedelta(
                 seconds=self.login_lockout_interval) > datetime.utcnow()):
             time.sleep(5)
-            return dict(username=username, message='locked out'), 403
+            return dict(username=username, message=_(u'locked out')), 403
         if account.password == '':
             logging.error("username=%s, message='no password'" % username)
-            return dict(username=username, message='no password'), 403
+            return dict(username=username, message=_(u'no password')), 403
         elif not sha256_crypt.verify(password, account.password):
             account.invalid_attempts += 1
             account.last_invalid_attempt = datetime.utcnow()
@@ -92,7 +93,7 @@ class SessionAuth(object):
                 'action=login username=%s credential=invalid attempt=%d' %
                 (username, account.invalid_attempts))
             g.db.commit()
-            return dict(username=username, message='not valid'), 403
+            return dict(username=username, message=_(u'not valid')), 403
         logging.info('action=login username=%s account_id=%s' %
                      (username, account.id))
         account.last_login = datetime.utcnow()
@@ -133,9 +134,9 @@ class SessionAuth(object):
                 retval['storage_id'] = account.settings.default_storage_id
             return retval, 201
         else:
-            return dict(message='rejected'), 403
+            return dict(message=_(u'rejected')), 403
 
-    def register(self, identity, username, name, i18n_id):
+    def register(self, identity, username, name, template='confirm_new'):
         """Register a new account: create related records in database
         and send confirmation token to new user
 
@@ -146,18 +147,18 @@ class SessionAuth(object):
           identity (str): account's primary identity, usually an email
           username (str): account's username
           name (str): name
-          i18n_id (str): key in i18n object of reset message
+          template (str): template for message (confirming new user)
         Returns:
           tuple: the Confirmation.request dict and http response
         """
         if not username or not identity or not name:
-            return dict(message='all fields required'), 400
+            return dict(message=_(u'all fields required')), 400
         identity = identity.lower()
         logmsg = dict(action='register', identity=identity,
                       username=username)
         try:
             g.db.query(self.models.Account).filter_by(name=username).one()
-            msg = 'that username is already registered'
+            msg = _(u'that username is already registered')
             logging.warning(dict(message=msg, **logmsg))
             return dict(message=msg), 405
         except NoResultFound:
@@ -168,7 +169,7 @@ class SessionAuth(object):
                 identity=identity).one()
             uid = existing.id
             g.db.query(self.models.Account).filter_by(uid=uid).one()
-            msg = 'that email is already registered, use forgot-password'
+            msg = _(u'that email is already registered, use forgot-password')
             logging.warning(dict(message=msg, **logmsg))
             return dict(message=msg), 405
         except NoResultFound:
@@ -191,8 +192,8 @@ class SessionAuth(object):
             g.db.add(self.models.Contact(id=cid, uid=uid, type='email',
                                          info=identity))
             g.db.commit()
-            logging.info(dict(message='person added', uid=uid, **logmsg))
-        return Confirmation().request(cid, message=i18n_id,
+            logging.info(dict(message=_(u'person added'), uid=uid, **logmsg))
+        return Confirmation().request(cid, template=template,
                                       func_send=self.func_send)
 
     def change_password(self, uid, new_password, reset_token,
@@ -211,17 +212,17 @@ class SessionAuth(object):
         """
 
         if not new_password or new_password != verify_password:
-            return dict(message='passwords do not match'), 405
+            return dict(message=_(u'passwords do not match')), 405
         try:
             account = g.db.query(self.models.Account).filter_by(
                 uid=uid, status='active').one()
         except NoResultFound:
-            return dict(uid=uid, message='account not found'), 404
+            return dict(uid=uid, message=_(u'account not found')), 404
         logmsg = dict(action='change_password', resource='account',
                       username=account.name, uid=uid)
 
         if self._password_weak(new_password):
-            return dict(message='rejected weak password'), 405
+            return dict(message=_(u'rejected weak password')), 405
         if old_password:
             if not sha256_crypt.verify(old_password, account.password):
                 msg = 'invalid credential'
@@ -230,22 +231,23 @@ class SessionAuth(object):
         else:
             retval = Confirmation().confirm(reset_token)
             if retval[1] != 200:
-                msg = 'invalid token'
+                msg = _(u'invalid token')
                 logging.warning(dict(message=msg, **logmsg))
                 return dict(username=account.name, message=msg), 405
         account.password = sha256_crypt.hash(new_password)
         account.password_must_change = False
         g.db.commit()
-        logging.info(dict(message='changed', **logmsg))
+        logging.info(dict(message=_(u'changed'), **logmsg))
         return dict(id=account.id, uid=uid, username=account.name), 200
 
-    def forgot_password(self, identity, username):
+    def forgot_password(self, identity, username, template='password_reset'):
         """Trigger Confirmation.request; specify either the username
         or email address
 
         Args:
           identity (str): account's primary identity, usually an email
           username (str): account's username
+          template (str): template for message (confirming new user)
         Returns:
           tuple: the Confirmation.request dict and http response
         """
@@ -264,10 +266,13 @@ class SessionAuth(object):
                 type='email', info=account.owner.identity).one().id
         except NoResultFound:
             logging.warning(dict(message='not found', **logmsg))
-            return dict(message='username or email not found'), 404
+            if identity and '@' in identity:
+                # TODO send reset_invalid message instead of rejection
+                return dict(message=_(u'username or email not found')), 404
+            return dict(message=_(u'username or email not found')), 404
         logging.info(logmsg)
         return Confirmation().request(
-            id, message=i18n.PASSWORD_RESET, func_send=self.func_send)
+            id, template=template, func_send=self.func_send)
 
     def get_roles(self, uid, member_model, resource=None, id=None):
         """Get roles that match uid / id for a resource

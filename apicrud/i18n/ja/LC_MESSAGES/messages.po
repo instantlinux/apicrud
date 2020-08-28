@@ -1,0 +1,250 @@
+# Japanese translations for apicrud.
+# Copyright (C) 2020 Richard Braun
+# This file is distributed under the same license as the apicrud project.
+# FIRST AUTHOR <docker@instantlinux.net>, 2020.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: apicrud VERSION\n"
+"Report-Msgid-Bugs-To: docker@instantlinux.net\n"
+"POT-Creation-Date: 2020-08-24 20:17-0700\n"
+"PO-Revision-Date: 2020-08-25 07:53-0700\n"
+"Last-Translator: FULL NAME <docker@instantlinux.net>\n"
+"Language: ja\n"
+"Language-Team: ja <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: apicrud/access.py:143 apicrud/basic_crud.py:100 apicrud/basic_crud.py:112
+#: apicrud/basic_crud.py:171 apicrud/basic_crud.py:179
+#: apicrud/basic_crud.py:214 apicrud/basic_crud.py:257
+#: apicrud/basic_crud.py:425 apicrud/basic_crud.py:426
+#: apicrud/basic_crud.py:471 apicrud/service_config.py:175
+msgid "access denied"
+msgstr "アクセスが拒否されました"
+
+#: apicrud/basic_crud.py:153
+msgid "not found"
+msgstr "見つかりません"
+
+#: apicrud/basic_crud.py:227 apicrud/basic_crud.py:492
+msgid "updated"
+msgstr "更新しました"
+
+#: apicrud/basic_crud.py:321 apicrud/basic_crud.py:363
+msgid "invalid filter specified"
+msgstr "無効なフィルターが指定されました"
+
+#: apicrud/basic_crud.py:413 apicrud/basic_crud.py:454
+msgid "carrier required for sms"
+msgstr "SMSに必要なキャリア"
+
+#: apicrud/basic_crud.py:415 apicrud/basic_crud.py:456
+msgid "invalid mobile number"
+msgstr "無効な携帯電話番号"
+
+#: apicrud/basic_crud.py:420 apicrud/basic_crud.py:461
+msgid "invalid email address"
+msgstr "無効なメールアドレス"
+
+#: apicrud/basic_crud.py:432
+msgid "max allowed contacts exceeded"
+msgstr "許可された連絡先の最大数を超えました"
+
+#: apicrud/basic_crud.py:490
+msgid "conflict with existing"
+msgstr "既存との競合"
+
+#: apicrud/const.py:30
+msgid "email"
+msgstr "Eメール"
+
+#: apicrud/const.py:30
+msgid "messenger"
+msgstr "メッセンジャー"
+
+#: apicrud/const.py:30
+msgid "sms"
+msgstr "SMS"
+
+#: apicrud/const.py:31
+msgid "voice"
+msgstr "ボイス"
+
+#: apicrud/const.py:31
+msgid "whatsapp"
+msgstr ""
+
+#: apicrud/session_auth.py:75
+msgid "DB operational error"
+msgstr "データベース操作エラー"
+
+#: apicrud/session_auth.py:80
+msgid "DB operational error, try again"
+msgstr "データベースの操作エラーです。もう一度やり直してください"
+
+#: apicrud/session_auth.py:85
+msgid "locked out"
+msgstr "ロックアウトされ"
+
+#: apicrud/session_auth.py:88
+msgid "no password"
+msgstr "パスワードなし"
+
+#: apicrud/session_auth.py:96
+msgid "not valid"
+msgstr "有効ではありません"
+
+#: apicrud/session_auth.py:137
+msgid "rejected"
+msgstr "拒否されました"
+
+#: apicrud/session_auth.py:155
+msgid "all fields required"
+msgstr "全て必須項目です"
+
+#: apicrud/session_auth.py:161
+msgid "that username is already registered"
+msgstr "そのユーザー名はすでに登録されています"
+
+#: apicrud/session_auth.py:172
+msgid "that email is already registered, use forgot-password"
+msgstr "そのメールはすでに登録されています。パスワードを忘れた場合"
+
+#: apicrud/session_auth.py:195
+msgid "person added"
+msgstr "追加された人"
+
+#: apicrud/session_auth.py:215
+msgid "passwords do not match"
+msgstr "パスワードが一致していません"
+
+#: apicrud/session_auth.py:220
+msgid "account not found"
+msgstr "アカウントが見つかりません"
+
+#: apicrud/session_auth.py:225
+msgid "rejected weak password"
+msgstr "拒否された脆弱なパスワード"
+
+#: apicrud/session_auth.py:234
+msgid "invalid token"
+msgstr "無効なトークン"
+
+#: apicrud/session_auth.py:240
+msgid "changed"
+msgstr "かわった"
+
+#: apicrud/session_auth.py:271 apicrud/session_auth.py:272
+msgid "username or email not found"
+msgstr "ユーザー名またはメールアドレスが見つかりません"
+
+#: apicrud/utils.py:146
+msgid "and"
+msgstr "そして"
+
+#: apicrud/templates/confirm_new.j2:2
+msgid "Welcome and please confirm your"
+msgstr "ようこそ、ご確認ください"
+
+#: apicrud/templates/confirm_new.j2:6
+#, python-format
+msgid "Welcome to %(appname)s!"
+msgstr "ようこそ %(appname)s！"
+
+#: apicrud/templates/confirm_new.j2:7 apicrud/templates/confirm_new.j2:24
+#: apicrud/templates/contact_add.j2:6 apicrud/templates/contact_add.j2:22
+msgid "Your contact info"
+msgstr "あなたの連絡先情報"
+
+#: apicrud/templates/confirm_new.j2:7 apicrud/templates/confirm_new.j2:24
+#: apicrud/templates/contact_add.j2:6 apicrud/templates/contact_add.j2:22
+#, python-format
+msgid "was added to %(siteurl)s by"
+msgstr "によって %(siteurl)s に追加されました"
+
+#: apicrud/templates/confirm_new.j2:8 apicrud/templates/confirm_new.j2:25
+msgid "The next step is to set a password."
+msgstr "次のステップは、パスワードを設定することです。"
+
+#: apicrud/templates/confirm_new.j2:9 apicrud/templates/contact_add.j2:7
+#: apicrud/templates/contact_add.j2:23
+msgid "Click to confirm this is you:"
+msgstr "これがあなたであることを確認するためにクリックしてください："
+
+#: apicrud/templates/confirm_new.j2:18 apicrud/templates/password_reset.j2:16
+msgid "Set your password"
+msgstr "パスワードを作る"
+
+#: apicrud/templates/confirm_new.j2:22 apicrud/templates/confirm_new.j2:28
+#: apicrud/templates/contact_add.j2:20 apicrud/templates/contact_add.j2:26
+#: apicrud/templates/password_reset.j2:20
+#: apicrud/templates/password_reset.j2:25 apicrud/templates/reset_invalid.j2:8
+#: apicrud/templates/reset_invalid.j2:12
+msgid "Ignore this message if you don't wish to receive further correspondence."
+msgstr "今後の連絡を希望しない場合は、このメッセージを無視してください。"
+
+#: apicrud/templates/confirm_new.j2:25 apicrud/templates/password_reset.j2:7
+#: apicrud/templates/password_reset.j2:22
+msgid "Go to"
+msgstr "に行く"
+
+#: apicrud/templates/confirm_new.j2:30 apicrud/templates/contact_add.j2:28
+#: apicrud/templates/password_reset.j2:27
+#, python-format
+msgid "See %(siteurl)s/#/confirm?token=%(token)s to confirm request by"
+msgstr "見る %(siteurl)s/#/confirm?token=%(token)s リクエストを確認する"
+
+#: apicrud/templates/contact_add.j2:2
+msgid "Please confirm your"
+msgstr "ご確認ください"
+
+#: apicrud/templates/contact_add.j2:16
+msgid "Confirm contact info"
+msgstr "連絡先情報を確認する"
+
+#: apicrud/templates/footer.j2:3 apicrud/templates/footer.j2:24
+#, python-format
+msgid "This message was generated by %(appname)s hosted at"
+msgstr "このメッセージは、ホストされている %(appname)s によって生成されました"
+
+#: apicrud/templates/footer.j2:5 apicrud/templates/footer.j2:26
+msgid "You can adjust your communication preferences by visiting this link:"
+msgstr "次のリンクにアクセスして、通信設定を調整できます。"
+
+#: apicrud/templates/footer.j2:15
+msgid "Messaging Preferences"
+msgstr "メッセージング設定"
+
+#: apicrud/templates/footer.j2:20 apicrud/templates/footer.j2:29
+msgid "Software copyright"
+msgstr "ソフトウェアの著作権"
+
+#: apicrud/templates/moderator.j2:6 apicrud/templates/moderator.j2:11
+msgid "List:"
+msgstr "リスト："
+
+#: apicrud/templates/moderator.j2:15
+msgid "Host message from"
+msgstr "からのホストメッセージ"
+
+#: apicrud/templates/password_reset.j2:2 apicrud/templates/reset_invalid.j2:2
+msgid "Password reset request for"
+msgstr "のパスワード再設定リクエスト"
+
+#: apicrud/templates/password_reset.j2:6 apicrud/templates/password_reset.j2:22
+#: apicrud/templates/reset_invalid.j2:6 apicrud/templates/reset_invalid.j2:10
+msgid "We received a request to reset your password for"
+msgstr "のパスワードをリセットするリクエストを受け取りました"
+
+#: apicrud/templates/reset_invalid.j2:7 apicrud/templates/reset_invalid.j2:11
+msgid "However, no registered account was found matching this address."
+msgstr "ただし、このアドレスに一致する登録済みアカウントは見つかりませんでした。"
+
+#: apicrud/templates/reset_invalid.j2:14
+msgid "No account is registered for this number at"
+msgstr "この番号のアカウントは登録されていません"
+

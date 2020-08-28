@@ -8,6 +8,7 @@ created 11-apr-2020 by richb@instantlinux.net
 import connexion
 from datetime import datetime
 from flask import g, jsonify
+from flask_babel import _
 from flask_cors import CORS
 from html.parser import HTMLParser
 import logging
@@ -54,6 +55,7 @@ def initialize_app(application):
     Returns:
       obj: Flask app
     """
+    global babel
 
     config = ServiceConfig().config
     logging.basicConfig(level=config.LOG_LEVEL,
@@ -128,23 +130,20 @@ def strip_tags(html):
     return s.get_data()
 
 
-def replace_last_comma_and(string, lang):
+def replace_last_comma_and(string):
     """Replace the last comma with the word 'and', dealing with
     translation.  The string is presumed to be a text array joined by
     ', ' -- including the space.
 
     Args:
         string (str): comma-separated utf8 content
-        lang (str): 2-letter language code
     """
 
     i = string.rfind(',')
-    conjunction = dict(
-        es=u'y', de=u'und', fr=u'et', pt=u'e', zh=u'和').get(lang, u'and')
     if i == -1:
         return string
     else:
-        return string[:i] + ' ' + conjunction + string[i + 1:]
+        return string[:i] + ' ' + _(u'and') + string[i + 1:]
 
 
 class HtmlStripper(HTMLParser):

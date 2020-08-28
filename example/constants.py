@@ -17,6 +17,3 @@ DEFAULT_BUCKET = 'apicrud-test'
 DEFAULT_COUNTRY = u'US'
 DEFAULT_LANG = u'en_US'
 DEFAULT_WINDOW_TITLE = u'Example apicrud Application'
-
-REGEX_EMAIL = r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}'
-REGEX_PHONE = r'[0-9()+ -]{5,20}'

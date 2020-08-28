@@ -1,0 +1,250 @@
+# Chinese (Simplified) translations for apicrud.
+# Copyright (C) 2020 Richard Braun
+# This file is distributed under the same license as the apicrud project.
+# FIRST AUTHOR <docker@instantlinux.net>, 2020.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: apicrud VERSION\n"
+"Report-Msgid-Bugs-To: docker@instantlinux.net\n"
+"POT-Creation-Date: 2020-08-24 20:17-0700\n"
+"PO-Revision-Date: 2020-08-24 22:21-0700\n"
+"Last-Translator: FULL NAME <docker@instantlinux.net>\n"
+"Language: zh_Hans\n"
+"Language-Team: zh_Hans <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: apicrud/access.py:143 apicrud/basic_crud.py:100 apicrud/basic_crud.py:112
+#: apicrud/basic_crud.py:171 apicrud/basic_crud.py:179
+#: apicrud/basic_crud.py:214 apicrud/basic_crud.py:257
+#: apicrud/basic_crud.py:425 apicrud/basic_crud.py:426
+#: apicrud/basic_crud.py:471 apicrud/service_config.py:175
+msgid "access denied"
+msgstr "找不到用户名或电子邮件"
+
+#: apicrud/basic_crud.py:153
+msgid "not found"
+msgstr "未找到"
+
+#: apicrud/basic_crud.py:227 apicrud/basic_crud.py:492
+msgid "updated"
+msgstr "更新"
+
+#: apicrud/basic_crud.py:321 apicrud/basic_crud.py:363
+msgid "invalid filter specified"
+msgstr "指定了无效的过滤器"
+
+#: apicrud/basic_crud.py:413 apicrud/basic_crud.py:454
+msgid "carrier required for sms"
+msgstr "短信所需的载体"
+
+#: apicrud/basic_crud.py:415 apicrud/basic_crud.py:456
+msgid "invalid mobile number"
+msgstr "手机号码无效"
+
+#: apicrud/basic_crud.py:420 apicrud/basic_crud.py:461
+msgid "invalid email address"
+msgstr "无效的邮件地址"
+
+#: apicrud/basic_crud.py:432
+msgid "max allowed contacts exceeded"
+msgstr "超出了允许的最大联系人数"
+
+#: apicrud/basic_crud.py:490
+msgid "conflict with existing"
+msgstr "与现有冲突"
+
+#: apicrud/const.py:30
+msgid "email"
+msgstr "电子邮件地址"
+
+#: apicrud/const.py:30
+msgid "messenger"
+msgstr "信使"
+
+#: apicrud/const.py:30
+msgid "sms"
+msgstr "短信"
+
+#: apicrud/const.py:31
+msgid "voice"
+msgstr "语音"
+
+#: apicrud/const.py:31
+msgid "whatsapp"
+msgstr ""
+
+#: apicrud/session_auth.py:75
+msgid "DB operational error"
+msgstr "数据库中的操作错误"
+
+#: apicrud/session_auth.py:80
+msgid "DB operational error, try again"
+msgstr "数据库操作错误，请重试"
+
+#: apicrud/session_auth.py:85
+msgid "locked out"
+msgstr "被锁在外面"
+
+#: apicrud/session_auth.py:88
+msgid "no password"
+msgstr "没有密码"
+
+#: apicrud/session_auth.py:96
+msgid "not valid"
+msgstr "无效"
+
+#: apicrud/session_auth.py:137
+msgid "rejected"
+msgstr "拒绝"
+
+#: apicrud/session_auth.py:155
+msgid "all fields required"
+msgstr "所有必填字段"
+
+#: apicrud/session_auth.py:161
+msgid "that username is already registered"
+msgstr "该用户名已经注册"
+
+#: apicrud/session_auth.py:172
+msgid "that email is already registered, use forgot-password"
+msgstr "该用户名已经注册，请使用忘记密码"
+
+#: apicrud/session_auth.py:195
+msgid "person added"
+msgstr "新增的人"
+
+#: apicrud/session_auth.py:215
+msgid "passwords do not match"
+msgstr "密码不匹配"
+
+#: apicrud/session_auth.py:220
+msgid "account not found"
+msgstr "找不到帐户"
+
+#: apicrud/session_auth.py:225
+msgid "rejected weak password"
+msgstr "拒绝弱密码"
+
+#: apicrud/session_auth.py:234
+msgid "invalid token"
+msgstr "令牌无效"
+
+#: apicrud/session_auth.py:240
+msgid "changed"
+msgstr "变了"
+
+#: apicrud/session_auth.py:271 apicrud/session_auth.py:272
+msgid "username or email not found"
+msgstr "找不到用户名或电子邮件"
+
+#: apicrud/utils.py:146
+msgid "and"
+msgstr "和"
+
+#: apicrud/templates/confirm_new.j2:2
+msgid "Welcome and please confirm your"
+msgstr "欢迎您，请确认您的"
+
+#: apicrud/templates/confirm_new.j2:6
+#, python-format
+msgid "Welcome to %(appname)s!"
+msgstr "欢迎使用 %(appname)s！"
+
+#: apicrud/templates/confirm_new.j2:7 apicrud/templates/confirm_new.j2:24
+#: apicrud/templates/contact_add.j2:6 apicrud/templates/contact_add.j2:22
+msgid "Your contact info"
+msgstr "您的联系方式"
+
+#: apicrud/templates/confirm_new.j2:7 apicrud/templates/confirm_new.j2:24
+#: apicrud/templates/contact_add.j2:6 apicrud/templates/contact_add.j2:22
+#, python-format
+msgid "was added to %(siteurl)s by"
+msgstr "已添加到 %(siteurl)s 通过"
+
+#: apicrud/templates/confirm_new.j2:8 apicrud/templates/confirm_new.j2:25
+msgid "The next step is to set a password."
+msgstr "下一步是设置密码。"
+
+#: apicrud/templates/confirm_new.j2:9 apicrud/templates/contact_add.j2:7
+#: apicrud/templates/contact_add.j2:23
+msgid "Click to confirm this is you:"
+msgstr "单击以确认这是您："
+
+#: apicrud/templates/confirm_new.j2:18 apicrud/templates/password_reset.j2:16
+msgid "Set your password"
+msgstr "设置你的密码"
+
+#: apicrud/templates/confirm_new.j2:22 apicrud/templates/confirm_new.j2:28
+#: apicrud/templates/contact_add.j2:20 apicrud/templates/contact_add.j2:26
+#: apicrud/templates/password_reset.j2:20
+#: apicrud/templates/password_reset.j2:25 apicrud/templates/reset_invalid.j2:8
+#: apicrud/templates/reset_invalid.j2:12
+msgid "Ignore this message if you don't wish to receive further correspondence."
+msgstr "如果您不希望收到进一步的信件，请忽略此消息。"
+
+#: apicrud/templates/confirm_new.j2:25 apicrud/templates/password_reset.j2:7
+#: apicrud/templates/password_reset.j2:22
+msgid "Go to"
+msgstr "去"
+
+#: apicrud/templates/confirm_new.j2:30 apicrud/templates/contact_add.j2:28
+#: apicrud/templates/password_reset.j2:27
+#, python-format
+msgid "See %(siteurl)s/#/confirm?token=%(token)s to confirm request by"
+msgstr "看到  %(siteurl)s/#/confirm?token=%(token)s 确认要求"
+
+#: apicrud/templates/contact_add.j2:2
+msgid "Please confirm your"
+msgstr "请确认您的"
+
+#: apicrud/templates/contact_add.j2:16
+msgid "Confirm contact info"
+msgstr "确认联系方式"
+
+#: apicrud/templates/footer.j2:3 apicrud/templates/footer.j2:24
+#, python-format
+msgid "This message was generated by %(appname)s hosted at"
+msgstr "该消息是由 %(appname)s 托管在"
+
+#: apicrud/templates/footer.j2:5 apicrud/templates/footer.j2:26
+msgid "You can adjust your communication preferences by visiting this link:"
+msgstr "您可以通过访问以下链接来调整通信首选项："
+
+#: apicrud/templates/footer.j2:15
+msgid "Messaging Preferences"
+msgstr "消息传递首选项"
+
+#: apicrud/templates/footer.j2:20 apicrud/templates/footer.j2:29
+msgid "Software copyright"
+msgstr "软件版权"
+
+#: apicrud/templates/moderator.j2:6 apicrud/templates/moderator.j2:11
+msgid "List:"
+msgstr "清单："
+
+#: apicrud/templates/moderator.j2:15
+msgid "Host message from"
+msgstr "来自的主机消息"
+
+#: apicrud/templates/password_reset.j2:2 apicrud/templates/reset_invalid.j2:2
+msgid "Password reset request for"
+msgstr "的密码要求"
+
+#: apicrud/templates/password_reset.j2:6 apicrud/templates/password_reset.j2:22
+#: apicrud/templates/reset_invalid.j2:6 apicrud/templates/reset_invalid.j2:10
+msgid "We received a request to reset your password for"
+msgstr "我们收到了重置密码的请求"
+
+#: apicrud/templates/reset_invalid.j2:7 apicrud/templates/reset_invalid.j2:11
+msgid "However, no registered account was found matching this address."
+msgstr "但是，找不到与该地址匹配的注册帐户。"
+
+#: apicrud/templates/reset_invalid.j2:14
+msgid "No account is registered for this number at"
+msgstr "尚未为该号码注册任何帐户，网址为"
+

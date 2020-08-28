@@ -36,13 +36,14 @@ class AccountSettings(object):
         def _convert(attrs):
             return namedtuple('GenericDict', attrs.keys())(**attrs)
 
+        models = self.models = ServiceConfig().models
         if account_id not in SETTINGS or (
                 utils.utcnow() > SETTINGS[account_id]['expires']):
-            models = ServiceConfig().models
             try:
                 if account_id:
                     account = db_session.query(models.Account).filter_by(
                         id=account_id).one()
+                    uid = account.uid
                 else:
                     account = db_session.query(models.Account).filter_by(
                         uid=uid).one()
@@ -62,6 +63,7 @@ class AccountSettings(object):
             config = ServiceConfig().config
             SETTINGS[account_id] = dict(
                 expires=utils.utcnow() + timedelta(seconds=config.REDIS_TTL),
+                uid=uid,
                 settings=dict(
                     record.as_dict(), **dict(
                         category_id=category_id,
@@ -77,3 +79,18 @@ class AccountSettings(object):
                 SETTINGS[account_id]['settings']['approved_senders'] = []
         self.get = _convert(SETTINGS[account_id]['settings'])
         self.account_id = account_id
+        self.uid = SETTINGS[account_id]['uid']
+        self.db_session = db_session
+        self.default_locale = ServiceConfig().config.BABEL_DEFAULT_LOCALE
+
+    @property
+    def locale(self):
+        """Returns the language for the account_id specified in the
+        class object, or the global settings default if not specified.
+        """
+        try:
+            return self.db_session.query(self.models.Profile).filter(
+                self.models.Profile.uid == self.uid,
+                self.models.Profile.item == 'lang').one().value
+        except NoResultFound:
+            return SETTINGS[self.account_id].get('lang', self.default_locale)
