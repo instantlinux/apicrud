@@ -4,7 +4,7 @@ botocore==1.16.16
 # unpinned, to use system package
 cryptography
 Flask==1.1.2
-flask-babel==1.0.0
+Flask-Babel==1.0.0
 itsdangerous==1.1.0
 PyJWT==1.7.1
 requests==2.23.0

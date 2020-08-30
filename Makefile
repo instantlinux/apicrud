@@ -69,7 +69,7 @@ test: test_requirements py_requirements apicrud/i18n/en/LC_MESSAGES/messages.mo
 	 --cov ../example \
 	 --cov .)
 
-dist/apicrud-$(VERSION).tar.gz: i18n_compile test_requirements
+dist/apicrud-$(VERSION).tar.gz: i18n_deploy test_requirements
 	@echo "Building package"
 	pip show wheel >/dev/null; \
 	if [ $$? -ne 0 ]; then \

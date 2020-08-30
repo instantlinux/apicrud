@@ -50,6 +50,7 @@ setuptools.setup(
         'connexion[swagger-ui]',
         'cryptography>=2.1.4',
         'Flask>=1.1.1',
+        'Flask-Babel>=1.0.0',
         'Flask-Cors>=3.0.8',
         'geocoder>=1.38.1',
         'itsdangerous>=1.1.0',
