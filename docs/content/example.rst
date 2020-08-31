@@ -75,8 +75,6 @@ This example serves a simple message-board. The `source code <https://github.com
      config
      constants
      controllers
-     db_schema
-     i18n_textstrings
      main
      messaging
      models

@@ -39,13 +39,7 @@ def setup_db(db_url=None, redis_conn=None):
     db_url = db_url or config.DB_URL
     ServiceRegistry().register(controllers.resources())
     if not setup_db_only_once:
-        database.initialize_db(
-            models, db_url=db_url, redis_host=config.REDIS_HOST,
-            redis_conn=redis_conn,
-            migrate=True, geo_support=config.DB_GEO_SUPPORT,
-            connection_timeout=config.DB_CONNECTION_TIMEOUT,
-            schema_update=database.schema_update,
-            schema_maxtime=config.DB_SCHEMA_MAXTIME)
+        database.initialize_db(db_url=db_url, redis_conn=redis_conn)
         setup_db_only_once['initialized'] = True
 
 

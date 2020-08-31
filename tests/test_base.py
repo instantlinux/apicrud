@@ -158,19 +158,6 @@ class TestBase(unittest.TestCase):
         self.authuser = username
         return 201
 
-    def guest_authorize(self, guest_id, magic):
-        if guest_id not in self.credentials:
-            response = self.call_endpoint('/auth', 'post', data=dict(
-                guest_id=guest_id, magic=magic))
-            self.assertEqual(response.status_code, 201)
-            tok = jwt.decode(response.get_json()['jwt_token'],
-                             self.config.JWT_SECRET, algorithms=['HS256'])
-            self.credentials[guest_id] = dict(
-                auth='Basic ' + base64.b64encode(
-                    bytes(tok['sub'] + ':' + tok['jti'], 'utf-8')
-                ).decode('utf-8'))
-        self.authuser = guest_id
-
     def call_endpoint(self, endpoint, method, data=None, extraheaders={}):
         """call an endpoint with flask.g context
 

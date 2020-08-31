@@ -113,9 +113,18 @@ components:
           default: alembic
           description: Parent directory containing alembic migration scripts
           type: string
+        db_migrate_enable:
+          default: true
+          description: Enable alembic migrations upon startup
+          type: boolean
         db_schema_maxtime:
           default: 120
-          description: Maximum time to wait for schema updates at startup
+          description: >
+            Maximum time to wait for schema updates at startup; if this
+            value is nonzero and db_migrate_enable is true, the service
+            will wait for another service to update to the current
+            version. If this value is zero, the service will ignore
+            database schema version and come up immediately.
           type: integer
         db_seed_file:
           default: db_seed.yaml

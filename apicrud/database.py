@@ -61,31 +61,23 @@ def get_session(scopefunc=None, scoped=True, db_url=None, engine=None):
         return Session
 
 
-def initialize_db(models, db_url=None, engine=None, redis_conn=None,
-                  redis_host=None, migrate=False, geo_support=False,
-                  connection_timeout=0, schema_update=None, schema_maxtime=60):
+def initialize_db(db_url=None, engine=None, redis_conn=None):
     """initialize database connectivity
 
     Args:
-      models (obj): the models file object
       db_url (str): URL of database
       engine (obj): override engine object (for unit tests)
       redis_conn (obj): redis connection object override (for unit tests)
-      redis_host (str): IP or hostname of redis service
-      migrate (bool): whether to run alembic migrations
-      geo_support (bool): whether to use GIS data types in db
-      connection_timeout (int): how long to wait for DB connection
-      schema_update (function): name of function to run for schema update
-      schema_maxtime (int): how long to wait for migration
     """
 
-    _init_db(db_url=db_url, engine=engine, geo_support=geo_support,
-             connection_timeout=connection_timeout)
-    if migrate:
-        with Mutex('alembic', redis_host=redis_host,
-                   ttl=schema_maxtime, redis_conn=redis_conn):
-            schema_update(db_engine, models, migrate=True,
-                          schema_maxtime=schema_maxtime)
+    config = ServiceConfig().config
+    models = ServiceConfig().models
+    _init_db(db_url=db_url, geo_support=config.DB_GEO_SUPPORT,
+             engine=engine, connection_timeout=config.DB_CONNECTION_TIMEOUT)
+    if config.DB_MIGRATE_ENABLE:
+        with Mutex('alembic', redis_host=config.REDIS_HOST,
+                   ttl=config.DB_SCHEMA_MAXTIME, redis_conn=redis_conn):
+            schema_update(db_engine, models)
     else:
         # just wait for schema update
         schema_update(db_engine, models)
@@ -99,8 +91,8 @@ def alembic_migrate(models, version, script_location, migrate=False,
       models (obj): the models file object
       version (str): schema version expected after migration
       script_location (str): relative path name of alembic's env.py
-      db_session (obj): existing db session
       migrate (bool): whether to run alembic migrations
+      db_session (obj): existing db session
       schema_maxtime (int): how long to wait for migration
       seed_func (function): function to seed initial records in blank db
     """
@@ -146,7 +138,7 @@ def alembic_migrate(models, version, script_location, migrate=False,
         db_session.close()
 
 
-def schema_update(db_engine, models, migrate=False, schema_maxtime=0):
+def schema_update(db_engine, models):
     """Run alembic migrations for updating schema
 
     Must be called with mutex for duration of update to prevent race
@@ -155,20 +147,23 @@ def schema_update(db_engine, models, migrate=False, schema_maxtime=0):
     Args:
       db_engine (obj): connection to database
       models (obj): models to generate or update
-      script_location (str): path for alembic scripts
-      migrate (bool): perform migrations only if True
-      schema_maxtime (int): maximum seconds to wait for mutex
     """
     db_session = get_session(scoped=True)
-    script_location = ServiceConfig().config.DB_MIGRATIONS
+    config = ServiceConfig().config
+    script_location = config.DB_MIGRATIONS
     try:
         version = db_session.query(models.AlembicVersion).one().version_num
     except (NoResultFound, OperationalError, ProgrammingError) as ex:
         logging.warning('DB schema does not yet exist: %s' % str(ex))
         version = None
     db_session.close()
-    alembic_migrate(models, version, script_location, migrate=migrate,
-                    schema_maxtime=schema_maxtime, seed_func=seed_new_db)
+    if config.DB_SCHEMA_MAXTIME == 0:
+        logging.info('found schema version=%s, skipping update' % version)
+    else:
+        alembic_migrate(models, version, script_location,
+                        migrate=config.DB_MIGRATE_ENABLE,
+                        schema_maxtime=config.DB_SCHEMA_MAXTIME,
+                        seed_func=seed_new_db)
 
 
 def seed_new_db(db_session, tz_model=None):

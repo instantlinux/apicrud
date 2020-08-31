@@ -8,13 +8,13 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.name=example-worker \
     org.label-schema.vcs-ref=$VCS_REF \
     org.label-schema.vcs-url=https://github.com/instantlinux/apicrud
-ENV CELERY_APP=example.messaging \
+ENV CELERY_APP=messaging \
     APP_ENV=dev \
     QUEUE=messaging
 ARG CELERY_UID=2062
 
 EXPOSE 5555
-WORKDIR /opt
+WORKDIR /opt/example
 COPY example/ /opt/example
 COPY apicrud/ /opt/apicrud
 COPY requirements.txt /usr/src/
