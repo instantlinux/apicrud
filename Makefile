@@ -78,9 +78,6 @@ dist/apicrud-$(VERSION).tar.gz: i18n_deploy test_requirements
 	  python setup.py sdist bdist_wheel ; \
 	fi
 
-apicrud/i18n/en/LC_MESSAGES/messages.mo:
-	make i18n_compile
-
 clean:
 	rm -rf build dist *.egg-info .cache .pytest_cache */__pycache__ \
 	 */*/__pycache__ */.coverage */.proto.sqlite */coverage.xml */htmlcov \
@@ -89,4 +86,5 @@ clean:
 	 -exec rm -rf {} \;
 	find example -name __pycache__ -exec rm -rf {} \;
 wipe_clean: clean
+	find apicrud/i18n example/i18n -name '*.mo' -exec rm -rf {} \;
 	rm -rf python_env

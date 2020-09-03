@@ -49,7 +49,9 @@ components:
           default: i18n
           description: >
             List of directories in which to find LC_MESSAGES translations,
-            semicolon-delimited
+            semicolon-delimited. If you want to keep the built-in translations
+            provided in the apicrud package, make your additions after the
+            semicolon (for example, `'i18n;%s' % os.path.join(path, 'i18n')`)
           type: string
         base_url:
           default: /api/v1
@@ -267,7 +269,7 @@ components:
           description: Name of the microservice this container provides
           type: string
         template_folders:
-          default: [ 'templates' ]
+          default: []
           description: Paths containing Jinja2 templates
           type: array
           items:

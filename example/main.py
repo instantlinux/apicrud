@@ -22,8 +22,11 @@ from apicrud.session_manager import SessionManager
 
 setup_db_only_once = {}
 application = connexion.FlaskApp(__name__)
-config = ServiceConfig(reset=True, file=os.path.join(os.path.dirname(
-    os.path.abspath(__file__)), 'config.yaml'), models=models).config
+path = os.path.dirname(os.path.abspath(__file__))
+config = ServiceConfig(
+    reset=True, file=os.path.join(path, 'config.yaml'),
+    babel_translation_directories='i18n;%s' % os.path.join(path, 'i18n'),
+    models=models).config
 utils.initialize_app(application)
 babel = Babel(application.app)
 
@@ -69,8 +72,11 @@ def cleanup(resp_or_exc):
 @babel.localeselector
 def get_locale():
     acc = AccessControl()
-    if acc.auth:
-        return AccountSettings(acc.account_id, db_session=g.db).locale
+    if acc.auth and acc.uid:
+        locale = AccountSettings(acc.account_id,
+                                 uid=acc.uid, db_session=g.db).locale
+        if locale:
+            return locale
     return request.accept_languages.best_match(config.LANGUAGES)
 
 

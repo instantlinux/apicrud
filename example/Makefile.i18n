@@ -7,16 +7,17 @@
 #
 # The translation files are named messages.po under apicrud/i18n.
 
+DIR      = example
 LANGS    = ar de en es fil fr it ja ko pt ru vi zh zh_Hans zh_Hant
 PO_FILES = $(patsubst %,apicrud/i18n/%/LC_MESSAGES/messages.po,$(LANGS))
-PO_FILE2 = $(patsubst %,example/i18n/%/LC_MESSAGES/messages.po,$(LANGS))
-POT_FILE = apicrud/i18n/messages.pot example/i18n/messages.pot
+PO_FILE2 = $(patsubst %,$(DIR)/i18n/%/LC_MESSAGES/messages.po,$(LANGS))
+POT_FILE = apicrud/i18n/messages.pot $(DIR)/i18n/messages.pot
 
 i18n_create: $(PO_FILES) $(PO_FILE2)
 i18n_compile:
 	. $(VDIR)/bin/activate ; \
 	pybabel compile -d apicrud/i18n ; \
-	pybabel compile -d example/i18n
+	pybabel compile -d $(DIR)/i18n
 i18n_update: $(POT_FILE)
 	$(foreach file,$(POT_FILE), \
 	  rm $(file) && make $(file); \
@@ -26,7 +27,7 @@ i18n_update: $(POT_FILE)
 i18n_deploy:
 	pip install flask-babel
 	umask=022; pybabel compile -d apicrud/i18n; \
-	pybabel compile -d example/i18n
+	pybabel compile -d $(DIR)/i18n
 
 apicrud/i18n/messages.pot:
 	@mkdir -p $(shell dirname $@)
@@ -35,11 +36,13 @@ apicrud/i18n/messages.pot:
 	cat apicrud/i18n/po_header.txt $@.tmp > $@ && rm $@.tmp
 apicrud/i18n/%/LC_MESSAGES/messages.po: apicrud/i18n/messages.pot
 	. $(VDIR)/bin/activate ; pybabel init -i $< -d apicrud/i18n -l $*
+apicrud/i18n/en/LC_MESSAGES/messages.mo:
+	make i18n_compile
 
-example/i18n/messages.pot:
+$(DIR)/i18n/messages.pot:
 	@mkdir -p $(shell dirname $@)
-	. $(VDIR)/bin/activate ; pybabel extract -o $@.tmp example \
+	. $(VDIR)/bin/activate ; pybabel extract -o $@.tmp $(DIR) \
 	  -F apicrud/i18n/babel.cfg --omit-header
 	cat apicrud/i18n/po_header.txt $@.tmp > $@ && rm $@.tmp
-example/i18n/%/LC_MESSAGES/messages.po: example/i18n/messages.pot
-	. $(VDIR)/bin/activate ; pybabel init -i $< -d example/i18n -l $*
+$(DIR)/i18n/%/LC_MESSAGES/messages.po: $(DIR)/i18n/messages.pot
+	. $(VDIR)/bin/activate ; pybabel init -i $< -d $(DIR)/i18n -l $*

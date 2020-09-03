@@ -19,12 +19,14 @@ import models
 
 app = celery.Celery()
 app.config_from_object(celeryconfig)
-config = ServiceConfig(reset=True, file=os.path.join(os.path.dirname(
-    os.path.abspath(__file__)), 'config.yaml'), models=models).config
+path = os.path.dirname(os.path.abspath(__file__))
+config = ServiceConfig(
+    reset=True, models=models, file=os.path.join(path, 'config.yaml'),
+    template_folders=[os.path.join(path, 'templates')]).config
 
 
 @app.task(name='tasks.messaging.send_contact')
-def send_contact(frm=None, to=None, template=None, db_session=None, **kwargs):
+def send_contact(frm=None, to=None, template=None, **kwargs):
     """
     Args:
       frm (uid): person
@@ -34,9 +36,8 @@ def send_contact(frm=None, to=None, template=None, db_session=None, **kwargs):
     Raises:
       SendException
     """
-
     db_session = get_session(scopefunc=celery.utils.threads.get_ident,
                              db_url=config.DB_URL)
-    apicrud.messaging.send.to_contact(db_session, frm=frm, to=to,
-                                      template=template, **kwargs)
+    apicrud.messaging.send.to_contact(
+        db_session, frm=frm, to=to, template=template, **kwargs)
     db_session.remove()

@@ -193,6 +193,18 @@ class SessionAuth(object):
                                          info=identity))
             g.db.commit()
             logging.info(dict(message=_(u'person added'), uid=uid, **logmsg))
+        # If browser language does not match global default language, add
+        # a profile setting
+        lang = request.accept_languages.best_match(self.config.LANGUAGES)
+        try:
+            default_lang = g.db.query(self.models.Settings).filter_by(
+                name='global').one().lang
+        except Exception:
+            default_lang = 'en'
+        if lang and lang != default_lang:
+            g.db.add(self.models.Profile(id=gen_id(), uid=uid, item='lang',
+                                         value=lang, status='active'))
+            g.db.commit()
         return Confirmation().request(cid, template=template,
                                       func_send=self.func_send)
 

@@ -1,6 +1,7 @@
 """format.py
 
 MIME and SMS formatting
+TODO redesign as a class
 
 created 15-aug-2020 by docker@instantlinux.net
 """

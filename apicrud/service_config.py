@@ -59,7 +59,6 @@ class ServiceConfig(object):
                                    Constants.SERVICE_CONFIG_FILE), 'rt',
                       encoding='utf8') as f:
                 openapi = yaml.safe_load(f)
-
             overrides = {}
             if file:
                 with open(file, 'rt', encoding='utf8') as f:
@@ -101,20 +100,17 @@ class ServiceConfig(object):
             state['secret_key'] = binascii.unhexlify(
                 state['flask_secret_key'])
             state['log_level'] = self._compose_loglevel(state['log_level'])
+            state['template_folders'].append(
+                    os.path.join(os.path.dirname(__file__), 'templates'))
             if os.environ.get('APP_ENV') != 'prod':
                 state['login_admin_limit'] = max(
                     state['login_admin_limit'], 86400)
                 state['login_session_limit'] = max(
                     state['login_admin_limit'], 86400)
-            if '/' not in state['babel_translation_directories']:
+            if '/' not in state['babel_translation_directories'].split(';')[0]:
                 state['babel_translation_directories'] = (
                     os.path.join(os.path.dirname(__file__),
                                  state['babel_translation_directories']))
-            if len(state['template_folders']) == 1 and (
-                    '/' not in state['template_folders'][0]):
-                state['template_folders'][0] = (
-                    os.path.join(os.path.dirname(__file__),
-                                 state['template_folders'][0]))
             if file:
                 if '/' not in state['rbac_file']:
                     state['rbac_file'] = os.path.join(os.path.dirname(
@@ -130,9 +126,11 @@ class ServiceConfig(object):
             config = namedtuple('Struct', [
                 key.upper() for key in state.keys()])(*state.values())
             state['schema'] = openapi['components']['schemas']['Config']
+
+        if models:
             state['models'] = models
+        self.models = state.get('models')
         self.config = config
-        self.models = state['models']
 
     @staticmethod
     def _compose_db_url():

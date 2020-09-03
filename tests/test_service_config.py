@@ -28,20 +28,20 @@ class TestServiceConfig(test_base.TestBase):
         configfile = tempfile.mkstemp(prefix='_cfg')[1]
         with open(configfile, 'w') as f:
             yaml.dump(updates, f)
+        path = os.path.join(os.path.abspath(os.path.join(
+            os.path.dirname(__file__), '..')), 'example')
         ServiceConfig(file=configfile, reset=True,
+                      babel_translation_directories='i18n;' + (
+                          os.path.join(path, 'i18n')),
+                      db_seed_file=os.path.join(path, 'db_seed.yaml'),
+                      db_migrations=os.path.join(path, 'alembic'),
                       rbac_file=app_config['rbac_file'])
         app_config.update(updates)
         app_config['log_level'] = logging.WARNING
 
         response = self.call_endpoint('/config', 'get')
         self.assertEqual(response.status_code, 200)
-        # TODO not sure why db_seed_file, babel pathnames mismatch
-        results = response.get_json()
-        results['db_migrations'] = results['db_migrations'].split('/')[-1]
-        results['db_seed_file'] = results['db_seed_file'].split('/')[-1]
-        results['babel_translation_directories'] = results[
-            'babel_translation_directories'].split('/')[-1]
-        self.assertEqual(results, app_config)
+        self.assertEqual(response.get_json(), app_config)
         os.remove(configfile)
 
     def test_get_config_unauthorized(self):
@@ -57,9 +57,13 @@ class TestServiceConfig(test_base.TestBase):
 
         os.environ['DB_GEO_SUPPORT'] = 'TRUE'
         os.environ['DEBUG'] = '0'
+        path = os.path.join(os.path.abspath(os.path.join(
+            os.path.dirname(__file__), '..')), 'example')
         ServiceConfig(reset=True,
                       db_seed_file=app_config['db_seed_file'],
                       db_migrations=app_config['db_migrations'],
+                      babel_translation_directories=(
+                          'i18n;%s' % os.path.join(path, 'i18n')),
                       rbac_file=app_config['rbac_file'])
         app_config['db_geo_support'] = True
 
@@ -73,6 +77,13 @@ class TestServiceConfig(test_base.TestBase):
 
         del os.environ['DEBUG']
         del os.environ['DB_GEO_SUPPORT']
+        # Restore settings
+        ServiceConfig(reset=True,
+                      db_seed_file=os.path.join(path, 'db_seed.yaml'),
+                      db_migrations=os.path.join(path, 'alembic'),
+                      babel_translation_directories=(
+                          'i18n;%s' % os.path.join(path, 'i18n')),
+                      rbac_file=app_config['rbac_file'])
 
     def test_set_one_value(self):
         new_value = 'testservice'

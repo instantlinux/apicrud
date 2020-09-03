@@ -6,7 +6,7 @@ metadata:
     app.kubernetes.io/name: apicrud-media
   name: apicrud-media
 spec:
-  replicas: $REPLICAS_API
+  replicas: $REPLICAS_MEDIA
   template:
     metadata:
       labels:

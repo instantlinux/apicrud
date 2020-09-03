@@ -20,6 +20,7 @@ from . import utils
 from .service_config import ServiceConfig
 
 SETTINGS = {}
+ADMIN_ID = None
 
 
 class AccountSettings(object):
@@ -36,6 +37,8 @@ class AccountSettings(object):
         def _convert(attrs):
             return namedtuple('GenericDict', attrs.keys())(**attrs)
 
+        global ADMIN_ID
+
         models = self.models = ServiceConfig().models
         if account_id not in SETTINGS or (
                 utils.utcnow() > SETTINGS[account_id]['expires']):
@@ -48,18 +51,28 @@ class AccountSettings(object):
                     account = db_session.query(models.Account).filter_by(
                         uid=uid).one()
                     account_id = account.id
+                record = account.settings
             except NoResultFound:
-                msg = 'Invalid account_id or uid'
-                logging.error(dict(account_id=account_id, uid=uid,
-                                   message=msg))
-                return None
-            record = account.settings
+                # TODO cleanup
+                if ADMIN_ID and utils.utcnow() < SETTINGS[ADMIN_ID]['expires']:
+                    # Already cached
+                    return self.__init__(ADMIN_ID, db_session=db_session)
+                try:
+                    record = db_session.query(models.Settings).filter_by(
+                        name='global').one()
+                    account = db_session.query(models.Account).filter_by(
+                        uid=record.administrator_id).one()
+                except Exception as ex:
+                    logging.error(dict(action='AccountSettings',
+                                       error=str(ex)))
+                    return None
+                uid = record.administrator_id
+                ADMIN_ID = account_id = account.id
             try:
                 category_id = db_session.query(models.Category).filter_by(
-                    uid=account.uid).filter_by(
-                        name='default').one().id
+                    uid=uid).filter_by(name='default').one().id
             except NoResultFound:
-                category_id = account.settings.default_cat_id
+                category_id = record.default_cat_id
             config = ServiceConfig().config
             SETTINGS[account_id] = dict(
                 expires=utils.utcnow() + timedelta(seconds=config.REDIS_TTL),
@@ -85,12 +98,12 @@ class AccountSettings(object):
 
     @property
     def locale(self):
-        """Returns the language for the account_id specified in the
-        class object, or the global settings default if not specified.
+        """Returns the language for the uid if specified in the
+        user's profile
         """
         try:
             return self.db_session.query(self.models.Profile).filter(
                 self.models.Profile.uid == self.uid,
                 self.models.Profile.item == 'lang').one().value
         except NoResultFound:
-            return SETTINGS[self.account_id].get('lang', self.default_locale)
+            return None
