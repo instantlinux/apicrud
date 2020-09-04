@@ -5,7 +5,7 @@ Credential storage
 created 13-mar-2019 by richb@instantlinux.net
 """
 
-from apicrud.basic_crud import BasicCRUD
+from apicrud import BasicCRUD
 
 
 class CredentialController(BasicCRUD):

@@ -1,10 +1,8 @@
 from flask import g, request
 import logging
 
-from apicrud.basic_crud import BasicCRUD
-from apicrud.access import AccessControl
-from apicrud.grants import Grants
-from apicrud import singletons
+from apicrud import AccessControl, BasicCRUD, Grants, singletons
+
 from models import ListMember
 
 

@@ -6,9 +6,7 @@ created 31-mar-2019 by richb@instantlinux.net
 from flask import g, request
 from sqlalchemy.orm.exc import NoResultFound
 
-from apicrud.basic_crud import BasicCRUD
-from apicrud.session_auth import SessionAuth
-from apicrud import singletons
+from apicrud import BasicCRUD, SessionAuth, singletons
 
 from messaging import send_contact
 from models import Settings

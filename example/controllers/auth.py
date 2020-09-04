@@ -6,8 +6,7 @@ created 6-apr-2019 by richb@instantlinux.net
 from flask import g, request
 import logging
 
-from apicrud.session_auth import SessionAuth
-from apicrud import singletons
+from apicrud import SessionAuth, singletons
 import models
 
 

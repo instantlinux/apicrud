@@ -1,4 +1,4 @@
-from apicrud.basic_crud import BasicCRUD
+from apicrud import BasicCRUD
 
 
 class CategoryController(BasicCRUD):

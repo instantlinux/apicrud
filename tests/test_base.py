@@ -16,9 +16,7 @@ from sqlalchemy.exc import IntegrityError
 import tempfile
 import unittest
 
-from apicrud import database
-from apicrud.service_config import ServiceConfig
-from apicrud.session_manager import SessionManager
+from apicrud import database, ServiceConfig, SessionManager
 from main import application, setup_db
 from models import Account, Category, Contact, Person
 

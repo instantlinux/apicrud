@@ -1,10 +1,7 @@
 from flask import g, request
 import logging
 
-from apicrud.access import AccessControl
-from apicrud.basic_crud import BasicCRUD
-import apicrud.utils as utils
-from apicrud import singletons
+from apicrud import AccessControl, BasicCRUD, singletons, utils
 
 from models import Contact
 

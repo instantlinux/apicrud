@@ -11,14 +11,11 @@ from flask import g, request
 from flask_babel import Babel
 import os
 
+from apicrud import AccessControl, AccountSettings, ServiceConfig, \
+    ServiceRegistry, SessionManager, database, utils
+
 import controllers
 import models
-from apicrud import database, utils
-from apicrud.access import AccessControl
-from apicrud.account_settings import AccountSettings
-from apicrud.service_config import ServiceConfig
-from apicrud.service_registry import ServiceRegistry
-from apicrud.session_manager import SessionManager
 
 setup_db_only_once = {}
 application = connexion.FlaskApp(__name__)

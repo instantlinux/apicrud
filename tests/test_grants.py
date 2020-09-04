@@ -10,8 +10,7 @@ from flask import g
 
 import test_base
 
-from apicrud import database
-from apicrud.grants import Grants
+from apicrud import database, Grants
 
 
 class TestGrants(test_base.TestBase):

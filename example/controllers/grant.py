@@ -3,8 +3,7 @@
 created 27-may-2019 by richb@instantlinux.net
 """
 
-from apicrud.basic_crud import BasicCRUD
-from apicrud.grants import Grants
+from apicrud import BasicCRUD, Grants
 
 
 class GrantController(BasicCRUD):

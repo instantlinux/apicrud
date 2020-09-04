@@ -3,7 +3,7 @@
 created 31-mar-2019 by richb@instantlinux.net
 """
 
-from apicrud.basic_crud import BasicCRUD
+from apicrud import BasicCRUD
 from apicrud.messaging.confirmation import Confirmation
 
 from messaging import send_contact

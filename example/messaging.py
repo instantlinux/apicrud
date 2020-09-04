@@ -8,8 +8,8 @@ created 18-apr-2019 by richb@instantlinux.net
 import celery
 import os
 
+from apicrud import ServiceConfig
 from apicrud.database import get_session
-from apicrud.service_config import ServiceConfig
 import apicrud.messaging.send
 
 import celeryconfig

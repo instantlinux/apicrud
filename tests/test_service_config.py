@@ -11,7 +11,7 @@ import tempfile
 import yaml
 
 import test_base
-from apicrud.service_config import ServiceConfig
+from apicrud import ServiceConfig
 
 
 class TestServiceConfig(test_base.TestBase):

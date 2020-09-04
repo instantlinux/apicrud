@@ -1,7 +1,6 @@
 from flask import g
 
-from apicrud.access import AccessControl
-from apicrud.basic_crud import BasicCRUD
+from apicrud import AccessControl, BasicCRUD
 
 from models import ListMessage
 

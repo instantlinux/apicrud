@@ -2,9 +2,9 @@
 
 created 23-sep-2019 by richb@instantlinux.net
 """
+from apicrud import health, service_config
 
 from example import _version
-from apicrud import health, service_config
 from models import AlembicVersion
 
 
