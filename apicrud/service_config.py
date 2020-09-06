@@ -5,9 +5,9 @@ Service Config
   service_config.yaml. Overrides of defaults are evaluated in this
   order:
 
-  - Values passed as a keyword arg at first class invocation
-  - Values defined in a file in yaml format
   - Environment variables set by parent process
+  - Values defined in a file in yaml format
+  - Values passed as a keyword arg at first class invocation
 
   For security, the config singleton is stored as an immutable
   namedtuple: to change values, update settings and restart the
@@ -68,11 +68,7 @@ class ServiceConfig(object):
 
             for key, schema in openapi['components']['schemas'][
                     'Config']['properties'].items():
-                if key in kwargs:
-                    state[key] = kwargs[key]
-                elif key in overrides:
-                    state[key] = overrides[key]
-                elif os.environ.get(key.upper()):
+                if os.environ.get(key.upper()):
                     if schema['type'] == 'array':
                         state[key] = os.environ[key.upper()].split(',')
                     elif schema['type'] == 'integer':
@@ -88,6 +84,10 @@ class ServiceConfig(object):
                             raise AttributeError('Invalid value for %s' % key)
                     else:
                         state[key] = os.environ[key.upper()]
+                elif key in overrides:
+                    state[key] = overrides[key]
+                elif key in kwargs:
+                    state[key] = kwargs[key]
                 elif 'default' in schema:
                     state[key] = schema['default']
                 elif key == 'db_url':

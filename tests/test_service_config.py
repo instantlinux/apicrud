@@ -26,6 +26,7 @@ class TestServiceConfig(test_base.TestBase):
         app_config = response.get_json()
 
         configfile = tempfile.mkstemp(prefix='_cfg')[1]
+        os.environ.pop('APPNAME', None)
         with open(configfile, 'w') as f:
             yaml.dump(updates, f)
         path = os.path.join(os.path.abspath(os.path.join(

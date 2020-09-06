@@ -21,9 +21,8 @@ setup_db_only_once = {}
 application = connexion.FlaskApp(__name__)
 path = os.path.dirname(os.path.abspath(__file__))
 config = ServiceConfig(
-    reset=True, file=os.path.join(path, 'config.yaml'),
     babel_translation_directories='i18n;%s' % os.path.join(path, 'i18n'),
-    models=models).config
+    reset=True, file=os.path.join(path, 'config.yaml'), models=models).config
 utils.initialize_app(application)
 babel = Babel(application.app)
 

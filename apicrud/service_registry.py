@@ -67,6 +67,10 @@ class ServiceRegistry(object):
             ipv4 = socket.gethostbyname(instance_id)
         except socket.gaierror:
             ipv4 = None
+        try:
+            redis_ip = socket.gethostbyname(self.config.REDIS_HOST)
+        except socket.gaierror:
+            redis_ip = None
         service_data['info'] = dict(
             endpoints=resource_endpoints, ipv4=ipv4,
             port=tcp_port or self.config.APP_PORT,
@@ -75,6 +79,7 @@ class ServiceRegistry(object):
         service_data['name'] = service_name or self.config.SERVICE_NAME
         service_data['id'] = instance_id
         logging.info(dict(action='service.register', id=instance_id,
+                          redis_ip=redis_ip,
                           name=service_data['name'], **service_data['info']))
         refresh_thread = threading.Timer(1, ServiceRegistry.update, ())
         refresh_thread.start()
