@@ -121,7 +121,7 @@ class ServiceRegistry(object):
                     params['connection'].get(instance)))
                 info['name'], info['id'] = instance.decode().split(':')[1:]
                 retval.append(info)
-            except TypeError:
+            except (TypeError, json.JSONDecodeError):
                 # A decrypt failure probably means another cluster
                 # is sharing the same redis instance (e.g. in a dev env)
                 # so skip over those service instances
@@ -129,6 +129,7 @@ class ServiceRegistry(object):
             except Exception as ex:
                 logging.warn('action=registry.find key=%s exception=%s' %
                              (instance, str(ex)))
+                continue
             if not info.get('endpoints'):
                 continue
             for resource in info['endpoints']:
