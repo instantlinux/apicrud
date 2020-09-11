@@ -599,6 +599,73 @@ components:
       title: a person
       xml:
         name: Person
+    Profile:
+      description: A profile item
+      example:
+        item: employer
+        value: City of New York
+      properties:
+        id:
+          $ref: '#/components/schemas/base/properties/id'
+        item:
+          type: string
+          enum:
+          - album
+          - birthday
+          - college
+          - degree
+          - employer
+          - gender
+          - highschool
+          - hometown
+          - jobtitle
+          - lang
+          - location
+          - partner
+          - pronouns
+          - reminders
+          - tz
+          - website
+        value:
+          type: string
+          maxLength: 32
+          nullable: true
+        album_id:
+          $ref: '#/components/schemas/base/properties/id'
+          nullable: true
+        location_id:
+          $ref: '#/components/schemas/base/properties/id'
+          nullable: true
+        tz_id:
+          $ref: '#/components/schemas/TZ/properties/id'
+          nullable: true
+        uid:
+          $ref: '#/components/schemas/base/properties/id'
+        privacy:
+          $ref: '#/components/schemas/List/properties/privacy'
+        owner:
+          $ref: '#/components/schemas/Person/properties/name'
+          readOnly: true
+        expires:
+          type: string
+          format: date-time
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        status:
+          description: status
+          enum:
+          - active
+          - disabled
+          type: string
+      required:
+      - item
+      - uid
+      title: a profile item
+      type: object
+      xml:
+        name: Profile
     Settings:
       <<: *schema_base
       description: Miscellaneous settings defaults (per account)
@@ -2568,6 +2635,200 @@ paths:
       tags:
       - person
       x-openapi-router-controller: controllers.person.PersonController
+  /profile:
+    get:
+      summary: Find profile items by conditions
+      description: Find profile items based on conditions
+      operationId: find
+      parameters:
+      - description: Profile item ID
+        in: query
+        name: id
+        schema:
+          $ref: '#/components/schemas/base/properties/id'
+      - description: Profile item
+        in: query
+        name: item
+        schema:
+          $ref: '#/components/schemas/Profile/properties/item'
+      - description: Status
+        in: query
+        name: status
+        schema:
+          $ref: '#/components/schemas/Profile/properties/status'
+      - description: Maximum records to fetch
+        in: query
+        name: limit
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 10000
+      - description: Record offset for pagination
+        in: query
+        name: offset
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+      - description: Sort-by field
+        in: query
+        name: sort
+        schema:
+          type: string
+          maxLength: 20
+      - description: Sort-order field
+        in: query
+        name: order
+        schema:
+          enum:
+          - asc
+          - desc
+          type: string
+      - description: Filter field
+        in: query
+        name: filter
+        schema:
+          type: string
+          maxLength: 2048
+      - description: Pagination token
+        in: query
+        name: cursor_next
+        schema:
+          type: string
+          format: b64string
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                items:
+                  type: array
+                  $ref: '#/components/schemas/Profile'
+          description: successful operation
+        400:
+          content: {}
+          description: Invalid conditions supplied
+        404:
+          content: {}
+          description: profile item not found
+      security:
+      - basic: []
+      tags:
+      - profile
+      x-codegen-request-body-name: conditions
+      x-openapi-router-controller: controllers.profile.ProfileController
+    post:
+      summary: Create a new profile item
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Profile'
+        required: true
+      responses:
+        405:
+          content: {}
+          description: Invalid input
+      security:
+      - basic: []
+      tags:
+      - profile
+      x-codegen-request-body-name: body
+      x-openapi-router-controller: controllers.profile.ProfileController
+  /profile/{id}:
+    get:
+      summary: Find profile item by ID
+      description: Returns a single profile item
+      operationId: get
+      parameters:
+      - description: ID of profile item to return
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          minLength: 10
+          maxLength: 10
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: successful operation
+        400:
+          content: {}
+          description: Invalid ID supplied
+        404:
+          content: {}
+          description: profile item not found
+      security:
+      - basic: []
+      tags:
+      - profile
+      x-openapi-router-controller: controllers.profile.ProfileController
+    put:
+      summary: Update an existing profile item
+      operationId: update
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Profile'
+        required: true
+      parameters:
+      - description: profile item to modify
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          minLength: 10
+          maxLength: 10
+      responses:
+        404:
+          content: {}
+          description: profile item not found
+        405:
+          content: {}
+          description: Validation exception
+      security:
+      - basic: []
+      tags:
+      - profile
+      x-codegen-request-body-name: body
+      x-openapi-router-controller: controllers.profile.ProfileController
+  /profile/{ids}:
+    delete:
+      summary: Delete one or more profile items
+      operationId: delete
+      parameters:
+      - description: profile ids to delete
+        in: path
+        name: ids
+        required: true
+        schema:
+          items:
+            type: string
+            minLength: 10
+            maxLength: 10
+          type: array
+      - description: force-delete instead of disable
+        in: query
+        name: force
+        schema:
+          default: false
+          type: boolean
+      responses:
+        400:
+          content: {}
+          description: Invalid id value
+      security:
+      - basic: []
+      tags:
+      - profile
+      x-openapi-router-controller: controllers.profile.ProfileController
   /settings/{id}:
     get:
       summary: Find settings by ID

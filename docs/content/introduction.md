@@ -6,6 +6,23 @@ The _APIcrud_ framework makes it easier to get started on full-stack development
 
 The essential components of a modern full-stack application include a back-end API server, a front-end UI server, a database, a memory-cache and a background worker for performing actions such as emailing, photo uploading or report generation. The challenge of setting up CI testing and microservice deployment is usually daunting; this repo addresses all of those issues by providing a fully-working example you can set up and start modifying in minutes. No prior experience is required.
 
+## Features
+
+Out of the box, here are some of the capabilities included in the example application:
+
+* User-account setup, following standard security practices with password lockout and reset via email
+* Encryption-at-rest for credentials
+* Microservice discovery
+* GeoIP location lookup and map display
+* Customizable per-account grant limits (such as list size, number of contacts)
+* User-profile and settings screens
+* Extensible internationalization support
+* Photo and file uploads, with a mobile-friendly photo album
+* Configurable role-based access control for all resource types, with per-object privacy settings
+* Storage and content-delivery support for AWS
+* Messaging via email and SMS
+* Scalability and fault-tolerance for all services
+
 ## About the Name
 
 APIcrud is based on the [OpenAPI 3.0](https://en.wikipedia.org/wiki/OpenAPI_Specification) standard for RESTful web services. While newer APIs have been developed, such as gRPC (Google) and GraphQL (Facebook), REST remains by far the most widely supported and easiest to learn interface for getting your software deployed.

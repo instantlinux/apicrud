@@ -9,7 +9,7 @@
 #    make ui_local        # (from the other clone)
 
 run_local: py_requirements envsubst redis_adhoc mariadb_adhoc
-	echo $(PUBLIC_URL)
+	@echo Serving http://$(FQDN):$(APP_PORT) as $(PUBLIC_URL)
 	. $(VDIR)/bin/activate && APP_ENV=$(APP_ENV) \
 	  AMQ_HOST=$(RABBITMQ_IP) REDIS_HOST=$(REDIS_IP) \
 	  PUBLIC_URL=http://$(FQDN):$(APP_PORT) \

@@ -349,12 +349,11 @@ class Profile(Base):
 
     id = Column(String(16), primary_key=True, unique=True)
     uid = Column(ForeignKey(u'people.id'), nullable=False)
-    item = Column(Enum(u'birthday', u'employer', u'gender', u'hometown',
-                       u'jobtitle', u'lang', u'location', u'partner',
-                       u'album', u'reminders', u'tz'), nullable=False)
+    item = Column(String(32), nullable=False)
     value = Column(String(32))
     location_id = Column(ForeignKey(u'locations.id'))
     tz_id = Column(ForeignKey(u'time_zone_name.id'))
+    privacy = Column(String(8), nullable=False, server_default=u'public')
     created = Column(TIMESTAMP, nullable=False, server_default=func.now())
     modified = Column(TIMESTAMP)
     status = Column(Enum('active', u'disabled'), nullable=False)

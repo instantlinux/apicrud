@@ -215,6 +215,10 @@ class BasicCRUD(object):
             current = query.one().as_dict()
             query.update(body)
             g.db.commit()
+        except IntegrityError as ex:
+            message = _(u'duplicate or other conflict')
+            logging.warning(dict(message=message, error=str(ex), **logmsg))
+            return dict(message=message, data=str(ex)), 405
         except Exception as ex:
             logging.warning(dict(message=str(ex), **logmsg))
             return dict(message='exception %s' % str(ex)), 405

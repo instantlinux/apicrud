@@ -1,3 +1,3 @@
 ---
-# Config settings for apicrud.service_config
+# Config settings for apicrud.ServiceConfig
 service_name: main

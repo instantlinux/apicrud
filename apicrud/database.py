@@ -55,6 +55,8 @@ def get_session(scopefunc=None, scoped=True, db_url=None, engine=None):
                                               autoflush=False,
                                               bind=engine),
                                  scopefunc=scopefunc)
+        if engine.url.drivername == 'sqlite':
+            Session.execute('PRAGMA foreign_keys=on')
         return Session
     else:
         Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -193,8 +195,8 @@ def seed_new_db(db_session, tz_model=None):
             record['geolong'] *= 1e7
         db_session.add(getattr(models, resource.capitalize())(**record))
     _seed_tz_table(db_session, tz_model)
-    db_session.execute('%s=on' % cmd)
     db_session.commit()
+    db_session.execute('%s=on' % cmd)
 
 
 def _init_db(db_url=None, engine=None, connection_timeout=0,
@@ -209,7 +211,7 @@ def _init_db(db_url=None, engine=None, connection_timeout=0,
             logging.error('action=init_db status=error message=%s' % str(ex))
             return None
     if db_engine.url.drivername == 'sqlite':
-        db_engine.execute('pragma foreign_keys=on')
+        db_engine.execute('PRAGMA foreign_keys=on')
         if geo_support:
             listen(db_engine, 'connect', _load_spatialite)
     db = get_session(scoped=True)

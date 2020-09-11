@@ -6,7 +6,7 @@ created 14-jan-2020 by richb@instantlinux.net
 """
 
 from . import account, auth, category, contact, credential, grant, list, \
-    location, message, person, settings, tz
+    location, message, person, profile, settings, tz
 
 
 def resources():
@@ -30,6 +30,7 @@ def resources():
             location.LocationController,
             message.MessageController,
             person.PersonController,
+            profile.ProfileController,
             settings.SettingsController,
             tz.TZController]:
         results.append(controller().resource)

@@ -49,6 +49,7 @@ This example serves a simple message-board. The `source code <https://github.com
     │   ├── location.py
     │   ├── message.py
     │   ├── person.py
+    │   ├── profile.py
     │   ├── settings.py
     │   └── tz.py
     ├── k8s                      # kubernetes resource specifications
