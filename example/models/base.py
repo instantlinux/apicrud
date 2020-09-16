@@ -11,3 +11,25 @@ from apicrud import ServiceConfig
 
 Base = declarative_base()
 aes_secret = ServiceConfig().config.DB_AES_SECRET
+
+
+class AsDictMixin(object):
+    def as_dict(self):
+        """Returns a serializable dict from an instance of the model
+
+        Each table column is returned in the dict, except for any
+        listed in a __rest_exclude__ tuple
+
+        A list of related records' ids can be attached by defining
+        one or more resource names in a __rest_related__ tuple
+        """
+
+        retval = self.__dict__.copy()
+        if hasattr(self, '__rest_exclude__'):
+            for col in self.__rest_exclude__:
+                del(retval[col])
+        if hasattr(self, '__rest_related__'):
+            for key in self.__rest_related__:
+                retval[key] = [rec.id for rec in getattr(self, key)]
+        retval.pop('_sa_instance_state', None)
+        return retval

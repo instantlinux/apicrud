@@ -16,14 +16,16 @@ from sqlalchemy_utils import EncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
 import constants
-from .base import aes_secret, Base
+from .base import aes_secret, AsDictMixin, Base
 
 
-class Account(Base):
+class Account(AsDictMixin, Base):
     __tablename__ = 'accounts'
     __table_args__ = (
         UniqueConstraint(u'id', u'uid', name='uniq_account_user'),
     )
+    __rest_exclude__ = ('password', 'totp_secret', 'invalid_attempts',
+                        'last_invalid_attempt')
 
     id = Column(String(16), primary_key=True, unique=True)
     name = Column(String(32), nullable=False, unique=True)
@@ -48,15 +50,8 @@ class Account(Base):
         'account_uid', cascade='all, delete-orphan'))
     settings = relationship('Settings')
 
-    def as_dict(self):
-        return {col.name: getattr(self, col.name)
-                for col in self.__table__.columns
-                if col.name not in [
-                        'password', 'totp_secret', 'invalid_attempts',
-                        'last_invalid_attempt']}
 
-
-class Category(Base):
+class Category(AsDictMixin, Base):
     __tablename__ = 'categories'
     __table_args__ = (
         UniqueConstraint(u'name', u'uid', name='uniq_category_owner'),
@@ -73,13 +68,8 @@ class Category(Base):
     owner = relationship('Person', foreign_keys=[uid], backref=backref(
         'category_uid', cascade='all, delete-orphan'))
 
-    # TODO - dry this out
-    def as_dict(self):
-        return {col.name: getattr(self, col.name)
-                for col in self.__table__.columns}
 
-
-class Contact(Base):
+class Contact(AsDictMixin, Base):
     __tablename__ = 'contacts'
     __table_args__ = (
         UniqueConstraint(u'info', u'type', name='uniq_info_type'),
@@ -103,16 +93,13 @@ class Contact(Base):
     owner = relationship('Person', foreign_keys=[uid], backref=backref(
         'contacts', cascade='all, delete-orphan'))
 
-    def as_dict(self):
-        return {col.name: getattr(self, col.name)
-                for col in self.__table__.columns}
 
-
-class Credential(Base):
+class Credential(AsDictMixin, Base):
     __tablename__ = 'credentials'
     __table_args__ = (
         UniqueConstraint(u'name', u'uid', name='uniq_name_uid'),
     )
+    __rest_exclude__ = ('secret', 'otherdata')
 
     id = Column(String(16), primary_key=True, unique=True)
     name = Column(String(64), nullable=False)
@@ -136,11 +123,6 @@ class Credential(Base):
     owner = relationship('Person', foreign_keys=[uid], backref=backref(
         'credential_uid', cascade='all, delete-orphan'))
 
-    def as_dict(self):
-        return {col.name: getattr(self, col.name)
-                for col in self.__table__.columns
-                if col.name not in ['secret', 'otherdata']}
-
 
 class DirectMessage(Base):
     __tablename__ = 'directmessages'
@@ -160,7 +142,7 @@ class DirectMessage(Base):
         'directmessages', cascade='all, delete-orphan'))
 
 
-class Grant(Base):
+class Grant(AsDictMixin, Base):
     __tablename__ = 'grants'
     __table_args__ = (
         UniqueConstraint(u'name', u'uid', name='uniq_grant_user'),
@@ -179,16 +161,13 @@ class Grant(Base):
     owner = relationship('Person', foreign_keys=[uid], backref=backref(
         'grant_uid', cascade='all, delete-orphan'))
 
-    def as_dict(self):
-        return {col.name: getattr(self, col.name)
-                for col in self.__table__.columns}
 
-
-class List(Base):
+class List(AsDictMixin, Base):
     __tablename__ = 'lists'
     __table_args__ = (
         UniqueConstraint(u'name', u'uid', name='uniq_list_owner'),
     )
+    __rest_related__ = ('members',)
 
     id = Column(String(16), primary_key=True, unique=True)
     name = Column(String(64), nullable=False)
@@ -208,12 +187,6 @@ class List(Base):
     category = relationship('Category')
     owner = relationship('Person', foreign_keys=[uid], backref=backref(
         'list_uid', cascade='all, delete-orphan'))
-
-    def as_dict(self):
-        retval = self.__dict__.copy()
-        retval['members'] = [member.id for member in self.members]
-        retval.pop('_sa_instance_state', None)
-        return retval
 
 
 # see https://docs.sqlalchemy.org/en/13/orm/extensions/associationproxy.html
@@ -256,7 +229,7 @@ class ListMessage(Base):
         'listmessages', cascade='all, delete-orphan'))
 
 
-class Location(Base):
+class Location(AsDictMixin, Base):
     __tablename__ = 'locations'
 
     id = Column(String(16), primary_key=True, unique=True)
@@ -284,12 +257,8 @@ class Location(Base):
     owner = relationship('Person', foreign_keys=[uid], backref=backref(
         'location_uid', cascade='all, delete-orphan'))
 
-    def as_dict(self):
-        return {col.name: getattr(self, col.name)
-                for col in self.__table__.columns}
 
-
-class Message(Base):
+class Message(AsDictMixin, Base):
     __tablename__ = 'messages'
 
     id = Column(String(16), primary_key=True, unique=True)
@@ -312,13 +281,10 @@ class Message(Base):
     owner = relationship('Person', foreign_keys=[uid])
     recipient = relationship('Person', foreign_keys=[recipient_id])
 
-    def as_dict(self):
-        return {col.name: getattr(self, col.name)
-                for col in self.__table__.columns}
 
-
-class Person(Base):
+class Person(AsDictMixin, Base):
     __tablename__ = 'people'
+    __rest_related__ = ('lists',)
 
     id = Column(String(16), primary_key=True, unique=True)
     name = Column(String(64), nullable=False)
@@ -333,14 +299,8 @@ class Person(Base):
                          backref=backref('lists'), lazy='dynamic')
     profileitems = relationship('Profile')
 
-    def as_dict(self):
-        retval = {col.name: getattr(self, col.name)
-                  for col in self.__table__.columns}
-        retval['lists'] = [list.id for list in self.lists]
-        return retval
 
-
-class Profile(Base):
+class Profile(AsDictMixin, Base):
     __tablename__ = 'profileitems'
     __table_args__ = (
         UniqueConstraint(u'uid', u'item', name='uniq_itemuid'),
@@ -362,12 +322,8 @@ class Profile(Base):
         'profile', cascade='all, delete-orphan'))
     tz = relationship('Tz')
 
-    def as_dict(self):
-        return {col.name: getattr(self, col.name)
-                for col in self.__table__.columns}
 
-
-class Settings(Base):
+class Settings(AsDictMixin, Base):
     __tablename__ = 'settings'
 
     id = Column(String(16), primary_key=True, unique=True)
@@ -400,12 +356,8 @@ class Settings(Base):
                                     foreign_keys=[default_hostlist_id])
     tz = relationship('Tz')
 
-    def as_dict(self):
-        return {col.name: getattr(self, col.name)
-                for col in self.__table__.columns}
 
-
-class Storage(Base):
+class Storage(AsDictMixin, Base):
     __tablename__ = 'storageitems'
     __table_args__ = (
         UniqueConstraint(u'name', u'uid', name='uniq_storage_user'),
@@ -431,19 +383,11 @@ class Storage(Base):
     owner = relationship('Person', foreign_keys=[uid], backref=backref(
         'storage_uid', cascade='all, delete-orphan'))
 
-    def as_dict(self):
-        return {col.name: getattr(self, col.name)
-                for col in self.__table__.columns}
 
-
-class Tz(Base):
+class Tz(AsDictMixin, Base):
     __tablename__ = 'time_zone_name'
 
     id = Column(INTEGER, primary_key=True, unique=True)
     name = Column(String(32), nullable=False, unique=True)
     status = Column(Enum('active', u'disabled'), nullable=False,
                     server_default="active")
-
-    def as_dict(self):
-        return {col.name: getattr(self, col.name)
-                for col in self.__table__.columns}
