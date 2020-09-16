@@ -683,6 +683,7 @@ components:
           default: US
         default_storage_id:
           $ref: '#/components/schemas/base/properties/id'
+          nullable: true
         smtp_smarthost:
           type: string
           format: fqdn

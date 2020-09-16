@@ -25,7 +25,11 @@ This example serves a simple message-board. The `source code <https://github.com
     ├── Makefile.sops
     ├── Makefile.vars
     ├── messaging.py             # messaging worker startup
-    ├── models.py                # models for database schema
+    ├── models
+    │   ├── __init__.py          # models for database schema
+    │   ├── api.py               # open-core API models
+    │   ├── base.py              # declarative base
+    │   └── ...                  # add your custom models here
     ├── openapi.yaml             # OpenAPI 3.0 specifications
     ├── rbac.yaml                # endpoint permissions
     ├── requirements.txt         # python dependencies

@@ -59,8 +59,8 @@ def upgrade():
 
     op.create_table('contacts',
     sa.Column('id', sa.String(length=16), nullable=False),
-    sa.Column('label', sa.Enum('home', 'mobile', 'other', 'work'), server_default='home', nullable=False),
-    sa.Column('type', sa.Enum('email', 'linkedin', 'location', 'messenger', 'slack', 'sms', 'voice', 'whatsapp'), server_default='email', nullable=False),
+    sa.Column('label', sa.String(length=16), server_default='home', nullable=False),
+    sa.Column('type', sa.String(length=12), server_default='email', nullable=False),
     sa.Column('carrier', sa.String(length=16), nullable=True),
     sa.Column('info', sa.String(length=255), nullable=True),
     sa.Column('muted', sa.BOOLEAN(), server_default=sa.text('0'), nullable=False),
@@ -154,7 +154,7 @@ def upgrade():
     sa.Column('status', sa.Enum('active', 'disabled'), nullable=False),
     sa.ForeignKeyConstraint(['location_id'], ['locations.id'], ),
     sa.ForeignKeyConstraint(['tz_id'], ['time_zone_name.id'], ),
-    sa.ForeignKeyConstraint(['uid'], ['people.id'], ),
+    sa.ForeignKeyConstraint(['uid'], ['people.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id'),
     sa.UniqueConstraint('uid', 'item', name='uniq_itemuid')
@@ -169,6 +169,7 @@ def upgrade():
     )
     with op.batch_alter_table('directmessages', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_directmessages_uid'), ['uid'], unique=False)
+        batch_op.create_unique_constraint('uniq_directmessage', ['message_id', 'uid'])
 
     op.create_table('lists',
     sa.Column('id', sa.String(length=16), nullable=False),
@@ -196,6 +197,7 @@ def upgrade():
     )
     with op.batch_alter_table('listmembers', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_listmembers_list_id'), ['list_id'], unique=False)
+        batch_op.create_unique_constraint('uniq_listmember', ['list_id', 'uid'])
 
     op.create_table('listmessages',
     sa.Column('message_id', sa.String(length=16), primary_key=True, nullable=False),
@@ -206,6 +208,7 @@ def upgrade():
     )
     with op.batch_alter_table('listmessages', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_listmessages_list_id'), ['list_id'], unique=False)
+        batch_op.create_unique_constraint('uniq_listmessage', ['list_id', 'message_id'])
 
     op.create_table('settings',
     sa.Column('id', sa.String(length=16), nullable=False),

@@ -1,6 +1,4 @@
-"""example-app models
-
-Database model definitions for SQLalchemy
+"""Open-core API model definitions
 
 created 26-mar-2019 by richb@instantlinux.net
 
@@ -14,16 +12,11 @@ from sqlalchemy import BOOLEAN, Column, Enum, ForeignKey, INTEGER, String, \
      TEXT, TIMESTAMP, Unicode, UniqueConstraint
 from sqlalchemy import func
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy_utils import EncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
-from apicrud import ServiceConfig
-
 import constants
-
-Base = declarative_base()
-aes_secret = ServiceConfig().config.DB_AES_SECRET
+from .base import aes_secret, Base
 
 
 class Account(Base):
@@ -93,11 +86,8 @@ class Contact(Base):
     )
 
     id = Column(String(16), primary_key=True, unique=True)
-    label = Column(Enum(u'home', u'mobile', u'other', u'work'),
-                   nullable=False, server_default=u'home')
-    type = Column(Enum(u'email', u'linkedin', u'location', u'messenger',
-                       u'slack', u'sms', u'voice', u'whatsapp'),
-                  nullable=False, server_default=u'email')
+    label = Column(String(16), nullable=False, server_default=u'home')
+    type = Column(String(12), nullable=False, server_default=u'email')
     carrier = Column(String(16))
     info = Column(String(255))
     muted = Column(BOOLEAN, nullable=False, server_default="False")
@@ -154,6 +144,9 @@ class Credential(Base):
 
 class DirectMessage(Base):
     __tablename__ = 'directmessages'
+    __table_args__ = (
+        UniqueConstraint(u'message_id', u'uid', name='uniq_directmessage'),
+    )
 
     message_id = Column(ForeignKey(u'messages.id', ondelete='CASCADE'),
                         primary_key=True, nullable=False)
@@ -226,6 +219,9 @@ class List(Base):
 # see https://docs.sqlalchemy.org/en/13/orm/extensions/associationproxy.html
 class ListMember(Base):
     __tablename__ = 'listmembers'
+    __table_args__ = (
+        UniqueConstraint(u'list_id', u'uid', name='uniq_listmember'),
+    )
 
     uid = Column(ForeignKey(u'people.id', ondelete='CASCADE'),
                  primary_key=True, nullable=False)
@@ -243,6 +239,9 @@ class ListMember(Base):
 
 class ListMessage(Base):
     __tablename__ = 'listmessages'
+    __table_args__ = (
+        UniqueConstraint(u'list_id', u'message_id', name='uniq_listmessage'),
+    )
 
     message_id = Column(ForeignKey(u'messages.id', ondelete='CASCADE'),
                         primary_key=True, nullable=False)
@@ -348,7 +347,7 @@ class Profile(Base):
     )
 
     id = Column(String(16), primary_key=True, unique=True)
-    uid = Column(ForeignKey(u'people.id'), nullable=False)
+    uid = Column(ForeignKey(u'people.id', ondelete='CASCADE'), nullable=False)
     item = Column(String(32), nullable=False)
     value = Column(String(32))
     location_id = Column(ForeignKey(u'locations.id'))
@@ -448,9 +447,3 @@ class Tz(Base):
     def as_dict(self):
         return {col.name: getattr(self, col.name)
                 for col in self.__table__.columns}
-
-
-class AlembicVersion(Base):
-    __tablename__ = 'alembic_version'
-
-    version_num = Column(String(32), primary_key=True, nullable=False)
