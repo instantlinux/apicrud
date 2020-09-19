@@ -11,49 +11,49 @@ requests==2.23.0
 
 # for faster builds, keep these versions in sync with images
 # instantlinux/python-builder and instantlinux/python-uwsgi
-alembic==1.4.2
-b2sdk==1.0.2
+alembic==1.4.3
+b2sdk==1.1.4
 connexion==2.7.0
 connexion[swagger-ui]
-Flask-Cors==3.0.8
+Flask-Cors==3.0.9
 # GeoAlchemy2==0.7.2
 geocoder==1.38.1
-icalendar==4.0.6
+icalendar==4.0.7
 passlib==1.7.2
-pycryptodomex==3.9.7
-PyMySQL==0.9.3
+pycryptodomex==3.9.8
+PyMySQL==0.10.1
 pytz==2020.1
 redis==3.5.3
-SQLAlchemy==1.3.17
-SQLAlchemy-Utils==0.36.6
-swagger-ui-bundle==0.0.6
+SQLAlchemy==1.3.19
+SQLAlchemy-Utils==0.36.8
+swagger-ui-bundle==0.0.8
 urllib3==1.25.9
 
 # transitive requirements - listed here for automated vulnerability scans
-amqp==2.6.0
-arrow==0.15.6
+amqp==2.6.1
+arrow==0.16.0
 Babel==2.8.0
 billiard==3.6.3.0
 clickclick==1.2.2
 decorator==4.4.2
-docutils==0.16
+docutils==0.15.2
 funcsigs==1.0.2
 future==0.18.2
-importlib-metadata==1.6.1
+importlib-metadata==1.7.0
 inflection==0.5.0
 Jinja2==2.11.2
 jmespath==0.10.0
 jsonschema==3.2.0
-kombu==4.6.10
+kombu==4.6.11
 logfury==0.1.2
 Mako==1.1.3
 MarkupSafe==1.1.1
-openapi-spec-validator==0.2.8
-pyrsistent==0.16.0
+openapi-spec-validator==0.2.9
+pyrsistent==0.17.3
 python-dateutil==2.8.1
 python-editor==1.0.4
 ratelim==0.1.6
 s3transfer==0.3.3
-tqdm==4.46.1
+tqdm==4.49.0
 vine==1.3.0
 zipp==3.1.0
