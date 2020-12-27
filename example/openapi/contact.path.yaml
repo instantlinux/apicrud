@@ -1,0 +1,262 @@
+contact:
+  get:
+    summary: Find contacts by conditions
+    description: Find contacts based on conditions
+    operationId: find
+    parameters:
+    - description: Contact ID
+      in: query
+      name: id
+      schema:
+        $ref: '#/components/schemas/base/properties/id'
+    - description: Person's name
+      in: query
+      name: name
+      schema:
+        $ref: '#/components/schemas/Person/properties/name'
+    - description: Status
+      in: query
+      name: status
+      schema:
+        $ref: '#/components/schemas/Contact/properties/status'
+    - description: Maximum records to fetch
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 10000
+    - description: Record offset for pagination
+      in: query
+      name: offset
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 2147483647
+    - description: Sort-by field
+      in: query
+      name: sort
+      schema:
+        type: string
+        maxLength: 20
+    - description: Sort-order field
+      in: query
+      name: order
+      schema:
+        enum:
+        - asc
+        - desc
+        type: string
+    - description: Filter field
+      in: query
+      name: filter
+      schema:
+        type: string
+        maxLength: 2048
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Contact'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid conditions supplied
+      404:
+        content: {}
+        description: contact not found
+    security:
+    - apikey: []
+    - basic: []
+    tags:
+    - contact
+    x-openapi-router-controller: controllers.contact.ContactController
+  post:
+    operationId: create
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Contact'
+      description: Create a new contact
+      required: true
+    responses:
+      405:
+        content: {}
+        description: Invalid input
+    security:
+    - apikey: ['full']
+    - basic: []
+    summary: Create a new contact
+    tags:
+    - contact
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.contact.ContactController
+contact-id:
+  get:
+    description: Returns a single contact
+    operationId: get
+    parameters:
+    - description: ID of contact to return
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Contact'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid ID supplied
+      404:
+        content: {}
+        description: contact not found
+    security:
+    - apikey: []
+    - basic: []
+    summary: Find contact by ID
+    tags:
+    - contact
+    x-openapi-router-controller: controllers.contact.ContactController
+  put:
+    operationId: update
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Contact'
+      description: Update a contact
+      required: true
+    parameters:
+    - description: contact to modify
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      404:
+        content: {}
+        description: contact not found
+      405:
+        content: {}
+        description: Validation exception
+    security:
+    - apikey: ['full']
+    - basic: []
+    summary: Update an existing contact
+    tags:
+    - contact
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.contact.ContactController
+contact-ids:
+  delete:
+    operationId: delete
+    parameters:
+    - description: contact ids to delete
+      in: path
+      name: ids
+      required: true
+      schema:
+        items:
+          type: string
+          minLength: 10
+          maxLength: 10
+        type: array
+    - description: force-delete instead of disable
+      in: query
+      name: force
+      schema:
+        default: false
+        type: boolean
+    responses:
+      400:
+        content: {}
+        description: Invalid id value
+    security:
+    - apikey: ['full']
+    - basic: []
+    summary: Deletes one or more contacts
+    tags:
+    - contact
+    x-openapi-router-controller: controllers.contact.ContactController
+contact-confirmation_get-id:
+  get:
+    description: Get a token for contact confirmation
+    operationId: confirmation_get
+    parameters:
+    - description: ID of contact
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              properties:
+                token:
+                  type: string
+                id:
+                  type: string
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid ID supplied
+      404:
+        content: {}
+        description: contact not found
+    summary: Get a token for contact confirmation
+    tags:
+    - contact
+    x-openapi-router-controller: controllers.contact.ContactController
+contact-confirm-token:
+  post:
+    description: Present token for contact confirmation
+    operationId: confirm
+    parameters:
+    - description: Token created by confirmation_get
+      in: path
+      name: token
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 255
+    responses:
+      201:
+        content:
+          application/json:
+            schema:
+              properties:
+                info:
+                  $ref: '#/components/schemas/Contact/properties/info'
+                type:
+                  $ref: '#/components/schemas/Contact/properties/type'
+                id:
+                  type: string
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid ID supplied
+      404:
+        content: {}
+        description: contact not found
+    summary: Present token for contact confirmation
+    tags:
+    - contact
+    x-openapi-router-controller: controllers.contact.ContactController

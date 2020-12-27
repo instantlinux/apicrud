@@ -1,0 +1,192 @@
+list:
+  get:
+    summary: Find lists by conditions
+    description: Find lists based on conditions
+    operationId: find
+    parameters:
+    - description: List ID
+      in: query
+      name: id
+      schema:
+        $ref: '#/components/schemas/base/properties/id'
+    - description: List name
+      in: query
+      name: name
+      schema:
+        $ref: '#/components/schemas/List/properties/name'
+    - description: Status
+      in: query
+      name: status
+      schema:
+        $ref: '#/components/schemas/List/properties/status'
+    - description: Maximum records to fetch
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 10000
+    - description: Record offset for pagination
+      in: query
+      name: offset
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 2147483647
+    - description: Sort-by field
+      in: query
+      name: sort
+      schema:
+        type: string
+        maxLength: 20
+    - description: Sort-order field
+      in: query
+      name: order
+      schema:
+        enum:
+        - asc
+        - desc
+        type: string
+    - description: Filter field
+      in: query
+      name: filter
+      schema:
+        type: string
+        maxLength: 2048
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/List'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid conditions supplied
+      404:
+        content: {}
+        description: list not found
+    security:
+    - apikey: []
+    - basic: []
+    tags:
+    - list
+    x-openapi-router-controller: controllers.list.ListController
+  post:
+    operationId: create
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/List'
+      description: Create a new list
+      required: true
+    responses:
+      405:
+        content: {}
+        description: Invalid input
+    security:
+    - apikey: ['full']
+    - basic: []
+    summary: Create a new list
+    tags:
+    - list
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.list.ListController
+list-id:
+  get:
+    description: Returns a single list
+    operationId: get
+    parameters:
+    - description: ID of list to return
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/List'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid ID supplied
+      404:
+        content: {}
+        description: list not found
+    security:
+    - apikey: []
+    - basic: []
+    summary: Find list by ID
+    tags:
+    - list
+    x-openapi-router-controller: controllers.list.ListController
+  put:
+    operationId: update
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/List'
+      description: Update a list
+      required: true
+    parameters:
+    - description: list to modify
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      404:
+        content: {}
+        description: list not found
+      405:
+        content: {}
+        description: Validation exception
+    security:
+    - apikey: ['full']
+    - basic: []
+    summary: Update an existing list
+    tags:
+    - list
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.list.ListController
+list-ids:
+  delete:
+    operationId: delete
+    parameters:
+    - description: list ids to delete
+      in: path
+      name: ids
+      required: true
+      schema:
+        items:
+          type: string
+          minLength: 10
+          maxLength: 10
+        type: array
+    - description: force-delete instead of disable
+      in: query
+      name: force
+      schema:
+        default: false
+        type: boolean
+    responses:
+      400:
+        content: {}
+        description: Invalid id value
+    security:
+    - apikey: ['full']
+    - basic: []
+    summary: Deletes one or more lists
+    tags:
+    - list
+    x-openapi-router-controller: controllers.list.ListController

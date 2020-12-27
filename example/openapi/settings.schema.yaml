@@ -1,0 +1,51 @@
+Settings:
+  description: Miscellaneous settings defaults (per domain)
+  properties:
+    administrator:
+      $ref: '#/components/schemas/Person/properties/name'
+    category_id:
+      $ref: '#/components/schemas/base/properties/id'
+    country:
+      default: US
+      maxLength: 2
+      minLength: 2
+      type: string
+    created:
+      $ref: '#/components/schemas/base/properties/created'
+    default_cat_id:
+      $ref: '#/components/schemas/base/properties/id'
+    default_hostlist:
+      $ref: '#/components/schemas/List/properties/name'
+      nullable: true
+    default_storage_id:
+      $ref: '#/components/schemas/base/properties/id'
+      nullable: true
+    id:
+      $ref: '#/components/schemas/base/properties/id'
+    modified:
+      $ref: '#/components/schemas/base/properties/modified'
+    privacy:
+      $ref: '#/components/schemas/base/properties/privacy'
+    smtp_credential_id:
+      $ref: '#/components/schemas/base/properties/id'
+      nullable: true
+    smtp_port:
+      default: 25
+      maximum: 65535
+      minimum: 1
+      type: integer
+    smtp_smarthost:
+      format: fqdn
+      type: string
+    status:
+      $ref: '#/components/schemas/base/properties/status'
+    url:
+      format: url
+      type: string
+    window_title:
+      default: Example Application
+      maxLength: 127
+      minLength: 2
+      type: string
+  title: account-level global settings
+  type: object

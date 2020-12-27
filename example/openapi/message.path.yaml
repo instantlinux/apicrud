@@ -1,0 +1,187 @@
+message:
+  get:
+    summary: Find messages by conditions
+    description: Find messages based on conditions
+    operationId: find
+    parameters:
+    - description: Message ID
+      in: query
+      name: id
+      schema:
+        $ref: '#/components/schemas/base/properties/id'
+    - description: Status
+      in: query
+      name: status
+      schema:
+        $ref: '#/components/schemas/base/properties/status'
+    - description: Maximum records to fetch
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 10000
+    - description: Record offset for pagination
+      in: query
+      name: offset
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 2147483647
+    - description: Sort-by field
+      in: query
+      name: sort
+      schema:
+        type: string
+        maxLength: 20
+    - description: Sort-order field
+      in: query
+      name: order
+      schema:
+        enum:
+        - asc
+        - desc
+        type: string
+    - description: Filter field
+      in: query
+      name: filter
+      schema:
+        type: string
+        maxLength: 2048
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid conditions supplied
+      404:
+        content: {}
+        description: message not found
+    security:
+    - apikey: []
+    - basic: []
+    tags:
+    - message
+    x-openapi-router-controller: controllers.message.MessageController
+  post:
+    operationId: create
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Message'
+      description: Create a new message
+      required: true
+    responses:
+      405:
+        content: {}
+        description: Invalid input
+    security:
+    - apikey: ['full']
+    - basic: []
+    summary: Create a new message
+    tags:
+    - message
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.message.MessageController
+message-id:
+  get:
+    description: Returns a single message
+    operationId: get
+    parameters:
+    - description: ID of message to return
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid ID supplied
+      404:
+        content: {}
+        description: Message not found
+    security:
+    - apikey: []
+    - basic: []
+    summary: Find message by ID
+    tags:
+    - message
+    x-openapi-router-controller: controllers.message.MessageController
+  put:
+    operationId: update
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Message'
+      description: Update a message
+      required: true
+    parameters:
+    - description: Message id to modify
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      404:
+        content: {}
+        description: Message not found
+      405:
+        content: {}
+        description: Validation exception
+    security:
+    - apikey: ['full']
+    - basic: []
+    summary: Update an existing message
+    tags:
+    - message
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.message.MessageController
+message-ids:
+  delete:
+    operationId: delete
+    parameters:
+    - description: Message ids to delete
+      in: path
+      name: ids
+      required: true
+      schema:
+        items:
+          type: string
+          minLength: 10
+          maxLength: 10
+        type: array
+    - description: force-delete instead of disable
+      in: query
+      name: force
+      schema:
+        default: false
+        type: boolean
+    responses:
+      400:
+        content: {}
+        description: Invalid id value
+    security:
+    - apikey: ['full']
+    - basic: []
+    summary: Deletes one or more messages
+    tags:
+    - message
+    x-openapi-router-controller: controllers.message.MessageController

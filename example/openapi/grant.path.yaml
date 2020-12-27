@@ -1,0 +1,199 @@
+grant:
+  get:
+    summary: Find grants by conditions
+    description: Find grants based on conditions
+    operationId: find
+    parameters:
+    - description: Grant ID
+      in: query
+      name: id
+      schema:
+        $ref: '#/components/schemas/base/properties/id'
+    - description: Grant name
+      in: query
+      name: name
+      schema:
+        $ref: '#/components/schemas/Grant/properties/name'
+    - description: Status
+      in: query
+      name: status
+      schema:
+        $ref: '#/components/schemas/Grant/properties/status'
+    - description: Maximum records to fetch
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 10000
+    - description: Record offset for pagination
+      in: query
+      name: offset
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 2147483647
+    - description: Sort-by field
+      in: query
+      name: sort
+      schema:
+        type: string
+        maxLength: 20
+    - description: Sort-order field
+      in: query
+      name: order
+      schema:
+        enum:
+        - asc
+        - desc
+        type: string
+    - description: Filter field
+      in: query
+      name: filter
+      schema:
+        type: string
+        maxLength: 2048
+    - description: Pagination token
+      in: query
+      name: cursor_next
+      schema:
+        type: string
+        format: b64string
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              items:
+                type: array
+                $ref: '#/components/schemas/Grant'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid conditions supplied
+      404:
+        content: {}
+        description: grant not found
+    security:
+    - apikey: []
+    - basic: []
+    tags:
+    - grant
+    x-codegen-request-body-name: conditions
+    x-openapi-router-controller: controllers.grant.GrantController
+  post:
+    summary: Create a new grant
+    operationId: create
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Grant'
+      required: true
+    responses:
+      405:
+        content: {}
+        description: Invalid input
+    security:
+    - apikey: ['full']
+    - basic: []
+    tags:
+    - grant
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.grant.GrantController
+grant-id:
+  get:
+    summary: Find grant by ID
+    description: Returns a single grant
+    operationId: get
+    parameters:
+    - description: ID of grant to return
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 35
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Grant'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid ID supplied
+      404:
+        content: {}
+        description: grant not found
+    security:
+    - apikey: []
+    - basic: []
+    tags:
+    - grant
+    x-openapi-router-controller: controllers.grant.GrantController
+  put:
+    summary: Update an existing grant
+    operationId: update
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Grant'
+      required: true
+    parameters:
+    - description: grant to modify
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 35
+    responses:
+      404:
+        content: {}
+        description: grant not found
+      405:
+        content: {}
+        description: Validation exception
+    security:
+    - apikey: ['full']
+    - basic: []
+    tags:
+    - grant
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.grant.GrantController
+grant-ids:
+  delete:
+    summary: Delete one or more grants
+    operationId: delete
+    parameters:
+    - description: grant ids to delete
+      in: path
+      name: ids
+      required: true
+      schema:
+        items:
+          type: string
+          minLength: 10
+          maxLength: 35
+        type: array
+    - description: force-delete instead of disable
+      in: query
+      name: force
+      schema:
+        default: false
+        type: boolean
+    responses:
+      400:
+        content: {}
+        description: Invalid id value
+    security:
+    - apikey: ['full']
+    - basic: []
+    tags:
+    - grant
+    x-openapi-router-controller: controllers.grant.GrantController

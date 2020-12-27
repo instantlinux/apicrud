@@ -1,0 +1,199 @@
+category:
+  get:
+    summary: Find categories by conditions
+    description: Find categories based on conditions
+    operationId: find
+    parameters:
+    - description: Category ID
+      in: query
+      name: id
+      schema:
+        $ref: '#/components/schemas/base/properties/id'
+    - description: Category name
+      in: query
+      name: name
+      schema:
+        $ref: '#/components/schemas/Category/properties/name'
+    - description: Status
+      in: query
+      name: status
+      schema:
+        $ref: '#/components/schemas/Category/properties/status'
+    - description: Maximum records to fetch
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 10000
+    - description: Record offset for pagination
+      in: query
+      name: offset
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 2147483647
+    - description: Sort-by field
+      in: query
+      name: sort
+      schema:
+        type: string
+        maxLength: 20
+    - description: Sort-order field
+      in: query
+      name: order
+      schema:
+        enum:
+        - asc
+        - desc
+        type: string
+    - description: Filter field
+      in: query
+      name: filter
+      schema:
+        type: string
+        maxLength: 2048
+    - description: Pagination token
+      in: query
+      name: cursor_next
+      schema:
+        type: string
+        format: b64string
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              items:
+                type: array
+                $ref: '#/components/schemas/Category'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid conditions supplied
+      404:
+        content: {}
+        description: category not found
+    security:
+    - apikey: []
+    - basic: []
+    tags:
+    - category
+    x-codegen-request-body-name: conditions
+    x-openapi-router-controller: controllers.category.CategoryController
+  post:
+    summary: Create a new category
+    operationId: create
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Category'
+      required: true
+    responses:
+      405:
+        content: {}
+        description: Invalid input
+    security:
+    - apikey: ['full']
+    - basic: []
+    tags:
+    - category
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.category.CategoryController
+category-id:
+  get:
+    summary: Find category by ID
+    description: Returns a single category
+    operationId: get
+    parameters:
+    - description: ID of category to return
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid ID supplied
+      404:
+        content: {}
+        description: category not found
+    security:
+    - apikey: []
+    - basic: []
+    tags:
+    - category
+    x-openapi-router-controller: controllers.category.CategoryController
+  put:
+    summary: Update an existing category
+    operationId: update
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Category'
+      required: true
+    parameters:
+    - description: category to modify
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      404:
+        content: {}
+        description: category not found
+      405:
+        content: {}
+        description: Validation exception
+    security:
+    - apikey: ['full']
+    - basic: []
+    tags:
+    - category
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.category.CategoryController
+category-ids:
+  delete:
+    summary: Delete one or more categories
+    operationId: delete
+    parameters:
+    - description: category ids to delete
+      in: path
+      name: ids
+      required: true
+      schema:
+        items:
+          type: string
+          minLength: 10
+          maxLength: 10
+        type: array
+    - description: force-delete instead of disable
+      in: query
+      name: force
+      schema:
+        default: false
+        type: boolean
+    responses:
+      400:
+        content: {}
+        description: Invalid id value
+    security:
+    - apikey: ['full']
+    - basic: []
+    tags:
+    - category
+    x-openapi-router-controller: controllers.category.CategoryController

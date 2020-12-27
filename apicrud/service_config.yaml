@@ -142,6 +142,7 @@ components:
           default:
             albums: 10
             album_size: 64
+            apikeys: 2
             contacts: 8
             daily_email: 200
             daily_sms: 100
@@ -151,6 +152,7 @@ components:
             monthly_email: 1000
             monthly_sms: 1000
             photo_res_max: 1080
+            ratelimit: 500
             video_duration_max: 60
           description: >
             List of quota grants and their default values for users who
@@ -168,6 +170,10 @@ components:
           pattern: ^[a-f0-9]+$
           minLength: 32
           maxLength: 64
+        header_auth_apikey:
+          default: X-Api-Key
+          description: Header name to use for API key authentication
+          type: string
         http_response_cache_max_age:
           default: 30
           description: How long a browser should cache API objects
@@ -230,6 +236,17 @@ components:
             Publicly-reachable name for the service registration, used by
             the UI to access endpoints
           type: string
+        ratelimit_interval:
+          default: 300
+          description: >
+            Rate-limit measurement interval (seconds) - each API key can
+            be invoked its granted number of calls over this interval
+            (see default_grants setting)
+          type: integer
+        ratelimit_enable:
+          default: true
+          description: Whether to impose rate limits
+          type: boolean
         rbac_file:
           default: rbac.yaml
           description: >
@@ -263,6 +280,10 @@ components:
           default: 60
           description: >
             How long a registration lasts before the container is assumed dead
+          type: integer
+        scopes_max:
+          default: 32
+          description: How many scopes allowed per account
           type: integer
         service_name:
           default: main
@@ -301,7 +322,7 @@ components:
       type: http
       scheme: basic
       x-basicInfoFunc: apicrud.session_auth.basic
-    example_apikey:
+    apikey:
       in: header
       name: api_key
       type: apiKey

@@ -1,14 +1,6 @@
 """service_registry.py
 
-Service Registry
-  Services or the UI discover one another through this service
-  registry.  Each microservice instance submits its identity and
-  capabilities to this central registry, implemented as expiring redis
-  keys which are updated at a fixed frequency. Encryption provides
-  modest protection against injection attacks.
-
 created 8-may-2020 by richb@instantlinux.net
-
 """
 
 import json
@@ -27,11 +19,15 @@ params = {}
 
 
 class ServiceRegistry(object):
-    """
-    Service registry
+    """Service Registry
 
-    Attributes:
-      db_session (obj): existing db session
+    Services or the UI discover one another through this service
+    registry.  Each microservice instance submits its identity and
+    capabilities to this central registry, implemented as expiring redis
+    keys which are updated at a fixed frequency. Encryption provides
+    modest protection against injection attacks.
+
+    Args:
       ttl (int): how long to cache instance's registration
       redis_conn (obj): connection to redis
     """

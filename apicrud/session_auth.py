@@ -1,14 +1,12 @@
 """session_auth
 
-Session Authorization
-  Functions for login, password and role authorization
-
 created 26-mar-2020 by richb@instantlinux.net
 """
-
+from base64 import b64encode
 from datetime import datetime, timedelta
 from flask import g, request
 from flask_babel import _
+import hashlib
 import jwt
 import logging
 from passlib.hash import sha256_crypt
@@ -24,11 +22,15 @@ from .const import Constants
 from .messaging.confirmation import Confirmation
 from .service_config import ServiceConfig
 from .service_registry import ServiceRegistry
-from .utils import gen_id
+from .utils import gen_id, utcnow
+
+APIKEYS = {}
 
 
 class SessionAuth(object):
     """Session Authorization
+
+    Functions for login, password and role authorization
 
     Args:
       func_send(function): name of function for sending message
@@ -123,7 +125,7 @@ class SessionAuth(object):
         duration = (self.login_admin_limit if account.is_admin
                     else self.login_session_limit)
         ses = g.session.create(account.uid, roles, acc=account.id,
-                               identity=account.owner.identity,  ttl=duration)
+                               identity=account.owner.identity, ttl=duration)
         if ses:
             retval = dict(
                 jwt_token=jwt.encode(
@@ -135,6 +137,70 @@ class SessionAuth(object):
             return retval, 201
         else:
             return dict(message=_(u'rejected')), 403
+
+    def api_access(self, apikey, roles_from=None):
+        """ Access using API key
+
+        Args:
+          apikey (str): the API key
+          roles_from (obj): model for which to look up authorizations
+
+        Returns:
+          dict: uid, scopes (None if not authorized)
+        """
+        prefix, secret = apikey.split('.')
+        if prefix not in APIKEYS or utcnow() > APIKEYS[prefix]['expires']:
+            try:
+                record = g.db.query(self.models.APIkey).filter_by(
+                    prefix=prefix, hashvalue=b64encode(hashlib.sha256(
+                        secret.encode()).digest()).decode('utf8'),
+                    status='active').one()
+                if not record.last_used or (
+                        record.last_used + timedelta(hours=6) < utcnow() and
+                        record.expires < utcnow()):
+                    record.last_used = utcnow()
+                    g.db.commit()
+                account = g.db.query(self.models.Account).filter_by(
+                    uid=record.uid, status='active').one()
+            except NoResultFound:
+                logging.info(dict(action='api_key', prefix=prefix,
+                                  message='not found'))
+                return None
+            except Exception as ex:
+                logging.error(dict(action='api_key', message=str(ex)))
+                return None
+            if record.expires and record.expires < datetime.now():
+                logging.info(dict(action='api_key', prefix=prefix,
+                                  uid=record.uid, message='expired'))
+                return None
+            APIKEYS[prefix] = dict(
+                account_id=account.id,
+                expires=utcnow() + timedelta(seconds=self.config.REDIS_TTL),
+                identity=account.owner.identity,
+                roles=['admin', 'user'] if account.is_admin else ['user'],
+                scopes=[item.name for item in record.scopes],
+                uid=record.uid)
+            if roles_from:
+                APIKEYS[prefix]['roles'] += self.get_roles(record.uid,
+                                                           roles_from)
+        item = APIKEYS[prefix]
+        uid = item['uid']
+        logging.debug(dict(action='api_key', uid=uid, scopes=item['scopes']))
+        duration = (self.login_admin_limit if 'admin' in item['roles']
+                    else self.login_session_limit)
+        secret = b64encode(
+            hashlib.sha1(secret.encode()).digest())[:8].decode('utf8')
+        ses = None
+        try:
+            # Look for existing session in redis cache
+            ses = g.session.get(
+                uid, secret, arg='auth', key_id=prefix).split(':')
+        except AttributeError:
+            ses = g.session.create(uid, item['roles'], acc=item['account_id'],
+                                   identity=item['identity'],
+                                   ttl=duration, key_id=prefix, nonce=secret)
+        if ses:
+            return dict(uid=uid, scopes=item['scopes'])
 
     def register(self, identity, username, name, template='confirm_new'):
         """Register a new account: create related records in database
@@ -399,15 +465,26 @@ def basic(username, password, required_scopes=None):
         if session:
             g.session.delete(username, password)
         return None
-    return {'uid': username}
+    return dict(uid=username)
 
 
-def api_key(token, required_scopes=None):
-    """ API key authentication - not yet implemented
+def api_key(apikey, required_scopes=None):
+    """ API key authentication
 
     Args:
-      token (str): the token
+      apikey (str): the key
       required_scopes (list): permissions requested
+
+    Returns:
+      dict: uid if successful (None otherwise)
     """
-    logging.info('action=api_key token=%s' % token)
-    return {'sub': 'user1', 'scope': ''}
+    models = ServiceConfig().models
+    retval = SessionAuth().api_access(apikey, roles_from=models.List)
+    if not retval:
+        return retval
+    if required_scopes and (set(required_scopes) & set(retval['scopes']) !=
+                            set(required_scopes)):
+        logging.info(dict(action='api_key', prefix=apikey.split('.')[0],
+                          scopes=retval['scopes'], message='denied'))
+        return None
+    return retval

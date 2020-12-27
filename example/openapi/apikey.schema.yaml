@@ -1,0 +1,52 @@
+APIkey:
+  description: An API key
+  properties:
+    created:
+      format: date-time
+      readOnly: true
+      type: string
+    expires:
+      format: date-time
+      nullable: true
+      type: string
+    id:
+      maxLength: 10
+      minLength: 10
+      type: string
+    last_used:
+      format: date-time
+      readOnly: true
+      type: string
+    modified:
+      format: date-time
+      readOnly: true
+      type: string
+    name:
+      maxLength: 32
+      minLength: 2
+      pattern: ^[A-Za-z0-9@_.=-]+$
+      type: string
+    prefix:
+      maxLength: 10
+      readOnly: true
+      type: string
+    scopes:
+      items:
+        $ref: '#/components/schemas/base/properties/id'
+      maxItems: 32
+      type: array
+    status:
+      description: Status
+      enum:
+      - active
+      - disabled
+      type: string
+    uid:
+      $ref: '#/components/schemas/base/properties/id'
+  required:
+  - name
+  - uid
+  title: an API key
+  type: object
+  xml:
+    name: APIkey

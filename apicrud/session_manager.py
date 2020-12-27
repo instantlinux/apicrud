@@ -1,9 +1,5 @@
 """session_manager.py
 
-Session Manager
-  Each login session is stored as an encrypted JSON dict in redis, indexed
-  by sub:token
-
 created 8-may-2019 by richb@instantlinux.net
 """
 
@@ -24,6 +20,9 @@ saved_redis = None
 class SessionManager(object):
     """Session Manager - for active user sessions
 
+    Each login session is stored as an encrypted JSON dict in redis, indexed
+    by sub:token
+
     Args:
       ttl (int): seconds until a session expires
       redis_conn (obj): connection to redis service
@@ -40,7 +39,7 @@ class SessionManager(object):
         self.ttl = ttl or self.config.REDIS_TTL
         self.aes = AESEncrypt(self.config.REDIS_AES_SECRET)
 
-    def create(self, uid, roles, **kwargs):
+    def create(self, uid, roles, key_id=None, **kwargs):
         """Create a session, which is an encrypted JSON object with the values
         defined in https://tools.ietf.org/html/rfc7519 for JWT claim names:
 
@@ -63,6 +62,7 @@ class SessionManager(object):
         Args:
           uid: User ID
           roles: Authorized roles
+          key_id: session key ID for redis (defaults to uid)
           nonce: a unique identifier for the token (random if not specified)
           ttl: duration of session (defaulted from class init)
         Returns:
@@ -79,23 +79,24 @@ class SessionManager(object):
                 seconds=ttl)).strftime('%s'),
             iss=self.config.JWT_ISSUER, jti=token, sub=uid
         )
-        key = 'uid:%s:%s' % (uid, token[-3:])
+        key = 'ses:%s:%s' % (key_id or uid, token[-3:])
         content = {**params, **kwargs}  # noqa
         if self.connection.set(key, self.aes.encrypt(json.dumps(
                 content)), ex=ttl, nx=True):
             return content
 
-    def get(self, uid, token, arg=None):
+    def get(self, uid, token, arg=None, key_id=None):
         """Get one or all key-value pairs stored by session create
 
         Args:
           uid (str): User ID
           token (str): The token value passed from create as 'jti'
           arg (str): key of desired value (None to fetch all)
+          key_id (str): session key ID for redis (defaults to uid)
         Returns:
           dict or str: single value or dictionary of all session keys
         """
-        key = 'uid:%s:%s' % (uid, token[-3:])
+        key = 'ses:%s:%s' % (key_id or uid, token[-3:])
         try:
             data = json.loads(self.aes.decrypt(
                 self.connection.get(key)))
@@ -112,7 +113,7 @@ class SessionManager(object):
             return data[arg] if arg in data else None
         return data
 
-    def update(self, uid, token, arg, value):
+    def update(self, uid, token, arg, value, key_id=None):
         """Update a specified session key
 
         Args:
@@ -120,28 +121,27 @@ class SessionManager(object):
           token (str): The token value passed from create as 'jti'
           arg (str): key to update
           value (str): new value for key
+          key_id (str): session key ID for redis (defaults to uid)
         """
-        key = 'uid:%s:%s' % (uid, token[-3:])
+        key = 'ses:%s:%s' % (key_id or uid, token[-3:])
         data = self.get(uid, token)
         data[arg] = value
         self.connection.set(key, self.aes.encrypt(
             json.dumps(data)), ex=self.ttl)
 
-    def delete(self, uid, token):
+    def delete(self, uid, token, key_id=None):
         """Cancel a session
 
         Args:
           uid: User ID
           token (str): The token value passed from create as 'jti'
+          key_id (str): session key ID for redis
         """
-        self.connection.delete('uid:%s:%s' % (uid, token[-3:]))
+        self.connection.delete('ses:%s:%s' % (key_id or uid, token[-3:]))
 
 
 class Mutex:
     """Simple mutex implementation for non-clustered Redis
-
-    Tried to implement this as inner class to DRY out the init,
-    but ... no joy.
 
     Args:
       lockname (str): a unique name for the lock

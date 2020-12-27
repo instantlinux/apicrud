@@ -5,8 +5,8 @@ Tests for accounts controller
 created 4-nov-2019 by richb@instantlinux.net
 """
 
-import mock
 import pytest
+from unittest import mock
 
 from apicrud import database
 from models import Profile

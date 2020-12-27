@@ -1,0 +1,31 @@
+Category:
+  description: A category
+  example:
+    name: name
+  properties:
+    id:
+      type: string
+      minLength: 10
+      maxLength: 10
+    name:
+      type: string
+      minLength: 2
+      maxLength: 64
+      pattern: ^[a-zA-Z0-9\u00C0-\u00FF@_.-]+$
+    owner:
+      $ref: '#/components/schemas/Account/properties/name'
+      readOnly: true
+    created:
+      type: string
+      format: date-time
+      readOnly: true
+    status:
+      description: status
+      enum:
+      - active
+      - disabled
+      type: string
+  title: a category
+  type: object
+  xml:
+    name: Category

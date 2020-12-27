@@ -9,20 +9,22 @@ Python Classes
      :toctree: stubs
      :recursive:
 
-     access
-     account_settings
-     aes_encrypt
-     basic_crud
+     AccessControl
+     AccountSettings
+     AESEncrypt
+     BasicCRUD
      const
      database
      geocode
-     grants
+     Grants
      health
      media
      messaging
      metrics
-     service_config
-     service_registry
+     Mutex
+     RateLimit
+     ServiceConfig
+     ServiceRegistry
      session_auth
-     session_manager
+     SessionManager
      utils

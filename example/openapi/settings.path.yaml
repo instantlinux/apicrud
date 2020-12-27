@@ -1,0 +1,96 @@
+settings-id:
+  get:
+    summary: Find settings by ID
+    description: Returns a single settings object
+    operationId: get
+    parameters:
+    - description: ID of settings to return
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Settings'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid ID supplied
+      404:
+        content: {}
+        description: settings not found
+    security:
+    - apikey: []
+    - basic: []
+    tags:
+    - settings
+    x-openapi-router-controller: controllers.settings.SettingsController
+  put:
+    summary: Update existing settings
+    operationId: update
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Settings'
+      required: true
+    parameters:
+    - description: settings to modify
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      404:
+        content: {}
+        description: settings not found
+      405:
+        content: {}
+        description: Validation exception
+    security:
+    - apikey: ['full']
+    - basic: []
+    tags:
+    - settings
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.settings.SettingsController
+settings-ids:
+  delete:
+    summary: Delete one or more settings objects
+    operationId: delete
+    parameters:
+    - description: settings ids to delete
+      in: path
+      name: ids
+      required: true
+      schema:
+        items:
+          type: string
+          minLength: 10
+          maxLength: 10
+        type: array
+    - description: force-delete instead of disable
+      in: query
+      name: force
+      schema:
+        default: false
+        type: boolean
+    responses:
+      400:
+        content: {}
+        description: Invalid id value
+    security:
+    - apikey: ['full']
+    - basic: []
+    tags:
+    - settings
+    x-openapi-router-controller: controllers.settings.SettingsController

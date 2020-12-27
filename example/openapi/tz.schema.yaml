@@ -1,0 +1,19 @@
+TZ:
+  description: A timezone
+  example:
+    name: US/Eastern
+  properties:
+    id:
+      maximum: 10000
+      minimum: 1
+      type: integer
+    name:
+      maxLength: 32
+      minLength: 2
+      type: string
+    status:
+      $ref: '#/components/schemas/base/properties/status'
+  required:
+  - name
+  title: a timezone
+  type: object

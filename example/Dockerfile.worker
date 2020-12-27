@@ -17,8 +17,9 @@ EXPOSE 5555
 WORKDIR /opt/example
 COPY example/ /opt/example
 COPY apicrud/ /opt/apicrud
-COPY requirements.txt /usr/src/
-RUN pip3 install -r /usr/src/requirements.txt && \
+COPY requirements*.txt /usr/src/
+RUN pip3 install -r /usr/src/requirements.txt \
+      -r /usr/src/requirements-messaging.txt && \
     chmod -R g-w,o-w /opt/example && \
     adduser -u $CELERY_UID -D -s /bin/false -G users celery
 

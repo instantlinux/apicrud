@@ -1,7 +1,5 @@
 """aes_encrypt.py
 
-Provides easier-to-use AES CBC encrypt/decrypt operations for strings
-
 created 14-may-2019 by richb@instantlinux.net
 """
 
@@ -17,7 +15,9 @@ BLOCK_SIZE = 16
 class AESEncrypt(object):
     """AES encryption for strings
 
-    Attributes:
+    Provides easier-to-use AES CBC encrypt/decrypt operations for strings
+
+    Args:
       secret (str): passphrase (suggest at least 16 characters)
     """
     def __init__(self, secret):

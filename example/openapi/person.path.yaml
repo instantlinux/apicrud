@@ -1,0 +1,192 @@
+person:
+  get:
+    summary: Find people by conditions
+    description: Find people based on conditions
+    operationId: find
+    parameters:
+    - description: Person ID
+      in: query
+      name: id
+      schema:
+        $ref: '#/components/schemas/base/properties/id'
+    - description: Person's name
+      in: query
+      name: name
+      schema:
+        $ref: '#/components/schemas/Person/properties/name'
+    - description: Status
+      in: query
+      name: status
+      schema:
+        $ref: '#/components/schemas/base/properties/status'
+    - description: Maximum records to fetch
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 10000
+    - description: Record offset for pagination
+      in: query
+      name: offset
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 2147483647
+    - description: Sort-by field
+      in: query
+      name: sort
+      schema:
+        type: string
+        maxLength: 20
+    - description: Sort-order field
+      in: query
+      name: order
+      schema:
+        enum:
+        - asc
+        - desc
+        type: string
+    - description: Filter field - allow up to ~250 ids for list-show
+      in: query
+      name: filter
+      schema:
+        type: string
+        maxLength: 3328
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Person'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid conditions supplied
+      404:
+        content: {}
+        description: person not found
+    security:
+    - apikey: []
+    - basic: []
+    tags:
+    - person
+    x-openapi-router-controller: controllers.person.PersonController
+  post:
+    operationId: create
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Person'
+      description: Create a new person
+      required: true
+    responses:
+      405:
+        content: {}
+        description: Invalid input
+    security:
+    - apikey: ['full']
+    - basic: []
+    summary: Create a new person
+    tags:
+    - person
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.person.PersonController
+person-id:
+  get:
+    description: Returns a single person
+    operationId: get
+    parameters:
+    - description: ID of person to return
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Person'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid ID supplied
+      404:
+        content: {}
+        description: person not found
+    security:
+    - apikey: []
+    - basic: []
+    summary: Find person by ID
+    tags:
+    - person
+    x-openapi-router-controller: controllers.person.PersonController
+  put:
+    operationId: update
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Person'
+      description: Update a person
+      required: true
+    parameters:
+    - description: person to modify
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      404:
+        content: {}
+        description: person not found
+      405:
+        content: {}
+        description: Validation exception
+    security:
+    - apikey: ['full']
+    - basic: []
+    summary: Update an existing person
+    tags:
+    - person
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.person.PersonController
+person-ids:
+  delete:
+    operationId: delete
+    parameters:
+    - description: person ids to delete
+      in: path
+      name: ids
+      required: true
+      schema:
+        items:
+          type: string
+          minLength: 10
+          maxLength: 10
+        type: array
+    - description: force-delete instead of disable
+      in: query
+      name: force
+      schema:
+        default: false
+        type: boolean
+    responses:
+      400:
+        content: {}
+        description: Invalid id value
+    security:
+    - apikey: ['full']
+    - basic: []
+    summary: Deletes one or more people
+    tags:
+    - person
+    x-openapi-router-controller: controllers.person.PersonController

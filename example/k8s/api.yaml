@@ -1,5 +1,5 @@
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -7,6 +7,9 @@ metadata:
   name: $SERVICE_NAME-api
 spec:
   replicas: $REPLICAS_API
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: $SERVICE_NAME-api
   template:
     metadata:
       labels:

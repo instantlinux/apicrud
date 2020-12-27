@@ -1,17 +1,6 @@
 """basic_crud.py
 
-Basic CRUD
-  Base class for create/read/update/delete/find controller operations.
-
-  This class provides permission-based, paginated access to database
-  models behind your application's endpoints. Most endpoints need no
-  boilerplate code, and can inherit these functions directly. Some
-  endpoints only need a few lines of code before or after inheriting
-  these functions. You can always write your own custom function for
-  special-case endpoints.
-
 created 31-mar-2019 by richb@instantlinux.net
-
 """
 
 import base64
@@ -37,7 +26,16 @@ from . import geocode, singletons, utils
 class BasicCRUD(object):
     """Controller base class
 
-    Attributes:
+    Create/Read/Update/Delete/find controller operations.
+
+    This class provides permission-based, paginated access to database
+    models behind your application's endpoints. Most endpoints need no
+    boilerplate code, and can inherit these functions directly. Some
+    endpoints only need a few lines of code before or after inheriting
+    these functions. You can always write your own custom function for
+    special-case endpoints.
+
+    Args:
       resource (str): a resource name (endpoint prefix)
       model (obj): the model corresponding to the resource
     """

@@ -1,9 +1,9 @@
 # Kubernetes deployment
 #  Env var TAG must be set; it will not default to 'latest'
 
-.PHONY: qemu
+.PHONY: qemu gen_openapi
 
-create_image: qemu i18n_deploy
+create_image: qemu i18n_deploy openapi_deploy
 	@echo docker build -t $(REGISTRY)/$(APPNAME)-$(CI_JOB_NAME):$(TAG)
 	@docker buildx build \
 	 --tag $(REGISTRY)/$(APPNAME)-$(CI_JOB_NAME):$(TAG) . \
@@ -12,7 +12,7 @@ create_image: qemu i18n_deploy
 	 --build-arg=TAG=$(TAG) \
 	 --build-arg=BUILD_DATE=$(shell date +%Y-%m-%dT%H:%M:%SZ)
 
-promote_images: qemu i18n_deploy
+promote_images: qemu i18n_deploy openapi_deploy
 ifeq ($(CI_COMMIT_TAG),)
 	# On master: push to latest on registry.gitlab.com; have to run
 	# buildx in order to push multi-arch manifest

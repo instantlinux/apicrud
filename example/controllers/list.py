@@ -30,7 +30,7 @@ class ListController(BasicCRUD):
             retval = self._update_many(id, 'members', body['members'])
             if retval[1] == 405:
                 return retval
-            del(body['members'])
+        body.pop('members', None)
         return super(ListController, ListController).update(id, body)
 
     def _update_many(self, id, attr, related_ids):

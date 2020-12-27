@@ -19,6 +19,7 @@ Skip the kubernetes / python / React.js learning curve and put your ideas in pro
    config
    classes
    example
+   customizing
 
 Indices and tables
 ==================

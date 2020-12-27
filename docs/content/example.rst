@@ -30,7 +30,11 @@ This example serves a simple message-board. The `source code <https://github.com
     │   ├── api.py               # open-core API models
     │   ├── base.py              # declarative base
     │   └── ...                  # add your custom models here
-    ├── openapi.yaml             # OpenAPI 3.0 specifications
+    ├── openapi                  # OpenAPI 3.0 specifications
+    │   ├── api.yaml             # top-level API spec
+    │   ├── account.schema.yaml  # open-core API model schema
+    │   ├── account.path.yaml    # open-core API routing paths
+    │   └── ...                  # add your custom specs here
     ├── rbac.yaml                # endpoint permissions
     ├── requirements.txt         # python dependencies
     ├── uwsgi.ini                # UWSGI server settings
@@ -43,6 +47,7 @@ This example serves a simple message-board. The `source code <https://github.com
     ├── controllers              # controller classes
     │   ├── __init__.py          # controller initialization
     │   ├── account.py
+    │   ├── apikey.py
     │   ├── auth.py
     │   ├── category.py
     │   ├── contact.py
@@ -54,6 +59,7 @@ This example serves a simple message-board. The `source code <https://github.com
     │   ├── message.py
     │   ├── person.py
     │   ├── profile.py
+    │   ├── scope.py
     │   ├── settings.py
     │   └── tz.py
     ├── k8s                      # kubernetes resource specifications

@@ -7,11 +7,11 @@ created 31-mar-2019 by richb@instantlinux.net
 
 import connexion
 from datetime import datetime
-from flask import g, request
+from flask import abort, g, request
 from flask_babel import Babel
 import os
 
-from apicrud import AccessControl, AccountSettings, ServiceConfig, \
+from apicrud import AccessControl, AccountSettings, RateLimit, ServiceConfig, \
     ServiceRegistry, SessionManager, database, utils
 
 import controllers
@@ -49,6 +49,8 @@ def before_request():
     g.db = database.get_session()
     g.session = SessionManager()
     g.request_start_time = datetime.utcnow()
+    if request.method != 'OPTIONS' and RateLimit().call():
+        abort(429)
 
 
 @application.app.after_request

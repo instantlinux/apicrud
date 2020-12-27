@@ -1,12 +1,5 @@
 """grants.py
 
-Grants
-  An account's usage limits are specified here in the grants table;
-  the free-service tier is defined and passed in via load_defaults().
-  Records in grants table are owned by administrator-level user.
-  If a record matches a user uid, the default grant name=value is
-  overridden.
-
 created 27-may-2019 by richb@instantlinux.net
 """
 
@@ -22,8 +15,13 @@ GRANTS = {}
 
 
 class Grants(object):
-    """
-    Account usage limits
+    """Account usage limits
+
+    An account's usage limits are specified here in the grants table;
+    the free-service tier is defined and passed in via load_defaults().
+    Records in grants table are owned by administrator-level user.
+    If a record matches a user uid, the default grant name=value is
+    overridden.
 
     Attributes:
       db_session (obj): existing db session

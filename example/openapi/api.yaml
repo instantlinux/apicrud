@@ -1,0 +1,163 @@
+openapi: 3.0.1
+info:
+  title: Example apicrud
+  version: "0.1"
+  description: |
+    This is the backend server for a simple message board.
+servers:
+- url: http://localhost:32080/api/v1
+- url: http://localhost:8080/api/v1
+
+components:
+  schemas:
+    base: &schema_base
+      $ref: 'base.schema.yaml#/base'
+    Account:
+      $ref: 'account.schema.yaml#/Account'
+    AccountPassword:
+      $ref: 'account.schema.yaml#/AccountPassword'
+    Auth:
+      $ref: 'account.schema.yaml#/Auth'
+    Registration:
+      $ref: 'account.schema.yaml#/Registration'
+    APIkey:
+      $ref: 'apikey.schema.yaml#/APIkey'
+    Category:
+      $ref: 'category.schema.yaml#/Category'
+    Contact:
+      $ref: 'contact.schema.yaml#/Contact'
+    Credential:
+      $ref: 'credential.schema.yaml#/Credential'
+    Grant:
+      $ref: 'grant.schema.yaml#/Grant'
+    Health:
+      description: Health check
+      title: status
+      type: object
+    List:
+      $ref: 'list.schema.yaml#/List'
+    Location:
+      $ref: 'location.schema.yaml#/Location'
+    Message:
+      $ref: 'message.schema.yaml#/Message'
+    Person:
+      $ref: 'person.schema.yaml#/Person'
+    Profile:
+      $ref: 'profile.schema.yaml#/Profile'
+    Scope:
+      $ref: 'scope.schema.yaml#/Scope'
+    Settings:
+      $ref: 'settings.schema.yaml#/Settings'
+    TZ:
+      $ref: 'tz.schema.yaml#/TZ'
+    ApiResponse:
+      $ref: 'apiresponse.schema.yaml#/ApiResponse'
+
+  securitySchemes:
+    basic:
+      type: http
+      scheme: basic
+      x-basicInfoFunc: apicrud.session_auth.basic
+    apikey:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+      x-apikeyInfoFunc: apicrud.session_auth.api_key
+
+paths:
+  /account:
+    $ref: 'account.path.yaml#/account'
+  /account/{id}:
+    $ref: 'account.path.yaml#/account-id'
+  /account/{ids}:
+    $ref: 'account.path.yaml#/account-ids'
+  /account_password/{uid}:
+    $ref: 'account.path.yaml#/account_password-uid'
+  /auth:
+    $ref: 'account.path.yaml#/auth'
+  /logout:
+    $ref: 'account.path.yaml#/logout'
+  /apikey:
+    $ref: 'apikey.path.yaml#/apikey'
+  /apikey/{id}:
+    $ref: 'apikey.path.yaml#/apikey-id'
+  /apikey/{ids}:
+    $ref: 'apikey.path.yaml#/apikey-ids'
+  /category:
+    $ref: 'category.path.yaml#/category'
+  /category/{id}:
+    $ref: 'category.path.yaml#/category-id'
+  /category/{ids}:
+    $ref: 'category.path.yaml#/category-ids'
+  /contact:
+    $ref: 'contact.path.yaml#/contact'
+  /contact/{id}:
+    $ref: 'contact.path.yaml#/contact-id'
+  /contact/{ids}:
+    $ref: 'contact.path.yaml#/contact-ids'
+  /contact/confirmation_get/{id}:
+    $ref: 'contact.path.yaml#/contact-confirmation_get-id'
+  /contact/confirm/{token}:
+    $ref: 'contact.path.yaml#/contact-confirm-token'
+  /credential:
+    $ref: 'credential.path.yaml#/credential'
+  /credential/{id}:
+    $ref: 'credential.path.yaml#/credential-id'
+  /credential/{ids}:
+    $ref: 'credential.path.yaml#/credential-ids'
+  /grant:
+    $ref: 'grant.path.yaml#/grant'
+  /grant/{id}:
+    $ref: 'grant.path.yaml#/grant-id'
+  /grant/{ids}:
+    $ref: 'grant.path.yaml#/grant-ids'
+  /health:
+    $ref: 'health.path.yaml#/health'
+  /list:
+    $ref: 'list.path.yaml#/list'
+  /list/{id}:
+    $ref: 'list.path.yaml#/list-id'
+  /list/{ids}:
+    $ref: 'list.path.yaml#/list-ids'
+  /location:
+    $ref: 'location.path.yaml#/location'
+  /location/{id}:
+    $ref: 'location.path.yaml#/location-id'
+  /location/{ids}:
+    $ref: 'location.path.yaml#/location-ids'
+  /message:
+    $ref: 'message.path.yaml#/message'
+  /message/{id}:
+    $ref: 'message.path.yaml#/message-id'
+  /message/{ids}:
+    $ref: 'message.path.yaml#/message-ids'
+  /person:
+    $ref: 'person.path.yaml#/person'
+  /person/{id}:
+    $ref: 'person.path.yaml#/person-id'
+  /person/{ids}:
+    $ref: 'person.path.yaml#/person-ids'
+  /profile:
+    $ref: 'profile.path.yaml#/profile'
+  /profile/{id}:
+    $ref: 'profile.path.yaml#/profile-id'
+  /profile/{ids}:
+    $ref: 'profile.path.yaml#/profile-ids'
+  /scope:
+    $ref: 'scope.path.yaml#/scope'
+  /scope/{id}:
+    $ref: 'scope.path.yaml#/scope-id'
+  /scope/{ids}:
+    $ref: 'scope.path.yaml#/scope-ids'
+  /settings/{id}:
+    $ref: 'settings.path.yaml#/settings-id'
+  /settings/{ids}:
+    $ref: 'settings.path.yaml#/settings-ids'
+  /tz:
+    $ref: 'tz.path.yaml#/tz'
+  /tz/{id}:
+    $ref: 'tz.path.yaml#/tz-id'
+  /tz/{ids}:
+    $ref: 'tz.path.yaml#/tz-ids'
+    
+    

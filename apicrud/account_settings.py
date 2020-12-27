@@ -1,14 +1,6 @@
 """account_settings.py
 
-Access class for account settings, with cache
-  Each account is associated with an entry in the Settings model; this
-  class provides access to these key-value pairs as read-only
-  attributes. Because these functions are called frequently, the db
-  entry is loaded into memory for a configurable expiration period
-  (config.REDIS_TTL).
-
 created 13-may-2019 by richb@instantlinux.net
-
 """
 
 from collections import namedtuple
@@ -24,7 +16,14 @@ ADMIN_ID = None
 
 
 class AccountSettings(object):
-    """Account Settings - converts db record to object attributes.
+    """Access class for account settings, with cache -
+    converts db record to object attributes
+
+    Each account is associated with an entry in the Settings model; this
+    class provides access to these key-value pairs as read-only
+    attributes. Because these functions are called frequently, the db
+    entry is loaded into memory for a configurable expiration period
+    (config.REDIS_TTL).
 
     Args:
       account_id (str): ID in database of a user's account

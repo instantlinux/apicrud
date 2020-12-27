@@ -12,8 +12,8 @@ from sqlalchemy import BOOLEAN, Column, Enum, ForeignKey, INTEGER, String, \
      TEXT, TIMESTAMP, Unicode, UniqueConstraint
 from sqlalchemy import func
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy_utils import EncryptedType
-from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
+from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine, \
+    StringEncryptedType
 
 import constants
 from .base import aes_secret, AsDictMixin, Base
@@ -31,12 +31,12 @@ class Account(AsDictMixin, Base):
     name = Column(String(32), nullable=False, unique=True)
     uid = Column(ForeignKey(u'people.id', ondelete='CASCADE'), nullable=False,
                  unique=True)
-    password = Column(EncryptedType(Unicode, aes_secret, AesEngine, 'pkcs5'),
-                      nullable=False)
+    password = Column(StringEncryptedType(Unicode, aes_secret, AesEngine,
+                                          'pkcs5', length=128), nullable=False)
     password_must_change = Column(BOOLEAN, nullable=False,
                                   server_default="False")
-    totp_secret = Column(EncryptedType(Unicode, aes_secret, AesEngine,
-                                       'pkcs5'))
+    totp_secret = Column(StringEncryptedType(Unicode, aes_secret, AesEngine,
+                                             'pkcs5', length=48))
     is_admin = Column(BOOLEAN, nullable=False, server_default="False")
     settings_id = Column(ForeignKey(u'settings.id'), nullable=False)
     last_login = Column(TIMESTAMP)
@@ -49,6 +49,51 @@ class Account(AsDictMixin, Base):
     owner = relationship('Person', foreign_keys=[uid], backref=backref(
         'account_uid', cascade='all, delete-orphan'))
     settings = relationship('Settings')
+
+
+class APIkey(AsDictMixin, Base):
+    __tablename__ = 'apikeys'
+    __table_args__ = (
+        UniqueConstraint(u'uid', u'name', name='uniq_apikey_owner'),
+    )
+    __rest_exclude__ = ('hashvalue',)
+    __rest_related__ = ('scopes',)
+
+    id = Column(String(16), primary_key=True, unique=True)
+    name = Column(String(32), nullable=False)
+    uid = Column(ForeignKey(u'people.id', ondelete='CASCADE'), nullable=False,
+                 unique=True)
+    prefix = Column(String(8), nullable=False, unique=True)
+    hashvalue = Column(StringEncryptedType(Unicode, aes_secret, AesEngine,
+                                           'pkcs5', length=96), nullable=False)
+    expires = Column(TIMESTAMP)
+    last_used = Column(TIMESTAMP)
+    created = Column(TIMESTAMP, nullable=False, server_default=func.now())
+    modified = Column(TIMESTAMP)
+    status = Column(Enum(u'active', u'disabled'), nullable=False)
+
+    scopes = relationship('Scope', secondary='apikeyscopes',
+                          backref=backref('scope'), order_by='Scope.name')
+    owner = relationship('Person', foreign_keys=[uid], backref=backref(
+        'apikey_uid', cascade='all, delete-orphan'))
+
+
+class APIkeyScope(Base):
+    __tablename__ = 'apikeyscopes'
+    __table_args__ = (
+        UniqueConstraint(u'apikey_id', u'scope_id', name='uniq_apikey_scope'),
+    )
+
+    apikey_id = Column(ForeignKey(u'apikeys.id', ondelete='CASCADE'),
+                       primary_key=True, nullable=False)
+    scope_id = Column(ForeignKey(u'scopes.id', ondelete='CASCADE'),
+                      primary_key=True, nullable=False, index=True)
+    created = Column(TIMESTAMP, nullable=False, server_default=func.now())
+
+    apikey = relationship('APIkey', foreign_keys=[apikey_id], backref=backref(
+        'apikeyscopes', cascade='all, delete-orphan'))
+    scope = relationship('Scope', backref=backref(
+        'apikeyscopes', cascade='all, delete-orphan'))
 
 
 class Category(AsDictMixin, Base):
@@ -109,8 +154,10 @@ class Credential(AsDictMixin, Base):
     type = Column(String(16))
     url = Column(String(length=64))
     key = Column(String(length=128))
-    secret = Column(EncryptedType(Unicode, aes_secret, AesEngine, 'pkcs5'))
-    otherdata = Column(EncryptedType(Unicode, aes_secret, AesEngine, 'pkcs5'))
+    secret = Column(StringEncryptedType(Unicode, aes_secret, AesEngine,
+                                        'pkcs5', length=128))
+    otherdata = Column(StringEncryptedType(Unicode, aes_secret, AesEngine,
+                                           'pkcs5', length=1024))
     expires = Column(TIMESTAMP)
     settings_id = Column(ForeignKey(u'settings.id'), nullable=False)
     uid = Column(ForeignKey(u'people.id', ondelete='CASCADE'), nullable=False)
@@ -321,6 +368,21 @@ class Profile(AsDictMixin, Base):
     owner = relationship('Person', foreign_keys=[uid], backref=backref(
         'profile', cascade='all, delete-orphan'))
     tz = relationship('Tz')
+
+
+class Scope(AsDictMixin, Base):
+    __tablename__ = 'scopes'
+    __table_args__ = (
+        UniqueConstraint(u'name', u'settings_id', name='uniq_scope_name'),
+    )
+
+    id = Column(String(16), primary_key=True, unique=True)
+    name = Column(String(32), nullable=False)
+    settings_id = Column(ForeignKey(u'settings.id'), nullable=False)
+    created = Column(TIMESTAMP, nullable=False, server_default=func.now())
+    modified = Column(TIMESTAMP)
+    status = Column(Enum('active', u'disabled'), nullable=False,
+                    server_default=u'active')
 
 
 class Settings(AsDictMixin, Base):

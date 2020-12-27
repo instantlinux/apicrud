@@ -1,29 +1,7 @@
 """service_config.py
 
-Service Config
-  Flask and application configuration global defaults are defined in
-  service_config.yaml. Overrides of defaults are evaluated in this
-  order:
-
-  - Environment variables set by parent process
-  - Values defined in a file in yaml format
-  - Values passed as a keyword arg at first class invocation
-
-  For security, the config singleton is stored as an immutable
-  namedtuple: to change values, update settings and restart the
-  container running the service.
-
-  An endpoint /config/v1/config provides read-only access to these values
-  except those of type password.  Always override those secret values
-  before deploying your service.
-
-  Attribute keys specified as env vars are UPPERCASE, and attribute keys
-  stored in the config object are also uppercase. Use lowercase to
-  specify attribute keys in kwargs or the yaml input file.
-
 created 12-aug-2020 by docker@instantlinux.net
 """
-
 import binascii
 from collections import namedtuple
 from flask_babel import gettext as _
@@ -39,7 +17,27 @@ config = None
 
 
 class ServiceConfig(object):
-    """Service config for flask application
+    """Service configration - have it your way!
+
+    Flask and application configuration global default values are defined in
+    service_config.yaml here in the source directory. Overrides of these
+    values can be specified in a few ways and are evaluated in this order:
+
+    - Environment variables set by parent process
+    - Values defined in a file in yaml format
+    - Values passed as a keyword arg at first class invocation
+
+    For runtime security, the config singleton is stored as an immutable
+    namedtuple: to change values, update settings and restart the
+    container running the service.
+
+    An endpoint /config/v1/config provides read-only access to these values
+    except those of type password.  Always override those secret values
+    before deploying your service.
+
+    Attribute keys specified as env vars are UPPERCASE, and attribute keys
+    stored in the config object are also uppercase. Use lowercase to
+    specify attribute keys in kwargs or the yaml input file.
 
     Args:
       file (str): path of a YAML file defining override values

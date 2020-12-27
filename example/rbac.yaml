@@ -58,6 +58,7 @@ private_resources:
     attr: list_id
 
 policies:
+  apikey: *base_policy
   category: *base_policy
   credential: *base_policy
   location: *base_policy
@@ -143,6 +144,13 @@ policies:
     - principal: list-*
       resource: "{resource}:{{uid}}"
       actions: ru
+  scope:
+    - principal: admin
+      resource: "{resource}:*"
+      actions: cdru
+    - principal: "*"
+      resource: "{resource}:*"
+      actions: r
   settings:
     - principal: admin
       resource: "{resource}:*"

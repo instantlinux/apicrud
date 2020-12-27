@@ -1,0 +1,25 @@
+health:
+  get:
+    summary: Health Check
+    description: Status of API
+    operationId: get
+    parameters:
+    - description: Tests to run
+      in: query
+      name: tests
+      required: false
+      schema:
+        items:
+          type: string
+          maxLength: 10
+        type: array
+    responses:
+      200:
+        content: {}
+        description: Health check status
+      503:
+        content: {}
+        description: Service unhealthy
+    tags:
+    - health
+    x-openapi-router-controller: controllers.health.HealthController

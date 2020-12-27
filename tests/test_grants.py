@@ -64,7 +64,7 @@ class TestGrants(test_base.TestBase):
                 for k, v in self.config.DEFAULT_GRANTS.items()],
             count=len(self.config.DEFAULT_GRANTS))
         # Confirm that updated grant is no longer default value
-        expected['items'][5] = updated
+        expected['items'][6] = updated
 
         response = self.call_endpoint('/grant?filter={"uid":"%s"}' %
                                       record['uid'], 'get')

@@ -1,0 +1,33 @@
+base:
+  properties:
+    id:
+      type: string
+      minLength: 10
+      maxLength: 10
+    category_id:
+      type: string
+      minLength: 10
+      maxLength: 10
+    status:
+      description: Status
+      enum:
+      - active
+      - disabled
+      type: string
+    privacy:
+      enum:
+      - public
+      - invitee
+      - member
+      - manager
+      - secret
+      type: string
+    created:
+      type: string
+      format: date-time
+      readOnly: true
+    modified:
+      type: string
+      format: date-time
+      readOnly: true
+  type: object

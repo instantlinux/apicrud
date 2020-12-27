@@ -12,6 +12,7 @@ dist
 env-config.js
 htmlcov
 node_modules
+openapi.yaml
 python_env
 results.xml
 stubs

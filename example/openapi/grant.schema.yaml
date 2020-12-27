@@ -1,0 +1,51 @@
+Grant:
+  description: A grant
+  example:
+    name: name
+  properties:
+    created:
+      format: date-time
+      readOnly: true
+      type: string
+    expires:
+      format: date-time
+      type: string
+    id:
+      maxLength: 35
+      minLength: 10
+      type: string
+    name:
+      enum:
+      - apikeys
+      - contacts
+      - daily_email
+      - daily_sms
+      - lists
+      - list_size
+      - monthly_email
+      - monthly_sms
+      - ratelimit
+      type: string
+    owner:
+      $ref: '#/components/schemas/Person/properties/name'
+      readOnly: true
+    status:
+      description: status
+      enum:
+      - active
+      - disabled
+      type: string
+    uid:
+      $ref: '#/components/schemas/base/properties/id'
+    value:
+      maxLength: 64
+      pattern: ^[a-z0-9@_.-]+$
+      type: string
+  required:
+  - name
+  - value
+  - uid
+  title: a grant
+  type: object
+  xml:
+    name: Grant

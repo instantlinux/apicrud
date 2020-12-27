@@ -18,6 +18,7 @@ from sqlalchemy.event import listen
 from sqlalchemy.exc import OperationalError, ProgrammingError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import select, func
+import sys
 import time
 import yaml
 
@@ -110,6 +111,7 @@ def alembic_migrate(models, version, script_location, migrate=False,
         def _do_upgrade(revision, context):
             return script._upgrade_revs(script.get_heads(), revision)
 
+        conn = None
         while schema_maxtime > 0:
             try:
                 conn = db_engine.connect()
@@ -119,6 +121,9 @@ def alembic_migrate(models, version, script_location, migrate=False,
                              % str(ex))
             schema_maxtime -= 10
             time.sleep(10)
+        if not conn:
+            logging.error('action=alembic_migrate status=timeout')
+            sys.exit(1)
         if db_engine.dialect.name == 'sqlite' and spatialite_loaded:
             conn.execute(select([func.InitSpatialMetaData(1)]))
         env.configure(connection=conn, target_metadata=Base.metadata,
@@ -188,12 +193,13 @@ def seed_new_db(db_session, tz_model=None):
     models = ServiceConfig().models
     if not tz_model:
         tz_model = models.Tz
-    for resource, record in records.items():
-        if 'geolat' in record:
-            # Store lat/long as fixed-precision integers
-            record['geolat'] *= 1e7
-            record['geolong'] *= 1e7
-        db_session.add(getattr(models, resource.capitalize())(**record))
+    for resource, records in records.items():
+        for record in records:
+            if 'geolat' in record:
+                # Store lat/long as fixed-precision integers
+                record['geolat'] *= 1e7
+                record['geolong'] *= 1e7
+            db_session.add(getattr(models, resource.capitalize())(**record))
     _seed_tz_table(db_session, tz_model)
     db_session.commit()
     db_session.execute('%s=on' % cmd)

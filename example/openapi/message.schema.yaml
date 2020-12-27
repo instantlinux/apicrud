@@ -1,0 +1,51 @@
+Message:
+  description: A message
+  example:
+    content: Please send me your mobile number
+    recipient_id: x-someone
+    subject: Hello
+  properties:
+    category_id:
+      $ref: '#/components/schemas/base/properties/id'
+    content:
+      maxLength: 4096
+      minLength: 2
+      type: string
+    created:
+      $ref: '#/components/schemas/base/properties/created'
+    id:
+      $ref: '#/components/schemas/base/properties/id'
+    list_id:
+      $ref: '#/components/schemas/base/properties/id'
+      nullable: true
+    modified:
+      $ref: '#/components/schemas/base/properties/modified'
+    owner:
+      $ref: '#/components/schemas/Person/properties/name'
+      readOnly: true
+    privacy:
+      $ref: '#/components/schemas/base/properties/privacy'
+    recipient_id:
+      $ref: '#/components/schemas/base/properties/id'
+      nullable: true
+    sender_id:
+      $ref: '#/components/schemas/base/properties/id'
+      readOnly: true
+    status:
+      $ref: '#/components/schemas/base/properties/status'
+    subject:
+      maxLength: 128
+      minLength: 2
+      type: string
+    viewed:
+      description: When message was first viewed
+      format: date-time
+      readOnly: true
+      type: string
+  required:
+  - subject
+  - content
+  title: a message
+  type: object
+  xml:
+    name: Message

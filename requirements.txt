@@ -7,33 +7,38 @@ Flask==1.1.2
 Flask-Babel==2.0.0
 itsdangerous==1.1.0
 PyJWT==1.7.1
-requests==2.23.0
+requests==2.25.1
 
 # for faster builds, keep these versions in sync with images
 # instantlinux/python-builder and instantlinux/python-uwsgi
 alembic==1.4.3
-b2sdk==1.1.4
+b2sdk==1.2.0
+celery==4.4.7
+# celery==5.0.5  -- TODO held back until flower updated
 connexion==2.7.0
 connexion[swagger-ui]
+dollar-ref==0.1.3
 Flask-Cors==3.0.9
 # GeoAlchemy2==0.7.2
 geocoder==1.38.1
 icalendar==4.0.7
-passlib==1.7.2
+passlib==1.7.4
 pycryptodomex==3.9.8
 PyMySQL==0.10.1
-pytz==2020.1
+pytz==2020.5
 redis==3.5.3
-SQLAlchemy==1.3.19
+SQLAlchemy==1.3.22
 SQLAlchemy-Utils==0.36.8
 swagger-ui-bundle==0.0.8
-urllib3==1.25.9
+urllib3==1.25.11
 
 # transitive requirements - listed here for automated vulnerability scans
 amqp==2.6.1
+# amqp==5.0.2  -- held back, this is part of the 2020 celery breaking-changes
 arrow==0.16.0
 Babel==2.8.0
 billiard==3.6.3.0
+click==7.1.2
 clickclick==1.2.2
 decorator==4.4.2
 docutils==0.15.2
@@ -45,6 +50,7 @@ Jinja2==2.11.2
 jmespath==0.10.0
 jsonschema==3.2.0
 kombu==4.6.11
+# kombu==5.0.2  -- held back
 logfury==0.1.2
 Mako==1.1.3
 MarkupSafe==1.1.1
@@ -54,6 +60,8 @@ python-dateutil==2.8.1
 python-editor==1.0.4
 ratelim==0.1.6
 s3transfer==0.3.3
-tqdm==4.49.0
+tqdm==4.55.0
 vine==1.3.0
+# vine==5.0.0  -- held back
+Werkzeug==1.0.1
 zipp==3.1.0

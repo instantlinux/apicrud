@@ -1,0 +1,71 @@
+Location:
+  description: A location
+  example:
+    address: 3600 16th St
+    city: San Francisco
+    name: Lookout Bar
+    postalcode: '94114'
+    privacy: public
+    state: CA
+    status: active
+  properties:
+    address:
+      maxLength: 255
+      nullable: true
+      type: string
+    category_id:
+      $ref: '#/components/schemas/base/properties/id'
+    city:
+      maxLength: 64
+      minLength: 2
+      type: string
+    country:
+      default: US
+      maxLength: 2
+      minLength: 2
+      type: string
+    created:
+      $ref: '#/components/schemas/base/properties/id'
+    geo:
+      items:
+        maximum: 180.0
+        minimum: -180.0
+        type: number
+      maxItems: 2
+      readOnly: true
+      type: array
+    id:
+      $ref: '#/components/schemas/base/properties/id'
+    modified:
+      $ref: '#/components/schemas/base/properties/modified'
+    name:
+      description: Venue name
+      maxLength: 64
+      minLength: 2
+      nullable: true
+      type: string
+    neighborhood:
+      nullable: true
+      type: string
+    owner:
+      $ref: '#/components/schemas/Person/properties/name'
+      readOnly: true
+    postalcode:
+      maxLength: 12
+      nullable: true
+      type: string
+    privacy:
+      $ref: '#/components/schemas/base/properties/privacy'
+    state:
+      maxLength: 10
+      minLength: 2
+      nullable: true
+      type: string
+    status:
+      $ref: '#/components/schemas/base/properties/status'
+  required:
+  - city
+  title: a location
+  type: object
+  xml:
+    name: Location

@@ -1,44 +1,14 @@
 """access.py
 
-Access control
-
-  Definitions:
-
-  - principal: a user or role
-  - membership: parent resource type for privacy sharing
-  - model: database model name (e.g. Person)
-  - resource: resource type (e.g. person)
-  - rbac: role-based access control (defined in rbac.yaml)
-  - role: a group name (e.g. admin or list-<id>-<level>)
-  - privacy: sharing options as defined in rbac.yaml (e.g. \
-    secret [default], public, invitee, member, manager)
-  - actions: crudlghij (create, read, update, del, list, guest/member, \
-    host/manager, invitee, join)
-
-  In rbac.yaml, define the RBAC policies for each principal/resource
-  combination. That file will be parsed into a singleton variable upon initial
-  startup.  This implementation implements RBAC similar to that of
-  kubernetes or AWS IAM, with the added capability of a simple privacy
-  permission within each object (database record) which creates an implied
-  ACL for read-only access by members of the object's group.
-
-  Group names currently used are:
-
-  - admin
-  - user
-  - pending
-  - person
-  - <resource>-<id>-<privacy>
-
-  These are defined in session_auth.py's account_login() method.
-
 created 20-may-2019 by richb@instantlinux.net
 refactored 6-mar-2020
 """
 
+from base64 import b64encode
 from datetime import datetime
 from flask import g, request
 from flask_babel import _
+import hashlib
 import logging
 import re
 from sqlalchemy import or_
@@ -55,6 +25,36 @@ PRIV_RES = {}
 class AccessControl(object):
     """Role-based access control
 
+    Definitions:
+
+    - principal: a user or role
+    - membership: parent resource type for privacy sharing
+    - model: database model name (e.g. Person)
+    - resource: resource type (e.g. person)
+    - rbac: role-based access control (defined in rbac.yaml)
+    - role: a group name (e.g. admin or list-<id>-<level>)
+    - privacy: sharing options as defined in rbac.yaml (e.g. \
+      secret [default], public, invitee, member, manager)
+    - actions: crudlghij (create, read, update, del, list, guest/member, \
+      host/manager, invitee, join)
+
+    In rbac.yaml, define the RBAC policies for each principal/resource
+    combination. That file will be parsed into a singleton variable upon
+    initial startup.  This implementation implements RBAC similar to that of
+    kubernetes or AWS IAM, with the added capability of a simple privacy
+    permission within each object (database record) which creates an implied
+    ACL for read-only access by members of the object's group.
+
+    Group names currently used are:
+
+    - admin
+    - user
+    - pending
+    - person
+    - <resource>-<id>-<privacy>
+
+    These are defined in session_auth.py's account_login() method.
+
     Args:
       policy_file (str): name of the yaml definitions file
       model (obj): a model to be validated for permissions
@@ -64,15 +64,25 @@ class AccessControl(object):
             self.policies = POLICIES['policies']
             self.privacy_levels = LEVELS['levels']
             self.private_res = PRIV_RES['private_res']
-            creds = request.authorization
             self.model = model
             self.models = ServiceConfig().models
             self.resource = model.__name__.lower() if model else None
             self.auth = None
-            if creds:
+            header_auth = ServiceConfig().config.HEADER_AUTH_APIKEY
+            if header_auth in request.headers:
+                prefix, secret = request.headers.get(header_auth).split('.')
+                secret = b64encode(
+                    hashlib.sha1(secret.encode()).digest())[:8].decode('utf8')
+                item = g.session.get(None, secret, key_id=prefix)
+                if item:
+                    self.auth = item.get('auth').split(':')
+                    self.uid = uid = item.get('sub')
+            elif request.authorization:
+                uid = self.uid = request.authorization.username
+                secret = request.authorization.password
                 try:
                     self.auth = g.session.get(
-                        creds.username, creds.password, arg='auth').split(':')
+                        uid, secret, arg='auth').split(':')
                 except AttributeError:
                     pass
             self.primary_res = self.private_res[0]['resource']
@@ -82,13 +92,12 @@ class AccessControl(object):
                     ev = self._parse_id(role, self.primary_res)
                     if ev:
                         self.auth_ids[self.primary_res].append(ev)
-                uid = self.uid = creds.username
-                self.account_id = g.session.get(uid, creds.password, 'acc')
-                self.identity = g.session.get(uid, creds.password, 'identity')
+                self.account_id = g.session.get(uid, secret, 'acc')
+                self.identity = g.session.get(uid, secret, 'identity')
             else:
-                logging.warning('no-auth resource=%s attempted' %
-                                self.resource)
-                self.auth = self.uid = self.account_id = self.identity = None
+                if 'health' not in request.base_url:
+                    logging.warning('no-auth url=%s' % request.base_url)
+                self.uid = self.account_id = self.identity = None
 
     def load_rbac(self, filename):
         """ Read RBAC default policies from rbac.yaml, process any
@@ -235,7 +244,8 @@ class AccessControl(object):
 
         actions, defaults = (set(), set())
         if privacy == 'public' or (
-                id and '%s-%s-%s' % (membership, id, privacy) in self.auth):
+                self.auth and id and '%s-%s-%s' % (membership, id, privacy)
+                in self.auth):
             defaults = set('r')
 
         for policy in self.policies[self.resource]:

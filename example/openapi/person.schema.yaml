@@ -1,0 +1,50 @@
+Person:
+  description: A person
+  example:
+    identity: jsimpson@fox.com
+    lang: en_US
+    name: Jessica Simpson
+  properties:
+    contacts:
+      items:
+        $ref: '#/components/schemas/base/properties/id'
+      maxItems: 8
+      type: array
+    created:
+      format: date-time
+      readOnly: true
+      type: string
+    id:
+      maxLength: 10
+      minLength: 10
+      type: string
+    identity:
+      example: f.jones@gmail.com
+      maxLength: 64
+      type: string
+    modified:
+      format: date-time
+      readOnly: true
+      type: string
+    name:
+      example: Fred Jones
+      maxLength: 64
+      type: string
+    privacy:
+      $ref: '#/components/schemas/base/properties/privacy'
+    referrer:
+      $ref: '#/components/schemas/base/properties/id'
+      nullable: true
+      readOnly: true
+    status:
+      description: Status
+      enum:
+      - active
+      - disabled
+      type: string
+  required:
+  - name
+  title: a person
+  type: object
+  xml:
+    name: Person

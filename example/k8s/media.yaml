@@ -7,6 +7,9 @@ metadata:
   name: apicrud-media
 spec:
   replicas: $REPLICAS_MEDIA
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: apicrud-media
   template:
     metadata:
       labels:

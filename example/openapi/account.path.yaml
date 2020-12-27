@@ -1,0 +1,294 @@
+account:
+  get:
+    summary: Find accounts by conditions
+    description: Find accounts based on conditions
+    operationId: find
+    parameters:
+    - description: Account ID
+      in: query
+      name: id
+      schema:
+        $ref: '#/components/schemas/base/properties/id'
+    - description: Login name
+      in: query
+      name: name
+      schema:
+        $ref: '#/components/schemas/Account/properties/name'
+    - description: Status
+      in: query
+      name: status
+      schema:
+        $ref: '#/components/schemas/base/properties/status'
+    - description: Maximum records to fetch
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 10000
+    - description: Record offset for pagination
+      in: query
+      name: offset
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 2147483647
+    - description: Sort-by field
+      in: query
+      name: sort
+      schema:
+        type: string
+        maxLength: 20
+    - description: Sort-order field
+      in: query
+      name: order
+      schema:
+        enum:
+        - asc
+        - desc
+        type: string
+    - description: Filter field
+      in: query
+      name: filter
+      schema:
+        type: string
+        maxLength: 2048
+    - description: Pagination token
+      in: query
+      name: cursor_next
+      schema:
+        type: string
+        format: b64string
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  $ref: '#/components/schemas/Account'
+                count:
+                  description: count of items returned
+                  type: integer
+                cursor_next:
+                  description: Pagination token
+                  type: string
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid conditions supplied
+      404:
+        content: {}
+        description: account not found
+    security:
+    - apikey: []
+    - basic: []
+    tags:
+    - account
+    x-codegen-request-body-name: conditions
+    x-openapi-router-controller: controllers.account.AccountController
+  post:
+    summary: Create a new account
+    operationId: register
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Registration'
+      required: true
+    responses:
+      405:
+        content: {}
+        description: Invalid input
+    tags:
+    - account
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.account.AccountController
+account-id:
+  get:
+    summary: Find account by ID
+    description: Returns a single account
+    operationId: get
+    parameters:
+    - description: ID of account to return
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid ID supplied
+      404:
+        content: {}
+        description: account not found
+    security:
+    - apikey: []
+    - basic: []
+    tags:
+    - account
+    x-openapi-router-controller: controllers.account.AccountController
+  put:
+    summary: Update an existing account
+    operationId: update
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Account'
+      required: true
+    parameters:
+    - description: account to modify
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      404:
+        content: {}
+        description: account not found
+      405:
+        content: {}
+        description: Validation exception
+    security:
+    - apikey: ['full']
+    - basic: []
+    tags:
+    - account
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.account.AccountController
+account-ids:
+  delete:
+    summary: Delete one or more accounts
+    operationId: delete
+    parameters:
+    - description: account ids to delete
+      in: path
+      name: ids
+      required: true
+      schema:
+        items:
+          type: string
+          minLength: 10
+          maxLength: 10
+        type: array
+    - description: force-delete instead of disable
+      in: query
+      name: force
+      schema:
+        default: false
+        type: boolean
+    responses:
+      400:
+        content: {}
+        description: Invalid id value
+    security:
+    - apikey: ['full']
+    - basic: []
+    tags:
+    - account
+    x-openapi-router-controller: controllers.account.AccountController
+account_password-uid:
+  put:
+    summary: Change a password
+    operationId: change_password
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AccountPassword'
+      required: true
+    parameters:
+    - description: user ID of account to change
+      in: path
+      name: uid
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      404:
+        content: {}
+        description: account not found
+      405:
+        content: {}
+        description: Validation exception
+    tags:
+    - account
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.account.AccountController
+  get:
+    summary: Dummy read for editing account password
+    operationId: get_password
+    parameters:
+    - description: user ID of account
+      in: path
+      name: uid
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountPassword'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid ID supplied
+      404:
+        content: {}
+        description: account not found
+    tags:
+    - account
+    x-openapi-router-controller: controllers.account.AccountController
+auth:
+  post:
+    summary: Authenticate
+    operationId: login
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Auth'
+      required: true
+    responses:
+      405:
+        content: {}
+        description: Invalid input
+    tags:
+    - auth
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.auth.AuthController
+logout:
+  get:
+    summary: Log out
+    operationId: logout
+    responses:
+      200:
+        content: {}
+        description: Logged out
+      405:
+        content: {}
+        description: Invalid input
+    tags:
+    - auth
+    x-openapi-router-controller: controllers.auth.AuthController

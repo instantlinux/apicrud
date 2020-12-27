@@ -1,0 +1,32 @@
+Scope:
+  description: Authorized scope (role) for access
+  example:
+    name: list-manage
+  properties:
+    id:
+      type: string
+      minLength: 10
+      maxLength: 10
+    name:
+      type: string
+      minLength: 4
+      maxLength: 32
+      pattern: ^[A-Za-z0-9@_.-]+$
+    settings_id:
+      $ref: '#/components/schemas/base/properties/id'
+    created:
+      type: string
+      format: date-time
+      readOnly: true
+    status:
+      description: status
+      enum:
+      - active
+      - disabled
+      type: string
+  required:
+  - name
+  title: a scope
+  type: object
+  xml:
+    name: Scope

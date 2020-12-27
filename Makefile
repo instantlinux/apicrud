@@ -39,6 +39,17 @@ $(VDIR)/bin/python3:
 	@echo "Creating virtual environment"
 	python3 -m venv --system-site-packages $(VENV)
 
+example/openapi.yaml: $(wildcard example/openapi/*.yaml)
+	@echo "Generating openapi.yaml"
+	. $(VDIR)/bin/activate && dref example/openapi/api.yaml $@
+
+# for the create_image rule, do this instead for openapi.yaml
+openapi_deploy:
+	pip install dollar-ref
+	ls -l $(find . -name dref)
+	/build/.local/bin/dref example/openapi/api.yaml example/openapi.yaml
+	chmod 644 example/openapi.yaml
+
 flake8: test_requirements
 	@echo "Running flake8 code analysis"
 	. $(VDIR)/bin/activate && flake8 apicrud example tests \
@@ -51,11 +62,12 @@ $(VDIR)/lib/python$(VER_PY)/site-packages/pytest.py: python_env
 $(VDIR)/lib/python$(VER_PY)/site-packages/flask/app.py: python_env
 	@echo "Installing main requirements"
 	(. $(VDIR)/bin/activate && \
-	 pip3 install -r requirements.txt -r example/requirements.txt)
+	 pip3 install -r requirements.txt)
 py_requirements: $(VDIR)/lib/python$(VER_PY)/site-packages/flask/app.py
 test_requirements: $(VDIR)/lib/python$(VER_PY)/site-packages/pytest.py
 
-test: test_requirements py_requirements apicrud/i18n/en/LC_MESSAGES/messages.mo
+test: test_requirements py_requirements apicrud/i18n/en/LC_MESSAGES/messages.mo \
+	  example/openapi.yaml
 	@echo "Running pytest unit tests"
 	cd apicrud && \
 	(. $(VDIR)/bin/activate && \
@@ -81,7 +93,7 @@ dist/apicrud-$(VERSION).tar.gz: i18n_deploy test_requirements
 clean:
 	rm -rf build dist *.egg-info .cache .pytest_cache */__pycache__ \
 	 */*/__pycache__ */.coverage */.proto.sqlite */coverage.xml */htmlcov \
-	 */results.xml docs/_build docs/content/stubs
+	 */results.xml docs/_build docs/content/stubs example/openapi.yaml
 	find . -name '*.pyc' -or -name '*~' -or -name '*.created' \
 	 -exec rm -rf {} \;
 	find example -name __pycache__ -exec rm -rf {} \;

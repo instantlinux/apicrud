@@ -8,7 +8,6 @@ created 11-apr-2020 by richb@instantlinux.net
 import connexion
 from datetime import datetime
 from flask import g, jsonify
-from flask_babel import _
 from flask_cors import CORS
 from html.parser import HTMLParser
 import logging
@@ -67,7 +66,8 @@ def initialize_app(application):
         os.path.join(os.path.dirname(os.path.abspath(__file__)),
                      Constants.SERVICE_CONFIG_FILE), base_path='/config/v1')
     application.add_api(config.OPENAPI_FILE)
-    application.add_error_handler(400, render_status_400)
+    application.add_error_handler(400, render_status_4xx)
+    application.add_error_handler(429, render_status_4xx)
     application.add_error_handler(connexion.ProblemException,
                                   render_problem)
     CORS(application.app,
@@ -79,14 +79,13 @@ def initialize_app(application):
     return application.app
 
 
-def render_status_400(error):
+def render_status_4xx(error):
     """Render function to provide message in dict as required for
-    react-admin to display text of message for 400 error codes
+    react-admin to display text of message for 4xx error codes
 
     Args:
       error (obj): the error object with name and description
     """
-
     return jsonify(dict(
         message=error.description,
         error=dict(status=error.name, code=error.code))), error.code
@@ -100,15 +99,14 @@ def render_problem(error):
     Args:
       error (obj): the error object with name and description
     """
-
     return jsonify(dict(
         message=error.detail,
         error=dict(status=error.title, code=error.status))), error.status
 
 
 def req_duration():
-    """Report request duration as milliseconds """
-
+    """Report request duration as milliseconds
+    """
     return '%.3f' % (utcnow().timestamp() -
                      g.request_start_time.timestamp())
 
@@ -124,26 +122,9 @@ def strip_tags(html):
     Args:
       html (str): an html document
     """
-
     s = HtmlStripper()
     s.feed(html)
     return s.get_data()
-
-
-def replace_last_comma_and(string):
-    """Replace the last comma with the word 'and', dealing with
-    translation.  The string is presumed to be a text array joined by
-    ', ' -- including the space.
-
-    Args:
-        string (str): comma-separated utf8 content
-    """
-
-    i = string.rfind(',')
-    if i == -1:
-        return string
-    else:
-        return string[:i] + ' ' + _(u'and') + string[i + 1:]
 
 
 class HtmlStripper(HTMLParser):

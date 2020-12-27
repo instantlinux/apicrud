@@ -1,20 +1,19 @@
-coverage==5.3
-fakeredis==1.4.3
-flake8==3.8.3
-mock==4.0.2
-pytest==6.0.2
+coverage==5.3.1
+fakeredis==1.4.5
+flake8==3.8.4
+pytest==6.2.1
 pytest-cov==2.10.1
-twine==3.2.0
-wheel==0.35.1
+twine==3.3.0
+wheel==0.36.2
 
 # transitive requirements
-Pygments==2.7.1
-SecretStorage==3.1.2
+Pygments==2.7.3
+SecretStorage==3.3.0
 bleach==3.2.1
-jeepney==0.4.3
+jeepney==0.6.0
 keyring==21.4.0
 mccabe==0.6.1
-more-itertools==8.5.0
+more-itertools==8.6.0
 packaging==20.4
 pkginfo==1.5.0.1
 pluggy==0.13.1

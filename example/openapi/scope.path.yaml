@@ -1,0 +1,187 @@
+scope:
+  get:
+    summary: Find scopes by conditions
+    description: Find scopes based on conditions
+    operationId: find
+    parameters:
+    - description: Scope ID
+      in: query
+      name: id
+      schema:
+        $ref: '#/components/schemas/base/properties/id'
+    - description: Status
+      in: query
+      name: status
+      schema:
+        $ref: '#/components/schemas/base/properties/status'
+    - description: Maximum records to fetch
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 10000
+    - description: Record offset for pagination
+      in: query
+      name: offset
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 2147483647
+    - description: Sort-by field
+      in: query
+      name: sort
+      schema:
+        type: string
+        maxLength: 20
+    - description: Sort-order field
+      in: query
+      name: order
+      schema:
+        enum:
+        - asc
+        - desc
+        type: string
+    - description: Filter field
+      in: query
+      name: filter
+      schema:
+        type: string
+        maxLength: 2048
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Scope'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid conditions supplied
+      404:
+        content: {}
+        description: scope not found
+    security:
+    - apikey: []
+    - basic: []
+    tags:
+    - scope
+    x-openapi-router-controller: controllers.scope.ScopeController
+  post:
+    operationId: create
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Scope'
+      description: Create a new scope
+      required: true
+    responses:
+      405:
+        content: {}
+        description: Invalid input
+    security:
+    - apikey: ['full']
+    - basic: []
+    summary: Create a new scope
+    tags:
+    - scope
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.scope.ScopeController
+scope-id:
+  get:
+    description: Returns a single scope
+    operationId: get
+    parameters:
+    - description: ID of scope to return
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Scope'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid ID supplied
+      404:
+        content: {}
+        description: Scope not found
+    security:
+    - apikey: []
+    - basic: []
+    summary: Find scope by ID
+    tags:
+    - scope
+    x-openapi-router-controller: controllers.scope.ScopeController
+  put:
+    operationId: update
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Scope'
+      description: Update a scope
+      required: true
+    parameters:
+    - description: Scope id to modify
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      404:
+        content: {}
+        description: Scope not found
+      405:
+        content: {}
+        description: Validation exception
+    security:
+    - apikey: ['full']
+    - basic: []
+    summary: Update an existing scope
+    tags:
+    - scope
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.scope.ScopeController
+scope-ids:
+  delete:
+    operationId: delete
+    parameters:
+    - description: Scope ids to delete
+      in: path
+      name: ids
+      required: true
+      schema:
+        items:
+          type: string
+          minLength: 10
+          maxLength: 10
+        type: array
+    - description: force-delete instead of disable
+      in: query
+      name: force
+      schema:
+        default: false
+        type: boolean
+    responses:
+      400:
+        content: {}
+        description: Invalid id value
+    security:
+    - apikey: ['full']
+    - basic: []
+    summary: Deletes one or more scopes
+    tags:
+    - scope
+    x-openapi-router-controller: controllers.scope.ScopeController

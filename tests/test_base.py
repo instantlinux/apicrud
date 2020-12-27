@@ -75,6 +75,7 @@ class TestBase(unittest.TestCase):
         self.account_id = 'x-TpP43xS9'
         self.cat_id = 'x-Jiqag482'
         self.contact_id = 'x-E97yKy73'
+        self.scope_id = 'x-6e373273'
         self.test_uid = 'u-B0miQweE'
         self.test_person_name = 'Conclave Tester'
         self.test_email = 'testuser@test.conclave.events'
@@ -138,10 +139,18 @@ class TestBase(unittest.TestCase):
         # os.remove(self.logfile_name)
         pass
 
-    def authorize(self, username=None, password=None, new_session=False):
-        if not username:
+    def authorize(self, username=None, password=None, apikey=None,
+                  new_session=False):
+        if not username and not apikey:
             username = self.username
             password = self.password
+        if apikey:
+            response = self.call_endpoint(
+                '/apikey?prefix=%s' % apikey[:8], 'get',
+                extraheaders={self.config.HEADER_AUTH_APIKEY: apikey})
+            if response.status_code == 200:
+                self.apikey = apikey
+            return response.status_code
         if username not in self.credentials or new_session:
             response = self.call_endpoint('/auth', 'post', data=dict(
                 username=username, password=password))
@@ -172,7 +181,11 @@ class TestBase(unittest.TestCase):
             g.db = database.get_session()
             g.session = SessionManager(redis_conn=self.redis)
             headers = extraheaders.copy()
-            if self.authuser:
+            if hasattr(self, 'apikey'):
+                headers[self.config.HEADER_AUTH_APIKEY] = self.apikey
+                headers['Accept'] = 'application/json'
+                headers['Content-Type'] = 'application/json'
+            elif self.authuser:
                 headers['Authorization'] = self.credentials[
                     self.authuser]['auth']
                 headers['Accept'] = 'application/json'

@@ -1,0 +1,145 @@
+Account:
+  description: A account
+  example:
+    name: fsmith
+    status: active
+    uid: existingval
+  properties:
+    contacts:
+      items:
+        $ref: '#/components/schemas/base/properties/id'
+      maxItems: 8
+      type: array
+    created:
+      format: date-time
+      readOnly: true
+      type: string
+    id:
+      maxLength: 10
+      minLength: 10
+      type: string
+    invalid_attempts:
+      default: 0
+      maximum: 100
+      readOnly: true
+      type: integer
+    is_admin:
+      default: false
+      type: boolean
+    last_invalid_attempt:
+      format: date-time
+      readOnly: true
+      type: string
+    last_login:
+      format: date-time
+      readOnly: true
+      type: string
+    modified:
+      format: date-time
+      readOnly: true
+      type: string
+    name:
+      description: A user's login name
+      maxLength: 32
+      minLength: 4
+      pattern: ^[a-z0-9@_.-]+$
+      type: string
+    password_must_change:
+      default: false
+      type: boolean
+    status:
+      description: Status
+      enum:
+      - active
+      - disabled
+      type: string
+    uid:
+      $ref: '#/components/schemas/base/properties/id'
+  required:
+  - name
+  - uid
+  title: an account
+  type: object
+  xml:
+    name: Account
+AccountPassword:
+  description: Password update
+  example:
+    new_password: m0re5eCR~t
+    old_password: myS3cr#t
+    verify_password: m0re5eCR~t
+  properties:
+    new_password:
+      $ref: '#/components/schemas/Auth/properties/password'
+    old_password:
+      description: Old password
+      maxLength: 64
+      minLength: 8
+      type: string
+    reset_token:
+      description: Reset token
+      maxLength: 150
+      minLength: 8
+      type: string
+    verify_password:
+      $ref: '#/components/schemas/Auth/properties/password'
+  required:
+  - new_password
+  - verify_password
+  type: object
+Registration:
+  description: Account registration
+  example:
+    identity: fsmith@verizon.net
+    name: Fred Smith
+    username: fsmith
+  properties:
+    identity:
+      description: Primary identity (email address)
+      type: string
+      format: email
+      minLength: 4
+      maxLength: 32
+    name:
+      description: Your name
+      type: string
+      minLength: 4
+      maxLength: 64
+    username:
+      description: A user's login name
+      type: string
+      minLength: 4
+      maxLength: 32
+      pattern: ^[a-z0-9@_.-]+$
+    forgot_password:
+      description: Send a password-reset token
+      type: boolean
+      default: false
+  title: new user registration
+  xml:
+    name: Registration
+Auth:
+  description: Authenticate
+  example:
+    username: fsmith
+    password: mysecret
+  properties:
+    username:
+      $ref: '#/components/schemas/Account/properties/name'
+    password:
+      description: >
+        Password, use at least 3 of the following types of characters:
+        (a) uppercase letters, (b) lowercase letters, (c) numbers, and/or
+        (d) punctuation
+      type: string
+      minLength: 8
+      maxLength: 64
+      format: password
+    guest_id:
+      $ref: '#/components/schemas/base/properties/id'
+    magic:
+      description: Token for guest access
+      type: string
+      minLength: 8
+      maxLength: 8
+  type: object

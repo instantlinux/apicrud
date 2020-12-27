@@ -1,5 +1,5 @@
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: $SERVICE_NAME-ingress-public
@@ -18,12 +18,16 @@ spec:
       paths:
       - path: /api
         backend:
-          serviceName: $SERVICE_NAME-api
-          servicePort: 80
+          service:
+            name: $SERVICE_NAME-api
+            port:
+              number: 80
       - path: /
         backend:
-          serviceName: $SERVICE_NAME-ui
-          servicePort: 80
+          service:
+            name: $SERVICE_NAME-ui
+            port:
+              number: 80
   tls:
   - hosts:
     - $EXAMPLE_PUBLIC_URL

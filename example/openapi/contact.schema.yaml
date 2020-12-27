@@ -1,0 +1,90 @@
+Contact:
+  description: A method of contact
+  example:
+    info: fjones@gmail.com
+    label: home
+    person: Frank Jones
+    type: email
+  properties:
+    carrier:
+      description: Mobile carrier
+      enum:
+      - att
+      - sprint
+      - tmobile
+      - verizon
+      nullable: true
+      type: string
+    category_id:
+      $ref: '#/components/schemas/Category/properties/id'
+    created:
+      format: date-time
+      readOnly: true
+      type: string
+    id:
+      maxLength: 10
+      minLength: 10
+      type: string
+    info:
+      description: Contact info
+      maxLength: 255
+      minLength: 2
+      type: string
+    label:
+      default: home
+      description: Label
+      enum:
+      - home
+      - mobile
+      - other
+      - work
+      type: string
+    last_attempted:
+      format: date-time
+      readOnly: true
+      type: string
+    modified:
+      format: date-time
+      readOnly: true
+      type: string
+    muted:
+      default: false
+      description: Whether this contact receives notifications
+      type: boolean
+    privacy:
+      $ref: '#/components/schemas/List/properties/privacy'
+    rank:
+      default: 1
+      description: Preference rank (1 is highest)
+      maximum: 100
+      minimum: 1
+      type: integer
+    status:
+      default: unconfirmed
+      description: Status
+      enum:
+      - active
+      - unconfirmed
+      - disabled
+      type: string
+    type:
+      description: Type of contact
+      enum:
+      - email
+      - linkedin
+      - location
+      - messenger
+      - slack
+      - sms
+      - voice
+      - whatsapp
+      type: string
+    uid:
+      $ref: '#/components/schemas/base/properties/id'
+  required:
+  - type
+  - info
+  title: a contact
+  type: object
+  xml:
+    name: Contact

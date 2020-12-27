@@ -16,11 +16,13 @@ Out of the box, here are some of the capabilities included in the example applic
 * GeoIP location lookup and map display
 * Customizable per-account grant limits (such as list size, number of contacts)
 * User-profile and settings screens
+* Authentication by password or API key
 * Extensible internationalization support
 * Photo and file uploads, with a mobile-friendly photo album
 * Configurable role-based access control for all resource types, with per-object privacy settings
 * Storage and content-delivery support for AWS
 * Messaging via email and SMS
+* Per-user request-rate limiting
 * Scalability and fault-tolerance for all services
 
 ## About the Name

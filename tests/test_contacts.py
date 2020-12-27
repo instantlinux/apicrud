@@ -5,8 +5,8 @@ Tests for contacts controller
 created 17-oct-2019 by richb@instantlinux.net
 """
 
-import mock
 import pytest
+from unittest import mock
 
 import test_base
 

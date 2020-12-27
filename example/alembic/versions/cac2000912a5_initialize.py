@@ -9,7 +9,7 @@ Create Date: 2020-04-07 21:53:03.499040
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy_utils import EncryptedType
+from sqlalchemy_utils.types.encrypted.encrypted_type import StringEncryptedType
 
 import constants
 
@@ -44,6 +44,26 @@ def upgrade():
     sa.UniqueConstraint('id'),
     sa.UniqueConstraint('name')
     )
+
+    op.create_table('apikeys',
+    sa.Column('id', sa.String(length=16), nullable=False),
+    sa.Column('name', sa.String(length=64), nullable=False),
+    sa.Column('uid', sa.String(length=16), nullable=False),
+    sa.Column('prefix', sa.String(length=8), nullable=False),
+    sa.Column('hashvalue', StringEncryptedType(sa.String(), length=96),
+              nullable=False),
+    sa.Column('expires', sa.TIMESTAMP(), nullable=True),
+    sa.Column('last_used', sa.TIMESTAMP(), nullable=True),
+    sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('modified', sa.TIMESTAMP(), nullable=True),
+    sa.Column('status', sa.Enum('active', 'disabled'), server_default='active', nullable=False),
+    sa.ForeignKeyConstraint(['uid'], ['people.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('id'),
+    sa.UniqueConstraint('prefix'),
+    sa.UniqueConstraint('name', 'uid', name='uniq_apikey_owner'),
+    )
+
     op.create_table('categories',
     sa.Column('id', sa.String(length=16), nullable=False),
     sa.Column('name', sa.String(length=64), nullable=False),
@@ -210,6 +230,29 @@ def upgrade():
         batch_op.create_index(batch_op.f('ix_listmessages_list_id'), ['list_id'], unique=False)
         batch_op.create_unique_constraint('uniq_listmessage', ['list_id', 'message_id'])
 
+    op.create_table('scopes',
+    sa.Column('id', sa.String(length=16), nullable=False),
+    sa.Column('name', sa.String(length=32), nullable=False),
+    sa.Column('settings_id', sa.String(length=16), nullable=False),
+    sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('modified', sa.TIMESTAMP(), nullable=True),
+    sa.Column('status', sa.Enum('active', 'disabled'), server_default='active',
+              nullable=False),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('id'),
+    sa.UniqueConstraint('name', 'settings_id', name='uniq_scope_name'),
+    )
+    op.create_table('apikeyscopes',
+    sa.Column('apikey_id', sa.String(length=16), primary_key=True, nullable=False),
+    sa.Column('scope_id', sa.String(length=16), primary_key=True, nullable=False),
+    sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.ForeignKeyConstraint(['apikey_id'], ['apikeys.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['scope_id'], ['scopes.id'], ondelete='CASCADE'),
+    )
+    with op.batch_alter_table('apikeyscopes', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_apikey_scope_id'), ['apikey_id'], unique=False)
+        batch_op.create_unique_constraint('uniq_apikeyscope', ['apikey_id', 'scope_id'])
+
     op.create_table('settings',
     sa.Column('id', sa.String(length=16), nullable=False),
     sa.Column('name', sa.String(length=32), nullable=False),
@@ -238,10 +281,10 @@ def upgrade():
     sa.Column('id', sa.String(length=16), nullable=False, primary_key=True, unique=True),
     sa.Column('name', sa.String(length=32), nullable=False),
     sa.Column('uid', sa.String(length=16), nullable=False),
-    sa.Column('password', EncryptedType(sa.String(length=77)),
+    sa.Column('password', StringEncryptedType(sa.String(), length=128),
               nullable=False),
     sa.Column('password_must_change', sa.BOOLEAN(), server_default=sa.text('0'), nullable=False),
-    sa.Column('totp_secret', EncryptedType(sa.String(length=32)), nullable=True),
+    sa.Column('totp_secret', StringEncryptedType(sa.String(), length=48), nullable=True),
     sa.Column('is_admin', sa.BOOLEAN(), server_default=sa.text('0'), nullable=False),
     sa.Column('settings_id', sa.String(length=16), nullable=False),
     sa.Column('last_login', sa.TIMESTAMP(), nullable=True),
@@ -265,8 +308,8 @@ def upgrade():
     sa.Column('type', sa.String(length=16), nullable=True),
     sa.Column('url', sa.String(length=64), nullable=True),
     sa.Column('key', sa.String(length=128), nullable=True),
-    sa.Column('secret', EncryptedType(sa.String(length=128)), nullable=True),
-    sa.Column('otherdata', EncryptedType(sa.String(length=1024)), nullable=True),
+    sa.Column('secret', StringEncryptedType(sa.String(), length=128), nullable=True),
+    sa.Column('otherdata', StringEncryptedType(sa.String(), length=1024), nullable=True),
     sa.Column('expires', sa.TIMESTAMP(), nullable=True),
     sa.Column('settings_id', sa.String(length=16), nullable=False),
     sa.Column('uid', sa.String(length=16), nullable=False),
@@ -348,7 +391,7 @@ def upgrade():
     sa.Column('name', sa.String(length=64), nullable=False),
     sa.Column('sizes', sa.String(length=32), server_default='120,720', nullable=False),
     sa.Column('encryption', sa.Enum('aes'), nullable=True),
-    sa.Column('password', EncryptedType(sa.String(length=64)), nullable=True),
+    sa.Column('password', StringEncryptedType(sa.String(), length=64), nullable=True),
     sa.Column('uid', sa.String(length=16), nullable=False),
     sa.Column('list_id', sa.String(length=16), nullable=True),
     sa.Column('event_id', sa.String(length=16), nullable=True),

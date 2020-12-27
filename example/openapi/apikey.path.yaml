@@ -1,0 +1,212 @@
+apikey:
+  get:
+    summary: Find APIkeys by conditions
+    description: Find APIkeys based on conditions
+    operationId: find
+    parameters:
+    - description: APIkey ID
+      in: query
+      name: id
+      schema:
+        $ref: '#/components/schemas/base/properties/id'
+    - description: Key name
+      in: query
+      name: name
+      schema:
+        $ref: '#/components/schemas/APIkey/properties/name'
+    - description: Prefix of API key
+      in: query
+      name: prefix
+      schema:
+        $ref: '#/components/schemas/APIkey/properties/prefix'
+    - description: Status
+      in: query
+      name: status
+      schema:
+        $ref: '#/components/schemas/base/properties/status'
+    - description: Maximum records to fetch
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 10000
+    - description: Record offset for pagination
+      in: query
+      name: offset
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 2147483647
+    - description: Sort-by field
+      in: query
+      name: sort
+      schema:
+        type: string
+        maxLength: 20
+    - description: Sort-order field
+      in: query
+      name: order
+      schema:
+        enum:
+        - asc
+        - desc
+        type: string
+    - description: Filter field
+      in: query
+      name: filter
+      schema:
+        type: string
+        maxLength: 2048
+    - description: Pagination token
+      in: query
+      name: cursor_next
+      schema:
+        type: string
+        format: b64string
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  $ref: '#/components/schemas/APIkey'
+                count:
+                  description: count of items returned
+                  type: integer
+                cursor_next:
+                  description: Pagination token
+                  type: string
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid conditions supplied
+      404:
+        content: {}
+        description: APIkey not found
+    security:
+    - apikey: []
+    - basic: []
+    tags:
+    - apikey
+    x-codegen-request-body-name: conditions
+    x-openapi-router-controller: controllers.apikey.APIkeyController
+  post:
+    summary: Create a new APIkey
+    operationId: create
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIkey'
+      required: true
+    responses:
+      405:
+        content: {}
+        description: Invalid input
+    security:
+    - apikey: ['full']
+    - basic: []
+    tags:
+    - apikey
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.apikey.APIkeyController
+apikey-id:
+  get:
+    summary: Find APIkey by ID
+    description: Returns a single APIkey
+    operationId: get
+    parameters:
+    - description: ID of APIkey to return
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIkey'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid ID supplied
+      404:
+        content: {}
+        description: APIkey not found
+    security:
+    - apikey: []
+    - basic: []
+    tags:
+    - apikey
+    x-openapi-router-controller: controllers.apikey.APIkeyController
+  put:
+    summary: Update an existing APIkey
+    operationId: update
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIkey'
+      required: true
+    parameters:
+    - description: apikey to modify
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      404:
+        content: {}
+        description: APIkey not found
+      405:
+        content: {}
+        description: Validation exception
+    security:
+    - apikey: ['full']
+    - basic: []
+    tags:
+    - apikey
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.apikey.APIkeyController
+apikey-ids:
+  delete:
+    summary: Delete one or more APIkeys
+    operationId: delete
+    parameters:
+    - description: APIkey ids to delete
+      in: path
+      name: ids
+      required: true
+      schema:
+        items:
+          type: string
+          minLength: 10
+          maxLength: 10
+        type: array
+    - description: force-delete instead of disable
+      in: query
+      name: force
+      schema:
+        default: false
+        type: boolean
+    responses:
+      400:
+        content: {}
+        description: Invalid id value
+    security:
+    - apikey: ['full']
+    - basic: []
+    tags:
+    - apikey
+    x-openapi-router-controller: controllers.apikey.APIkeyController
