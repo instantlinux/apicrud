@@ -8,7 +8,8 @@
 #    make messaging_worker
 #    make ui_local        # (from the other clone)
 
-run_local: py_requirements envsubst redis_adhoc mariadb_adhoc
+run_local: py_requirements envsubst redis_adhoc mariadb_adhoc \
+	   example/openapi.yaml
 	@echo Serving http://$(FQDN):$(APP_PORT) as $(PUBLIC_URL)
 	. $(VDIR)/bin/activate && APP_ENV=$(APP_ENV) \
 	  AMQ_HOST=$(RABBITMQ_IP) REDIS_HOST=$(REDIS_IP) \
