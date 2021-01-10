@@ -5,14 +5,12 @@ APIkey controller
 created 27-dec-2020 by richb@instantlinux.net
 """
 
-from base64 import b64encode
 from flask import g, request
 from flask_babel import _
-import hashlib
 import logging
 
 from apicrud import AccessControl, BasicCRUD, Grants, ServiceConfig, \
-    singletons, utils
+    singletons
 import models
 
 
@@ -27,9 +25,7 @@ class APIkeyController(BasicCRUD):
     def create(body):
         """
         Check that user hasn't exceeded max grant for API keys, then
-        generate a 41-byte string. First 8 characters (48 bits) are
-        an access key ID prefix; last 32 characters (192 bits) are the
-        secret key.
+        generate a new key
         """
         self = singletons.controller[request.url_rule.rule.split('/')[3]]
         max_keys = int(Grants().get('apikeys', uid=body.get('uid')))
@@ -39,15 +35,13 @@ class APIkeyController(BasicCRUD):
             msg = _(u'max allowed API keys exceeded')
             logging.warning(dict(message=msg, allowed=max_keys, **logmsg))
             return dict(message=msg, allowed=max_keys), 405
-        apikey = utils.gen_id(length=35, prefix='')[-32:]
-        body['prefix'] = utils.gen_id(prefix='')
-        body['hashvalue'] = b64encode(hashlib.sha256(
-            apikey.encode()).digest()).decode('utf8')
+        body['prefix'], secret, body['hashvalue'] = AccessControl(
+            ).apikey_create()
         scopes = body.pop('scopes', None)
         ret = super(APIkeyController, APIkeyController).create(body)
         body.pop('hashvalue', None)
         if ret[1] == 201:
-            ret[0]['apikey'] = body['prefix'] + '.' + apikey
+            ret[0]['apikey'] = body['prefix'] + '.' + secret
             ret[0]['name'] = body['name']
             if scopes:
                 ret2 = self._update_many(ret[0]['id'], 'scopes', scopes)

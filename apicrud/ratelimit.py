@@ -49,6 +49,9 @@ class RateLimit(object):
         if not self.config.RATELIMIT_ENABLE:
             return False
         uid = uid or self._get_request_uid()
+        if not uid:
+            # No limit on anonymous requests
+            return False
         limit = int(Grants().get('ratelimit', uid=uid))
         curr = round(time.time()) % (self.interval * 2) // self.interval
         key = 'rate:%s:%s:%d' % (service, uid, curr)
@@ -72,7 +75,10 @@ class RateLimit(object):
         """
         header_auth = self.config.HEADER_AUTH_APIKEY
         if header_auth in request.headers:
-            prefix, secret = request.headers.get(header_auth).split('.')
+            try:
+                prefix, secret = request.headers.get(header_auth).split('.')
+            except ValueError:
+                return None
             secret = b64encode(
                 hashlib.sha1(secret.encode()).digest())[:8].decode('utf8')
             # TODO confirm whether this drops first use of apikey

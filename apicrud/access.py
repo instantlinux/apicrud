@@ -5,7 +5,7 @@ refactored 6-mar-2020
 """
 
 from base64 import b64encode
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import g, request
 from flask_babel import _
 import hashlib
@@ -16,6 +16,7 @@ from sqlalchemy.orm.exc import NoResultFound
 import yaml
 
 from .service_config import ServiceConfig
+from .utils import gen_id
 
 LEVELS = {}
 POLICIES = {}
@@ -70,10 +71,11 @@ class AccessControl(object):
             self.auth = None
             header_auth = ServiceConfig().config.HEADER_AUTH_APIKEY
             if header_auth in request.headers:
+                # TODO: add support for HMAC request signing in place
+                # of this plain-text X-Api-Key header method
                 prefix, secret = request.headers.get(header_auth).split('.')
-                secret = b64encode(
-                    hashlib.sha1(secret.encode()).digest())[:8].decode('utf8')
-                item = g.session.get(None, secret, key_id=prefix)
+                item = g.session.get(None, self.apikey_hash(secret)[:8],
+                                     key_id=prefix)
                 if item:
                     self.auth = item.get('auth').split(':')
                     self.uid = uid = item.get('sub')
@@ -95,8 +97,7 @@ class AccessControl(object):
                 self.account_id = g.session.get(uid, secret, 'acc')
                 self.identity = g.session.get(uid, secret, 'identity')
             else:
-                if 'health' not in request.base_url:
-                    logging.warning('no-auth url=%s' % request.base_url)
+                # For anonymous-access paths that don't require security
                 self.uid = self.account_id = self.identity = None
 
     def load_rbac(self, filename):
@@ -210,7 +211,6 @@ class AccessControl(object):
         Returns:
           set: actions available to principal
         """
-
         if query:
             try:
                 record = query.one()
@@ -282,6 +282,63 @@ class AccessControl(object):
                         actions |= policy['actions']
         actions -= deny_delete
         return actions if len(actions) else defaults
+
+    def apikey_create(self):
+        """Generate an API key - a 41-byte string. First 8 characters (48
+        bits) are an access key ID prefix; last 32 characters (192
+        bits) are the secret key.
+
+
+        Returns: tuple
+          key ID (str) - public portion of key
+          secret (str) - secret portion
+          hashvalue (str) - hash value for database
+        """
+        secret = gen_id(length=35, prefix='')[-32:]
+        key_id = gen_id(prefix='')
+        return key_id, secret, self.apikey_hash(secret)
+
+    def apikey_verify(self, key_id, secret):
+        """Verify an API key
+
+        Args:
+          key_id (str): the public key_id at time of generation
+          secret (str): the unhashed secret
+
+        Returns: tuple
+          uid (str): User ID if valid
+          scopes (list): list of scope IDs
+        """
+        try:
+            record = g.db.query(self.models.APIkey).filter_by(
+                prefix=key_id, hashvalue=self.apikey_hash(secret),
+                status='active').one()
+            if not record.last_used or (
+                    record.last_used + timedelta(hours=6) < datetime.utcnow()
+                    and record.expires < datetime.utcnow()):
+                record.last_used = datetime.utcnow()
+                g.db.commit()
+        except NoResultFound:
+            logging.info(dict(action='api_key', key_id=key_id,
+                              message='not found'))
+            return None, None
+        except Exception as ex:
+            logging.error(dict(action='api_key', message=str(ex)))
+            return None, None
+        if record.expires and record.expires < datetime.now():
+            logging.info(dict(action='api_key', key_id=key_id,
+                              uid=record.uid, message='expired'))
+            return None, None
+        return record.uid, record.scopes
+
+    @staticmethod
+    def apikey_hash(secret):
+        """Generate a hash value from the secret
+        Args:
+          secret (str): secret key
+        """
+        return b64encode(
+            hashlib.sha256(secret.encode()).digest()).decode('utf8')
 
     @staticmethod
     def _parse_id(role, resource):

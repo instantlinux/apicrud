@@ -2,11 +2,9 @@
 
 created 26-mar-2020 by richb@instantlinux.net
 """
-from base64 import b64encode
 from datetime import datetime, timedelta
 from flask import g, request
 from flask_babel import _
-import hashlib
 import jwt
 import logging
 from passlib.hash import sha256_crypt
@@ -148,57 +146,48 @@ class SessionAuth(object):
         Returns:
           dict: uid, scopes (None if not authorized)
         """
-        prefix, secret = apikey.split('.')
-        if prefix not in APIKEYS or utcnow() > APIKEYS[prefix]['expires']:
+        global APIKEYS
+        acc = AccessControl()
+        key_id, secret = apikey.split('.')
+        if key_id not in APIKEYS or utcnow() > APIKEYS[key_id]['expires']:
+            # Note - local caching in APIKEYS global var reduces database
+            # queries on Accounts table
+            uid, scopes = acc.apikey_verify(key_id, secret)
+            if not uid:
+                return None
             try:
-                record = g.db.query(self.models.APIkey).filter_by(
-                    prefix=prefix, hashvalue=b64encode(hashlib.sha256(
-                        secret.encode()).digest()).decode('utf8'),
-                    status='active').one()
-                if not record.last_used or (
-                        record.last_used + timedelta(hours=6) < utcnow() and
-                        record.expires < utcnow()):
-                    record.last_used = utcnow()
-                    g.db.commit()
                 account = g.db.query(self.models.Account).filter_by(
-                    uid=record.uid, status='active').one()
+                    uid=uid, status='active').one()
             except NoResultFound:
-                logging.info(dict(action='api_key', prefix=prefix,
-                                  message='not found'))
+                logging.info(dict(action='api_key', uid=uid,
+                                  message='account not active'))
                 return None
             except Exception as ex:
                 logging.error(dict(action='api_key', message=str(ex)))
                 return None
-            if record.expires and record.expires < datetime.now():
-                logging.info(dict(action='api_key', prefix=prefix,
-                                  uid=record.uid, message='expired'))
-                return None
-            APIKEYS[prefix] = dict(
+            APIKEYS[key_id] = dict(
                 account_id=account.id,
                 expires=utcnow() + timedelta(seconds=self.config.REDIS_TTL),
                 identity=account.owner.identity,
                 roles=['admin', 'user'] if account.is_admin else ['user'],
-                scopes=[item.name for item in record.scopes],
-                uid=record.uid)
+                scopes=[item.name for item in scopes], uid=uid)
             if roles_from:
-                APIKEYS[prefix]['roles'] += self.get_roles(record.uid,
-                                                           roles_from)
-        item = APIKEYS[prefix]
+                APIKEYS[key_id]['roles'] += self.get_roles(uid, roles_from)
+        item = APIKEYS[key_id]
         uid = item['uid']
         logging.debug(dict(action='api_key', uid=uid, scopes=item['scopes']))
         duration = (self.login_admin_limit if 'admin' in item['roles']
                     else self.login_session_limit)
-        secret = b64encode(
-            hashlib.sha1(secret.encode()).digest())[:8].decode('utf8')
+        token = acc.apikey_hash(secret)[:8]
         ses = None
         try:
             # Look for existing session in redis cache
             ses = g.session.get(
-                uid, secret, arg='auth', key_id=prefix).split(':')
+                uid, token, arg='auth', key_id=key_id).split(':')
         except AttributeError:
             ses = g.session.create(uid, item['roles'], acc=item['account_id'],
                                    identity=item['identity'],
-                                   ttl=duration, key_id=prefix, nonce=secret)
+                                   ttl=duration, key_id=key_id, nonce=token)
         if ses:
             return dict(uid=uid, scopes=item['scopes'])
 
@@ -479,6 +468,8 @@ def api_key(apikey, required_scopes=None):
       dict: uid if successful (None otherwise)
     """
     models = ServiceConfig().models
+    if len(apikey) > 96 or '.' not in apikey:
+        return None
     retval = SessionAuth().api_access(apikey, roles_from=models.List)
     if not retval:
         return retval

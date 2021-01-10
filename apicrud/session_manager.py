@@ -6,13 +6,12 @@ created 8-may-2019 by richb@instantlinux.net
 from datetime import datetime, timedelta
 import json
 import logging
-import random
 import redis
-import string
 import time
 
 from .aes_encrypt import AESEncrypt
 from .service_config import ServiceConfig
+from .utils import gen_id
 
 saved_redis = None
 
@@ -71,7 +70,7 @@ class SessionManager(object):
             (as above), along with parameters passed into this function
         """
 
-        token = kwargs.pop('nonce', _gen_id(prefix=''))
+        token = kwargs.pop('nonce', gen_id(prefix=''))
         ttl = kwargs.pop('ttl', self.ttl)
         params = dict(
             auth=':'.join(roles),
@@ -157,7 +156,7 @@ class Mutex:
             redis_conn or redis.Redis(host=redis_host,
                                       port=config.REDIS_PORT, db=0))
         self.ttl = ttl or config.REDIS_TTL
-        self.lock_signature = _gen_id()
+        self.lock_signature = gen_id()
         self.lockname = lockname
         self.maxwait = maxwait
 
@@ -187,17 +186,3 @@ class Mutex:
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         self.release()
-
-
-# TODO: resolve another DRY problem - this yields a circular dependency
-# when invoked as 'import lib.utils'
-def _gen_id(length=8, prefix='x-', chars=(
-        '-' + string.digits + string.ascii_uppercase + '_' +
-        string.ascii_lowercase)):
-    def _int2base(x, chars, base=64):
-        return _int2base(x // base, chars, base).lstrip(chars[0]) + chars[
-            x % base] if x else chars[0]
-    return (prefix +
-            _int2base((datetime.utcnow() - datetime(2018, 1, 1)).days * 8 +
-                      random.randint(0, 8), chars) +
-            ''.join(random.choice(chars) for i in range(length - 3)))

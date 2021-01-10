@@ -67,6 +67,7 @@ class Confirmation:
                      (id, contact.info))
         if func_send:
             # TODO: stop token value from leaking into celery logs
+            logging.info(dict(token=token, to=id, template=template))
             func_send(to=id, template=template, token=token, type=contact.type)
         return dict(token=token, id=id, uid=contact.uid), 200
 
@@ -93,8 +94,6 @@ class Confirmation:
             logging.warning('action=confirm id=%s info=%s'
                             'message=invalid_token' % (id, info))
             return dict(id=id, message='invalid token'), 403
-        # TODO need to delete session after fully confirmed
-        # g.session.delete(id, nonce)
         try:
             contact = g.db.query(self.models.Contact).filter_by(id=id).one()
         except NoResultFound:
@@ -109,6 +108,7 @@ class Confirmation:
         # Create a login session with permissions to modify a Person/Contact
         logging.info('action=confirm type=%s info=%s' %
                      (contact.type, info))
+        g.session.delete(id, nonce)
         return dict(g.session.create(
             contact.uid, ['pending'], info=info, type=contact.type,
             contact_id=id, name=contact.owner.name)), 200
