@@ -295,6 +295,10 @@ components:
           type: array
           items:
             type: string
+        thumbnail_tiny:
+          default: 50
+          description: Pixel height of thumbnail images
+          type: integer
         token_salt:
           default: "YI31A26j6f4&0#X*8&7QBNF"
           description: >

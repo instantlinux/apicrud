@@ -37,21 +37,20 @@ class MediaProcessing(object):
     def __init__(self, uid, file_id, db_session=None):
         config = self.config = ServiceConfig().config
         self.models = ServiceConfig().models
-        self.api = StorageAPI(redis_host=config.REDIS_HOST, uid=uid,
-                              models=self.models, db_session=db_session)
+        self.api = StorageAPI(uid=uid, db_session=db_session)
+        self.db_session = db_session
         self.file_id = file_id
         self.meta = self.api.get_file_meta(file_id)
 
     def __del__(self):
         self.api.del_file_meta(self.file_id, self.meta)
 
-    def photo(self, uid, meta, db_session):
+    def photo(self, uid, meta):
         """metadata and scaling for still images
 
         Args:
           uid (str): User ID
           meta (dict): Image metadata
-          db_session (obj): database session
         """
 
         def _exif_get(field, max_width):
@@ -94,8 +93,7 @@ class MediaProcessing(object):
             name=meta["name"],
             path=meta["path"],
             uid=uid,
-            category_id=AccountSettings(None, self.models,
-                                        db_session=db_session,
+            category_id=AccountSettings(None, db_session=self.db_session,
                                         uid=meta["oid"]).get.category_id,
             compression=_exif_get("Compression", 16),
             datetime_original=exif.get("DateTimeOriginal") or modified,
@@ -117,20 +115,20 @@ class MediaProcessing(object):
             storage_id=meta["sid"],
             width=img.width,
         )
-        db_session.add(record)
+        self.db_session.add(record)
 
         # add picture to album; first added is initial cover picture
-        album = db_session.query(self.models.Album).filter_by(
+        album = self.db_session.query(self.models.Album).filter_by(
             id=meta["pid"]).one()
         record = self.models.AlbumContent(
             album_id=meta["pid"],
             picture_id=meta["fid"],
             rank=len(album.pictures) + 1)
-        db_session.add(record)
+        self.db_session.add(record)
         if len(album.pictures) == 0 or album.cover_id is None:
             album.cover_id = meta["fid"]
-            db_session.add(album)
-        db_session.commit()
+            self.db_session.add(album)
+        self.db_session.commit()
 
         # generate additional scaled sizes
         sizes = [int(x) for x in album.sizes.split(",")]
@@ -154,7 +152,7 @@ class MediaProcessing(object):
 
         # stay in budget--throw away originals larger than max
         # TODO grants needs to work under celery
-        # res_max = Grants(db_session=db_session,
+        # res_max = Grants(db_session=self.db_session,
         #                  ttl=config.CACHE_TTL).get('photo_res_max')
         res_max = self.config.DEFAULT_GRANTS.get('photo_res_max')
         if img.height > res_max:
@@ -163,13 +161,12 @@ class MediaProcessing(object):
         # TODO (eventually)-apply encryption when gallery frontend has support
         #  and strip exif tags
 
-    def video(self, uid, meta, db_session):
+    def video(self, uid, meta):
         """metadata for videos - construct and save a pictures db record
 
         Args:
           uid (str): User ID
           meta (dict): Video metadata
-          db_session (obj): database session
         """
         # TODO decide whether to bother with exif or thumbnail
 
@@ -185,8 +182,7 @@ class MediaProcessing(object):
             name=meta["name"],
             path=meta["path"],
             uid=uid,
-            category_id=AccountSettings(None, self.models,
-                                        db_session=db_session,
+            category_id=AccountSettings(None, db_session=self.db_session,
                                         uid=meta["oid"]).get.category_id,
             compression=None,
             datetime_original=modified,
@@ -209,18 +205,18 @@ class MediaProcessing(object):
             storage_id=meta["sid"],
             width=meta["width"],
         )
-        db_session.add(record)
+        self.db_session.add(record)
 
         # add to album
-        album = db_session.query(self.models.Album).filter_by(
+        album = self.db_session.query(self.models.Album).filter_by(
             id=meta["pid"]).one()
         # TODO query AlbumContents max(rank) to handle edge case
         record = self.models.AlbumContent(
             album_id=meta["pid"],
             picture_id=meta["fid"],
             rank=len(album.pictures) + 1)
-        db_session.add(record)
-        db_session.commit()
+        self.db_session.add(record)
+        self.db_session.commit()
 
     def _gpsexif(self, exif):
         """Convert GPS exif data to fixed-decimal format. For some

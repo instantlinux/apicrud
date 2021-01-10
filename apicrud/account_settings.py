@@ -27,7 +27,7 @@ class AccountSettings(object):
 
     Args:
       account_id (str): ID in database of a user's account
-      db_session (obj): a session connected to datbase
+      db_session (obj): a session connected to database
       uid (str): User ID
     """
     def __init__(self, account_id, db_session=None, uid=None):
