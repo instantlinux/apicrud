@@ -35,7 +35,7 @@ class MediaProcessing(object):
     """
 
     def __init__(self, uid, file_id, db_session=None):
-        config = self.config = ServiceConfig().config
+        self.config = ServiceConfig().config
         self.models = ServiceConfig().models
         self.api = StorageAPI(uid=uid, db_session=db_session)
         self.db_session = db_session
