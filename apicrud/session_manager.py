@@ -80,9 +80,13 @@ class SessionManager(object):
         )
         key = 'ses:%s:%s' % (key_id or uid, token[-3:])
         content = {**params, **kwargs}  # noqa
-        if self.connection.set(key, self.aes.encrypt(json.dumps(
-                content)), ex=ttl, nx=True):
-            return content
+        try:
+            if self.connection.set(key, self.aes.encrypt(json.dumps(
+                    content)), ex=ttl, nx=True):
+                return content
+        except redis.exceptions.ConnectionError as ex:
+            logging.error(dict(action='session.create',
+                               uid=uid, message=str(ex)))
 
     def get(self, uid, token, arg=None, key_id=None):
         """Get one or all key-value pairs stored by session create
@@ -102,11 +106,11 @@ class SessionManager(object):
         except TypeError:
             return None
         except Exception as ex:
-            logging.info('action=session.get uid=%s exception=%s' %
-                         (uid, str(ex)))
+            logging.info(dict(action='session.get', uid=uid,
+                              exception=str(ex)))
             return None
         if data['jti'] != token:
-            logging.warning('action=session.get message=rejected')
+            logging.warning(dict(action='session.get', message='rejected'))
             return None
         if arg:
             return data[arg] if arg in data else None
@@ -136,7 +140,10 @@ class SessionManager(object):
           token (str): The token value passed from create as 'jti'
           key_id (str): session key ID for redis
         """
-        self.connection.delete('ses:%s:%s' % (key_id or uid, token[-3:]))
+        try:
+            self.connection.delete('ses:%s:%s' % (key_id or uid, token[-3:]))
+        except redis.exceptions.ConnectionError as ex:
+            logging.error(dict(action='session.delete', message=str(ex)))
 
 
 class Mutex:
@@ -167,9 +174,13 @@ class Mutex:
           TimeoutError: if the resource is unavailable
         """
         for retry in range(self.maxwait):
-            if self.connection.set('mutex:%s' % self.lockname,
-                                   self.lock_signature, ex=self.ttl, nx=True):
-                return True
+            try:
+                if self.connection.set(
+                        'mutex:%s' % self.lockname,
+                        self.lock_signature, ex=self.ttl, nx=True):
+                    return True
+            except redis.exceptions.ConnectionError:
+                pass
             time.sleep(1)
         raise TimeoutError('Unable to acquire mutex=%s' % self.lockname)
 

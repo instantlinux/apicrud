@@ -6,11 +6,9 @@ created 27-dec-2020 by richb@instantlinux.net
 """
 
 from flask import g, request
-from flask_babel import _
 import logging
 
-from apicrud import AccessControl, BasicCRUD, Grants, ServiceConfig, \
-    singletons
+from apicrud import AccessControl, BasicCRUD, ServiceConfig, singletons
 import models
 
 
@@ -23,30 +21,13 @@ class APIkeyController(BasicCRUD):
 
     @staticmethod
     def create(body):
-        """
-        Check that user hasn't exceeded max grant for API keys, then
-        generate a new key
-        """
-        self = singletons.controller[request.url_rule.rule.split('/')[3]]
-        max_keys = int(Grants().get('apikeys', uid=body.get('uid')))
-        logmsg = dict(action='create', resource='apikey', uid=body.get('uid'))
-        if g.db.query(self.model).filter_by(uid=body[
-                'uid']).count() >= max_keys:
-            msg = _(u'max allowed API keys exceeded')
-            logging.warning(dict(message=msg, allowed=max_keys, **logmsg))
-            return dict(message=msg, allowed=max_keys), 405
-        body['prefix'], secret, body['hashvalue'] = AccessControl(
-            ).apikey_create()
         scopes = body.pop('scopes', None)
         ret = super(APIkeyController, APIkeyController).create(body)
-        body.pop('hashvalue', None)
-        if ret[1] == 201:
-            ret[0]['apikey'] = body['prefix'] + '.' + secret
-            ret[0]['name'] = body['name']
-            if scopes:
-                ret2 = self._update_many(ret[0]['id'], 'scopes', scopes)
-                if ret2[1] != 200:
-                    ret[1] = ret2[1]
+        self = singletons.controller[request.url_rule.rule.split('/')[3]]
+        if ret[1] == 201 and scopes:
+            ret2 = self._update_many(ret[0]['id'], 'scopes', scopes)
+            if ret2[1] != 200:
+                ret[1] = ret2[1]
         return ret
 
     @staticmethod
@@ -69,7 +50,7 @@ class APIkeyController(BasicCRUD):
         max_size = ServiceConfig().config.SCOPES_MAX
         if len(related_ids) > max_size:
             msg = 'Max list size exceeded'
-            logging.warn('action=update resource=list uid=%s message=%s'
+            logging.warn('action=update resource=apikey uid=%s message=%s'
                          'allowed=%d' % (AccessControl().uid, msg,
                                          max_size))
             return dict(message=msg, allowed=max_size), 405

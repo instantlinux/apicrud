@@ -1,0 +1,124 @@
+---
+# Standard timezone names for timezone table.
+#  Most of the ID values are from:
+#   https://code2care.org/pages/java-timezone-list-utc-gmt-offset
+#  ID values don't really matter, but they should remain as
+#  unchanging and universal as possible. This list is curated to
+#  be short enough for a user to quickly select from a dropdown,
+#  but long enough to represent almost all of the world's timezones.
+#
+# Note that additions can be made to the db_seed.yaml in the app.
+
+tz:
+- id: 14
+  name: Africa/Cairo
+- id: 15
+  name: Africa/Casablanca
+- id: 26
+  name: Africa/Johannesburg
+- id: 32
+  name: Africa/Lagos
+- id: 44
+  name: Africa/Nairobi
+- id: 247
+  name: Asia/Bangkok
+- id: 259
+  name: Asia/Damascus
+- id: 262
+  name: Asia/Dubai
+- id: 269
+  name: Asia/Hong_Kong
+- id: 272
+  name: Asia/Istanbul
+- id: 273
+  name: Asia/Jakarta
+- id: 275
+  name: Asia/Jerusalem
+- id: 276
+  name: Asia/Kabul
+- id: 278
+  name: Asia/Karachi
+- id: 287
+  name: Asia/Kuwait
+- id: 292
+  name: Asia/Manila
+- id: 306
+  name: Asia/Riyadh
+- id: 307
+  name: Asia/Saigon
+- id: 308
+  name: Asia/Seoul
+- id: 309
+  name: Asia/Shanghai
+- id: 314
+  name: Asia/Taipei
+- id: 315
+  name: Asia/Tehran
+- id: 319
+  name: Asia/Tokyo
+- id: 334
+  name: Atlantic/Azores
+- id: 360
+  name: Australia/North
+- id: 362
+  name: Australia/Queensland
+- id: 363
+  name: Australia/South
+- id: 364
+  name: Australia/Sydney
+- id: 365
+  name: Australia/Tasmania
+- id: 366
+  name: Australia/Victoria
+- id: 367
+  name: Australia/West
+- id: 370
+  name: Brazil/DeNoronha
+- id: 371
+  name: Brazil/East
+- id: 372
+  name: Brazil/West
+- id: 375
+  name: Canada/Atlantic
+- id: 376
+  name: Canada/Central
+- id: 377
+  name: Canada/Eastern
+- id: 378
+  name: Canada/Mountain
+- id: 379
+  name: Canada/Newfoundland
+- id: 380
+  name: Canada/Pacific
+- id: 383
+  name: Chile/Continental
+- id: 428
+  name: Europe/Athens
+- id: 444
+  name: Europe/Istanbul
+- id: 457
+  name: Europe/Moscow
+- id: 460
+  name: Europe/Paris
+- id: 464
+  name: Europe/Rome
+- id: 520
+  name: PRC
+- id: 586
+  name: US/Arizona
+- id: 590
+  name: US/Hawaii
+- id: 591
+  name: US/Central
+- id: 593
+  name: US/Eastern
+- id: 596
+  name: US/Samoa
+- id: 597
+  name: US/Mountain
+- id: 598
+  name: US/Pacific
+- id: 601
+  name: UTC
+- id: 619
+  name: IST

@@ -9,8 +9,7 @@ import celery
 import os
 
 from apicrud import ServiceConfig
-from apicrud.database import get_session
-import apicrud.messaging.send
+from apicrud.messaging.send import Messaging
 
 import celeryconfig
 import models
@@ -36,8 +35,4 @@ def send_contact(frm=None, to=None, template=None, **kwargs):
     Raises:
       SendException
     """
-    db_session = get_session(scopefunc=celery.utils.threads.get_ident,
-                             db_url=config.DB_URL)
-    apicrud.messaging.send.to_contact(
-        db_session, frm=frm, to=to, template=template, **kwargs)
-    db_session.remove()
+    Messaging().send(frm=frm, to=to, template=template, **kwargs)

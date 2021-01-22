@@ -18,6 +18,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from .access import AccessControl
 from .account_settings import AccountSettings
 from .const import Constants
+from .exceptions import APIcrudGrantsError
 from .grants import Grants
 from .service_config import ServiceConfig
 from . import geocode, singletons, utils
@@ -97,6 +98,7 @@ class BasicCRUD(object):
                 message='access denied', uid=uid, **logmsg))
             return dict(message=_(u'access denied')), 403
         logmsg['uid'] = body.get('uid')
+        info = {}
         logging.info(dict(id=body['id'], name=body.get('name'), **logmsg))
         if not body.get('category_id') and hasattr(self.model, 'category_id'):
             if acc.account_id:
@@ -110,6 +112,15 @@ class BasicCRUD(object):
                 return dict(message=_(u'access denied')), 403
         if hasattr(self.model, 'status'):
             body['status'] = body.get('status', 'active')
+        if self.resource == 'apikey':
+            max_keys = int(Grants().get('apikeys', uid=body['uid']))
+            try:
+                body['prefix'], secret, body['hashvalue'] = acc.apikey_create(
+                    max_keys=max_keys)
+            except APIcrudGrantsError as ex:
+                return dict(message=str(ex), allowed=max_keys), 405
+            info = dict(apikey=body['prefix'] + '.' + secret,
+                        name=body['name'])
         try:
             record = self.model(**body)
         except (AttributeError, TypeError) as ex:
@@ -125,7 +136,7 @@ class BasicCRUD(object):
         except Exception as ex:
             logging.warning(dict(message=str(ex), **logmsg))
             return dict(message=str(ex), data=str(body)), 405
-        return dict(id=body['id']), 201
+        return dict(id=body['id'], **info), 201
 
     @staticmethod
     def get(id):
@@ -465,7 +476,7 @@ class BasicCRUD(object):
             return dict(message='id is a read-only property',
                         title='Bad Request'), 405
         self = singletons.controller[request.url_rule.rule.split('/')[3]]
-        body['modified'] = datetime.utcnow()
+        body['modified'] = utils.utcnow()
         try:
             query = g.db.query(self.model).filter_by(id=id)
             if not AccessControl(model=self.model).with_permission(

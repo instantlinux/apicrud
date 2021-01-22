@@ -84,7 +84,8 @@ class AccountSettings(object):
                         tz=record.tz.name)))
             try:
                 senders = db_session.query(models.List).filter_by(
-                    name=config.APPROVED_SENDERS, uid=account.uid).one()
+                    name=config.APPROVED_SENDERS,
+                    uid=record.administrator_id).one()
                 SETTINGS[account_id]['settings']['approved_senders'] = (
                     [member.identity for member in senders.members])
             except NoResultFound:
@@ -94,6 +95,10 @@ class AccountSettings(object):
         self.uid = SETTINGS[account_id]['uid']
         self.db_session = db_session
         self.default_locale = ServiceConfig().config.BABEL_DEFAULT_LOCALE
+
+    def clear(self):
+        """Clear the cached settings for account_id"""
+        SETTINGS.pop(self.account_id, None)
 
     @property
     def locale(self):

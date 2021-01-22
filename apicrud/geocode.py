@@ -35,9 +35,9 @@ def lookup(address=None, neighborhood=None, city=None, state=None,
         geo = geocoder.mapquest(location)
     except Exception as ex:
         if 'Provide API Key' in str(ex):
-            logging.info('geocode: no MapQuest key set')
+            logging.error('geocode: no MapQuest key set')
         else:
-            logging.error('action=geo_lookup error=%s' % str(ex))
+            logging.warning('action=geo_lookup error=%s' % str(ex))
         return (None, None, '')
 
     # POINT column type only supported in PostgreSQL / sqlite

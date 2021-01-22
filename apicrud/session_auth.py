@@ -8,6 +8,7 @@ from flask_babel import _
 import jwt
 import logging
 from passlib.hash import sha256_crypt
+from redis.exceptions import ConnectionError
 from sqlalchemy import or_
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm.exc import NoResultFound
@@ -128,13 +129,13 @@ class SessionAuth(object):
             retval = dict(
                 jwt_token=jwt.encode(
                     ses, self.jwt_secret, algorithm='HS256').decode('utf-8'),
-                resources=ServiceRegistry(self.config).find()['url_map'],
+                resources=ServiceRegistry().find()['url_map'],
                 settings_id=account.settings_id)
             if hasattr(account.settings, 'default_storage_id'):
                 retval['storage_id'] = account.settings.default_storage_id
             return retval, 201
         else:
-            return dict(message=_(u'rejected')), 403
+            return dict(message=_(u'DB operational error')), 500
 
     def api_access(self, apikey, roles_from=None):
         """ Access using API key
@@ -452,7 +453,10 @@ def basic(username, password, required_scopes=None):
         logging.info('action=logout username=%s token_auth=%s' % (
             username, token_auth))
         if session:
-            g.session.delete(username, password)
+            try:
+                g.session.delete(username, password)
+            except ConnectionError as ex:
+                logging.error(dict(action='logout', message=str(ex)))
         return None
     return dict(uid=username)
 

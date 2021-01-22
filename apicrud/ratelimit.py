@@ -7,6 +7,7 @@ from base64 import b64encode
 from flask import g, request
 import hashlib
 import logging
+from redis.exceptions import ConnectionError
 import time
 
 from .service_config import ServiceConfig
@@ -50,13 +51,18 @@ class RateLimit(object):
             return False
         uid = uid or self._get_request_uid()
         if not uid:
-            # No limit on anonymous requests
+            # No limit on anonymous requests, TODO make this smarter to
+            #  protect against brute-force DDOS / security attacks
             return False
         limit = int(Grants().get('ratelimit', uid=uid))
         curr = round(time.time()) % (self.interval * 2) // self.interval
         key = 'rate:%s:%s:%d' % (service, uid, curr)
         altkey = 'rate:%s:%s:%d' % (service, uid, 0 if curr else 1)
-        calls = self.redis.get(key)
+        try:
+            calls = self.redis.get(key)
+        except ConnectionError as ex:
+            logging.error(dict(action='ratelimit.call', message=str(ex)))
+            return False
         if not calls or int(calls.decode()) < limit:
             try:
                 pipe = self.redis.pipeline()

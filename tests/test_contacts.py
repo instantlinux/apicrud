@@ -101,7 +101,7 @@ class TestContacts(test_base.TestBase):
     def test_get_admin_contact(self):
         expected = dict(
             carrier=None, id='x-4566a239', info=self.adm_default_identity,
-            label='home', owner='Example User', uid='x-23450001',
+            label='home', owner='Example User', uid=self.global_admin_id,
             privacy='public',
             muted=True, rank=1, rbac='r', status='active', type='email')
         response = self.call_endpoint('/contact/x-4566a239', 'get')
@@ -177,7 +177,8 @@ class TestContacts(test_base.TestBase):
         self.assertEqual(result, expected)
 
     def test_update_contact_disallowed(self):
-        record = dict(uid='x-23450001', info='changeme@conclave.events',
+        record = dict(uid=self.global_admin_id,
+                      info='changeme@conclave.events',
                       label='home', type='email', status='unconfirmed')
         response = self.call_endpoint('/contact/x-4566a239', 'post',
                                       data=record)

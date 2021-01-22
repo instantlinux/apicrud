@@ -2,25 +2,17 @@ APIkey:
   description: An API key
   properties:
     created:
-      format: date-time
-      readOnly: true
-      type: string
+      $ref: '#/components/schemas/base/properties/created'
     expires:
       format: date-time
       nullable: true
       type: string
     id:
-      maxLength: 10
-      minLength: 10
-      type: string
+      $ref: '#/components/schemas/base/properties/id'
     last_used:
-      format: date-time
-      readOnly: true
-      type: string
+      $ref: '#/components/schemas/base/properties/modified'
     modified:
-      format: date-time
-      readOnly: true
-      type: string
+      $ref: '#/components/schemas/base/properties/modified'
     name:
       maxLength: 32
       minLength: 2
@@ -36,11 +28,7 @@ APIkey:
       maxItems: 32
       type: array
     status:
-      description: Status
-      enum:
-      - active
-      - disabled
-      type: string
+      $ref: '#/components/schemas/base/properties/status'
     uid:
       $ref: '#/components/schemas/base/properties/id'
   required:

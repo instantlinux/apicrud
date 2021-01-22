@@ -8,12 +8,7 @@ Profile:
       $ref: '#/components/schemas/base/properties/id'
       nullable: true
     created:
-      format: date-time
-      readOnly: true
-      type: string
-    expires:
-      format: date-time
-      type: string
+      $ref: '#/components/schemas/base/properties/created'
     id:
       $ref: '#/components/schemas/base/properties/id'
     item:
@@ -44,11 +39,7 @@ Profile:
     privacy:
       $ref: '#/components/schemas/base/properties/privacy'
     status:
-      description: status
-      enum:
-      - active
-      - disabled
-      type: string
+      $ref: '#/components/schemas/base/properties/status'
     tz_id:
       $ref: '#/components/schemas/TZ/properties/id'
       nullable: true

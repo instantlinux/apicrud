@@ -57,7 +57,7 @@ class TestMain(test_base.TestBase):
     def test_get_settings_auth(self):
         expected = dict(
             id='x-75023275',  # theme_id='x-05a720bf',
-            administrator_id='x-23450001', country='US',
+            administrator_id=self.global_admin_id, country='US',
             default_storage_id=None,
             default_cat_id='x-3423ceaf', default_hostlist_id=None,
             lang='en_US', name='global', privacy='public',
@@ -89,7 +89,7 @@ class TestMain(test_base.TestBase):
             rbac='r',
             state='CA',
             status='active',
-            uid='x-23450001')
+            uid=self.global_admin_id)
         self.authorize()
         response = self.call_endpoint('/location/x-67673434', 'get')
         self.assertEqual(response.status_code, 200)

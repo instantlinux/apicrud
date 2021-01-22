@@ -25,7 +25,7 @@ Location:
       minLength: 2
       type: string
     created:
-      $ref: '#/components/schemas/base/properties/id'
+      $ref: '#/components/schemas/base/properties/created'
     geo:
       items:
         maximum: 180.0

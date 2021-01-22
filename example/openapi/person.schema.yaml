@@ -11,21 +11,15 @@ Person:
       maxItems: 8
       type: array
     created:
-      format: date-time
-      readOnly: true
-      type: string
+      $ref: '#/components/schemas/base/properties/created'
     id:
-      maxLength: 10
-      minLength: 10
-      type: string
+      $ref: '#/components/schemas/base/properties/id'
     identity:
       example: f.jones@gmail.com
       maxLength: 64
       type: string
     modified:
-      format: date-time
-      readOnly: true
-      type: string
+      $ref: '#/components/schemas/base/properties/modified'
     name:
       example: Fred Jones
       maxLength: 64
@@ -37,11 +31,7 @@ Person:
       nullable: true
       readOnly: true
     status:
-      description: Status
-      enum:
-      - active
-      - disabled
-      type: string
+      $ref: '#/components/schemas/base/properties/status'
   required:
   - name
   title: a person
