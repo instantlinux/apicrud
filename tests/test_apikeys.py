@@ -5,6 +5,8 @@ Tests for apikeys controller
 created 27-dec-2020 by richb@instantlinux.net
 """
 
+from datetime import datetime, timedelta
+
 import pytest
 from unittest import mock
 
@@ -77,13 +79,21 @@ class TestAPIkeys(test_base.TestBase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(result, dict(id=id, message='not found'))
 
-    def test_invalid_apikey(self):
+    def test_find_invalid_apikey(self):
         response = self.call_endpoint('/apikey?filter={"name":"invalid"}',
                                       'get')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json(), dict(items=[], count=0))
         response = self.call_endpoint('/apikey/invalid', 'get')
         self.assertEqual(response.status_code, 400)
+
+    @mock.patch('logging.info')
+    def test_use_invalid_apikey(self, mock_logging):
+        bad_key = 'deadbeef.01234567890123456789012345678901'
+        ret = self.authorize(apikey=bad_key)
+        self.assertEqual(ret, 401)
+        mock_logging.assert_called_with(dict(
+            action='api_key', key_id='deadbeef', message='not found'))
 
     @pytest.mark.slow
     @mock.patch('messaging.send_contact.delay')
@@ -209,3 +219,40 @@ class TestAPIkeys(test_base.TestBase):
         response = self.call_endpoint('/apikey/%s' % id, 'get')
         self.assertEqual(response.status_code, 200)
         self.assertNotEqual(response.get_json()['last_used'], None)
+
+    @pytest.mark.slow
+    @mock.patch('logging.info')
+    @mock.patch('messaging.send_contact.delay')
+    def test_expired_apikey(self, mock_messaging, mock_logging):
+        account = dict(name='Uncompliant Dev', username='dev1',
+                       identity='dev1@conclave.events')
+        password = dict(new_password='455#8b76', verify_password='455#8b76')
+
+        response = self.call_endpoint('/account', 'post', data=account)
+        self.assertEqual(response.status_code, 201)
+        uid = response.get_json()['uid']
+        record = dict(
+            name='KeyExp1', uid=uid, scopes=[self.scope_id],
+            expires=(datetime.utcnow() - timedelta(hours=1)).strftime(
+                '%Y-%m-%dT%H:%M:%SZ'))
+
+        for call in mock_messaging.call_args_list:
+            password['reset_token'] = call.kwargs.get('token')
+        response = self.call_endpoint(
+            '/account_password/%s' % uid, 'put', data=password)
+        self.assertEqual(response.status_code, 200, 'put failed message=%s' %
+                         response.get_json().get('message'))
+        self.authorize(username=account['username'],
+                       password=password['new_password'], new_session=True)
+
+        response = self.call_endpoint('/apikey', 'post', data=record)
+        self.assertEqual(response.status_code, 201)
+        new_key = response.get_json()['apikey']
+        self.assertEqual(len(new_key), 41)
+        response = self.call_endpoint('/logout', 'get')
+        self.assertEqual(response.status_code, 200)
+
+        ret = self.authorize(apikey=new_key)
+        self.assertEqual(ret, 401)
+        mock_logging.assert_called_with(dict(
+            action='api_key', key_id=new_key[:8], uid=uid, message='expired'))

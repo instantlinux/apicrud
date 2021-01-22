@@ -1,6 +1,6 @@
 """test_service_config
 
-Tests for service_config controller
+Tests for service_config class
 
 created 14-aug-2020 by docker@instantlinux.net
 """

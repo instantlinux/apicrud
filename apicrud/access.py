@@ -5,7 +5,7 @@ refactored 6-mar-2020
 """
 
 from base64 import b64encode
-from datetime import datetime, timedelta
+from datetime import timedelta
 from flask import g, request
 from flask_babel import _
 import hashlib
@@ -15,8 +15,9 @@ from sqlalchemy import or_
 from sqlalchemy.orm.exc import NoResultFound
 import yaml
 
+from .exceptions import APIcrudGrantsError
 from .service_config import ServiceConfig
-from .utils import gen_id
+from .utils import gen_id, utcnow
 
 LEVELS = {}
 POLICIES = {}
@@ -147,7 +148,7 @@ class AccessControl(object):
         if access in rbac:
             return True
         else:
-            duration = (datetime.utcnow().timestamp() -
+            duration = (utcnow().timestamp() -
                         g.request_start_time.timestamp())
             logging.info(dict(
                 action='with_permission', message=_('access denied'),
@@ -283,17 +284,26 @@ class AccessControl(object):
         actions -= deny_delete
         return actions if len(actions) else defaults
 
-    def apikey_create(self):
-        """Generate an API key - a 41-byte string. First 8 characters (48
+    def apikey_create(self, max_keys=1):
+        """Check that user hasn't exceeded max grant for API keys, then
+        generate an API key - a 41-byte string. First 8 characters (48
         bits) are an access key ID prefix; last 32 characters (192
         bits) are the secret key.
 
-
+        Args:
+          max_keys (int) - maximum number of keys granted for current uid
         Returns: tuple
           key ID (str) - public portion of key
           secret (str) - secret portion
           hashvalue (str) - hash value for database
+        Raises: APIcrudGrantsError
         """
+        logmsg = dict(action='create', resource='apikey', uid=self.uid)
+        if g.db.query(self.models.APIkey).filter_by(
+                uid=self.uid).count() >= max_keys:
+            msg = _(u'max allowed API keys exceeded')
+            logging.warning(dict(message=msg, allowed=max_keys, **logmsg))
+            raise APIcrudGrantsError(msg)
         secret = gen_id(length=35, prefix='')[-32:]
         key_id = gen_id(prefix='')
         return key_id, secret, self.apikey_hash(secret)
@@ -314,9 +324,9 @@ class AccessControl(object):
                 prefix=key_id, hashvalue=self.apikey_hash(secret),
                 status='active').one()
             if not record.last_used or (
-                    record.last_used + timedelta(hours=6) < datetime.utcnow()
-                    and record.expires < datetime.utcnow()):
-                record.last_used = datetime.utcnow()
+                    record.last_used + timedelta(hours=6) < utcnow()
+                    and record.expires < utcnow()):
+                record.last_used = utcnow()
                 g.db.commit()
         except NoResultFound:
             logging.info(dict(action='api_key', key_id=key_id,
@@ -325,7 +335,7 @@ class AccessControl(object):
         except Exception as ex:
             logging.error(dict(action='api_key', message=str(ex)))
             return None, None
-        if record.expires and record.expires < datetime.now():
+        if record.expires and record.expires < utcnow():
             logging.info(dict(action='api_key', key_id=key_id,
                               uid=record.uid, message='expired'))
             return None, None

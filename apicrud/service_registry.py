@@ -28,21 +28,25 @@ class ServiceRegistry(object):
     modest protection against injection attacks.
 
     Args:
-      ttl (int): how long to cache instance's registration
+      aes_secret (str): an AES secret [default: config.REDIS_AES_SECRET]
+      public_url (str): URL to serve [default: config.PUBLIC_URL]
       redis_conn (obj): connection to redis
+      reload_params (bool): force param reload, for unit-testing
+      ttl (int): how long to cache instance's registration
     """
 
-    def __init__(self, ttl=None, redis_conn=None):
+    def __init__(self, aes_secret=None, redis_conn=None, public_url=None,
+                 reload_params=False, ttl=None):
         global params, refresh_thread
         self.config = config = ServiceConfig().config
+        self.public_url = public_url or config.PUBLIC_URL
         if not redis_conn:
             redis_conn = SessionManager().connection
-        if not params:
+        if not params or reload_params:
             params = dict(
-                aes=AESEncrypt(config.REDIS_AES_SECRET),
+                aes=AESEncrypt(aes_secret or config.REDIS_AES_SECRET),
                 interval=config.REGISTRY_INTERVAL,
                 ttl=ttl or config.REGISTRY_TTL)
-        # TODO why doesn't this get initialized on first pass?
         params['connection'] = redis_conn
         if not refresh_thread:
             refresh_thread = threading.Thread()
@@ -69,14 +73,14 @@ class ServiceRegistry(object):
             redis_ip = None
         service_data['info'] = dict(
             endpoints=resource_endpoints, ipv4=ipv4,
-            port=tcp_port or self.config.APP_PORT,
-            public_url=self.config.PUBLIC_URL,
+            port=tcp_port or self.config.APP_PORT, public_url=self.public_url,
             created=utils.utcnow().replace(microsecond=0).isoformat())
         service_data['name'] = service_name or self.config.SERVICE_NAME
         service_data['id'] = instance_id
         logging.info(dict(action='service.register', id=instance_id,
                           redis_ip=redis_ip,
                           name=service_data['name'], **service_data['info']))
+        self._save_entry()
         refresh_thread = threading.Timer(1, ServiceRegistry.update, ())
         refresh_thread.start()
 
@@ -87,15 +91,19 @@ class ServiceRegistry(object):
         terminates.
         """
 
+        ServiceRegistry._save_entry()
+        refresh_thread = threading.Timer(params['interval'],
+                                         ServiceRegistry.update, ())
+        refresh_thread.start()
+
+    @staticmethod
+    def _save_entry():
         key = 'reg:%s:%s' % (service_data['name'], service_data['id'])
         try:
             params['connection'].set(key, params['aes'].encrypt(json.dumps(
                 service_data['info'])), ex=params['ttl'], nx=False)
         except Exception as ex:
             logging.error('action=registry.update message=%s' % str(ex))
-        refresh_thread = threading.Timer(params['interval'],
-                                         ServiceRegistry.update, ())
-        refresh_thread.start()
 
     def find(self, service_name=None):
         """ Finds one or all services
@@ -117,26 +125,26 @@ class ServiceRegistry(object):
                     params['connection'].get(instance)))
                 info['name'], info['id'] = instance.decode().split(':')[1:]
                 retval.append(info)
-            except (TypeError, json.JSONDecodeError):
+            except (TypeError, json.JSONDecodeError, UnicodeDecodeError):
                 # A decrypt failure probably means another cluster
                 # is sharing the same redis instance (e.g. in a dev env)
                 # so skip over those service instances
                 continue
             except Exception as ex:
-                logging.warn('action=registry.find key=%s exception=%s' %
-                             (instance, str(ex)))
+                logging.error('action=registry.find key=%s exception=%s' %
+                              (instance, str(ex)))
                 continue
             if not info.get('endpoints'):
                 continue
+            base_url = ServiceConfig().config.BASE_URL
             for resource in info['endpoints']:
                 if resource not in url_map:
-                    url_map[resource] = info[
-                        'public_url'] + self.config.BASE_URL
-                elif url_map[resource] != info[
-                        'public_url'] + self.config.BASE_URL:
+                    url_map[resource] = info['public_url'] + base_url
+                elif url_map[resource] != info['public_url'] + base_url:
                     logging.warning(dict(
-                        action='registry.find',
-                        message='instance serves different public URL',
-                        resource=resource, instance1=instance.decode(),
-                        url1=info['public_url'], url2=url_map[resource]))
+                        action='registry.find', resource=resource,
+                        message='misconfigured cluster serves two URLs',
+                        instance1=':'.join(instance.decode().split(':')[1:]),
+                        url1=info['public_url'] + base_url,
+                        url2=url_map[resource]))
         return dict(instances=retval, url_map=url_map)

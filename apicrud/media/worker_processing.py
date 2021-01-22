@@ -9,6 +9,7 @@ Media worker functions to process media
 created 3-feb-2020 by richb@instantlinux.net
 """
 
+import celery
 from datetime import datetime
 import hashlib
 import io
@@ -17,6 +18,7 @@ from PIL import Image
 from PIL.ExifTags import GPSTAGS, TAGS
 
 from ..account_settings import AccountSettings
+from ..database import get_session
 from ..service_config import ServiceConfig
 from .storage import StorageAPI
 
@@ -35,15 +37,17 @@ class MediaProcessing(object):
     """
 
     def __init__(self, uid, file_id, db_session=None):
-        self.config = ServiceConfig().config
+        self.config = config = ServiceConfig().config
         self.models = ServiceConfig().models
         self.api = StorageAPI(uid=uid, db_session=db_session)
-        self.db_session = db_session
+        self.db_session = db_session or get_session(
+            scopefunc=celery.utils.threads.get_ident, db_url=config.DB_URL)
         self.file_id = file_id
         self.meta = self.api.get_file_meta(file_id)
 
     def __del__(self):
         self.api.del_file_meta(self.file_id, self.meta)
+        self.db_session.remove()
 
     def photo(self, uid, meta):
         """metadata and scaling for still images

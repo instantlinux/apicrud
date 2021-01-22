@@ -95,14 +95,6 @@ class TestMessages(test_base.TestBase):
 
         # Force delete -- should no longer exist
         response = self.call_endpoint('/message/%s?force=true' % id, 'delete')
-        # TODO sometimes this happens
-        # WARNING {'message': "(pymysql.err.IntegrityError) (1451, 'Cannot
-        # delete or update a parent row: a foreign key constraint fails
-        # (`conclave_2`.`listmessages`, CONSTRAINT `listmessages_ibfk_1`
-        # FOREIGN KEY (`message_id`) REFERENCES `messages` (`id`) ON DELETE
-        # CASCADE)')\n[SQL: DELETE FROM messages WHERE messages.id =
-        # %(id_1)s]\n[parameters: {'id_1': 'x-0YQvLkrM'}
-
         self.assertEqual(response.status_code, 204)
         response = self.call_endpoint('/message/%s' % id, 'get')
         result = response.get_json()

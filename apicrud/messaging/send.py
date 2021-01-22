@@ -1,163 +1,178 @@
 """send.py
 
-Send a message
-TODO redesign this as a class, it evolved from the oldest crappy script
-
 created 18-apr-2019 by richb@instantlinux.net
 """
 
-from datetime import datetime
+import celery
 import logging
 import smtplib
 from sqlalchemy.orm.exc import NoResultFound
 import ssl
 
 from ..account_settings import AccountSettings
+from ..database import get_session
+from ..exceptions import APIcrudSendError
 from ..service_config import ServiceConfig
-import apicrud.messaging.format
-
-ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-
-
-class SendException(Exception):
-    pass
+from ..utils import utcnow
+from .format import MessageFormat
 
 
-def to_contact(db_session, smtp=None, frm=None, to=None, template=None,
-               account_id=None, settings=None, attachments=[], **kwargs):
+class Messaging(object):
     """
+    External messaging
+
     Args:
-        db_session (obj): open session to database
-        smtp (obj): open session to SMTP smarthost
-        frm (uid): person
-        to (Contact): recipient
-        template (str): jinja2 template name
         account_id (str): ID of logged-in account
-        settings (obj): the AccountSettings for the account
-        attachments (list): additional MIMEBase / MimeText objects
-        kwargs: kv pairs
-    Raises:
-        SendException
+        db_session (obj): open session to database
+        settings (obj): AccountSettings for account
+        smtp (obj): open session to SMTP smarthost
+        ssl_context (obj): an SSL context (TLSv1_2)
     """
+    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 
-    config = ServiceConfig().config
-    models = ServiceConfig().models
-    if not settings:
-        settings = _get_settings(db_session,
-                                 models.Account, account_id=account_id)
-    smtp_persist = True if smtp else False
-    to_contact = db_session.query(models.Contact).filter_by(id=to).one()
-    logmsg = dict(action='send_contact', to_id=to, from_id=frm,
-                  info=to_contact.info)
-    if to_contact.status == 'disabled':
-        logging.info(dict(status='disabled', **logmsg))
-        return
-    frm, from_contact = _get_frm(frm, to_contact, settings, db_session)
-    if from_contact.info in settings.get.approved_senders:
-        sender_email = from_contact.info
-    else:
-        sender_email = settings.get.sender_email
-    if to_contact.type in ('email', 'sms'):
-        if not smtp:
-            smtp = smtp_session(settings, db_session)
-        logging.info('action=send_contact template=%s type=%s address=%s' %
-                     (template, to_contact.type, to_contact.info))
-        if to_contact.type == 'sms':
-            dest_email = (to_contact.info + '@' +
-                          config.CARRIER_GATEWAYS[to_contact.carrier])
-            body = apicrud.messaging.format.sms(
-                template, from_contact, to_contact, settings,
-                db_session, appname=config.APPNAME,
-                siteurl=settings.get.url, **kwargs)
+    def __init__(self, db_session=None, account_id=None, smtp=None,
+                 settings=None):
+        self.config = config = ServiceConfig().config
+        self.db_session = db_session or get_session(
+            scopefunc=celery.utils.threads.get_ident, db_url=config.DB_URL)
+        self.models = ServiceConfig().models
+        self.settings = settings or self._get_settings(
+            self.models.Account, account_id=account_id)
+        self.siteurl = self.settings.get.url
+        self.smtp = smtp
+
+    def __del__(self):
+        if self.smtp:
+            self.smtp.quit()
+        self.db_session.remove()
+
+    def send(self, frm=None, to=None, template=None, attachments=[], **kwargs):
+        """
+        Send a message to one contact
+
+        Args:
+            frm (uid): person
+            to (Contact): recipient
+            template (str): jinja2 template name
+            attachments (list): additional MIMEBase / MimeText objects
+            kwargs: kv pairs
+        Raises:
+            APIcrudSendError
+        """
+        to_contact = self.db_session.query(
+            self.models.Contact).filter_by(id=to).one()
+        logmsg = dict(action='send_contact', to_id=to, from_id=frm,
+                      info=to_contact.info)
+        if to_contact.status == 'disabled':
+            logging.info(dict(status='disabled', **logmsg))
+            return
+        frm, from_contact = self._get_frm(frm, to_contact)
+        if from_contact.info in self.settings.get.approved_senders:
+            sender_email = from_contact.info
         else:
-            dest_email = to_contact.info
-            body = apicrud.messaging.format.email(
-                template, from_contact, sender_email,
-                to_contact, settings, db_session,
-                attachments=attachments, appname=config.APPNAME,
-                contact_id=to_contact.id,
-                siteurl=settings.get.url, **kwargs).as_string()
-        smtp.sendmail(settings.get.sender_email, dest_email, body)
-        to_contact.last_attempted = datetime.utcnow()
-        db_session.add(to_contact)
-    else:
-        logging.warning(dict(message='Unsupported type',
-                             contact_type=to_contact.type, **logmsg))
-        db_session.remove()
-        raise SendException('unsupported type=%s' % to_contact.type)
-    db_session.commit()
-    if not smtp_persist:
-        smtp.quit()
-
-
-def smtp_session(settings, db_session):
-    """Open an SMTP connection to the account's defined smtp_smarthost
-
-    Args:
-        settings (obj): settings object
-    """
-    models = ServiceConfig().models
-    session = smtplib.SMTP(settings.get.smtp_smarthost,
-                           settings.get.smtp_port)
-    session.starttls(context=ssl_context)
-    if (hasattr(settings.get, 'smtp_credential_id') and
-            settings.get.smtp_credential_id):
-        try:
-            cred = db_session.query(models.Credential).filter_by(
-                id=settings.get.smtp_credential_id).one()
-            session.login(cred.key, cred.secret)
-        except Exception as ex:
-            logging.error('action=send_contact message=%s' %
-                          str(ex))
-            db_session.remove()
-        raise
-    return session
-
-
-def _get_settings(db_session, model, account_id=None):
-    if account_id is None:
-        try:
-            account_id = db_session.query(model).filter_by(
-                name='admin').one().id
-        except NoResultFound:
-            logging.warning('action=_get_settings message="Missing admin"')
-            raise SendException('Missing admin')
-    return AccountSettings(account_id, db_session=db_session)
-
-
-def _get_frm(frm, to_contact, settings, db_session):
-    """TODO this is a BS function to get rid of Improve encapsulation
-
-    Args:
-        frm (uid): the sender
-        to_contact (obj): Contact record
-        settings (obj): settings object
-        db_session (obj): an db session
-    """
-    logmsg = dict(action='_get_frm', from_id=frm, to=to_contact.info)
-    if frm is None:
-        frm = settings.get.administrator_id
-    from_contact = None
-    Contact = ServiceConfig().models.Contact
-    try:
-        from_contact = db_session.query(Contact).filter_by(
-            uid=frm, type=to_contact.type).filter(
-                (Contact.status.in_(['active', 'unconfirmed']))).first()
-    except Exception:
-        # We don't care at all why this fails; next step catches error
-        pass
-    if not from_contact:
-        try:
-            from_contact = db_session.query(Contact).filter_by(uid=frm).filter(
-                    (Contact.status.in_(['active', 'unconfirmed']))
-                    ).order_by(Contact.rank).first()
-        except NoResultFound:
-            db_session.remove()
-            raise SendException('Contact for uid=%s not found' % frm)
-        if from_contact:
-            logging.warning(dict(message='missing contact type', **logmsg))
+            sender_email = self.settings.get.sender_email
+        if to_contact.type in ('email', 'sms'):
+            if not self.smtp:
+                self.smtp = self.smtp_session()
+            logging.info('action=send_contact template=%s type=%s address=%s' %
+                         (template, to_contact.type, to_contact.info))
+            if to_contact.type == 'sms':
+                dest_email = (to_contact.info + '@' +
+                              self.config.CARRIER_GATEWAYS[to_contact.carrier])
+                body = MessageFormat(db_session=self.db_session,
+                                     settings=self.settings).sms(
+                    template, from_contact, to_contact, **kwargs)
+            else:
+                dest_email = to_contact.info
+                body = MessageFormat(db_session=self.db_session,
+                                     settings=self.settings).email(
+                    template, from_contact, sender_email,
+                    to_contact, attachments=attachments,
+                    contact_id=to_contact.id, **kwargs).as_string()
+            self.smtp.sendmail(sender_email, dest_email, body)
+            to_contact.last_attempted = utcnow()
+            self.db_session.add(to_contact)
         else:
-            logging.error(dict(message='garbled_from', **logmsg))
-            db_session.remove()
-            raise SendException('uid=%s cannot get From address' % frm)
-    return frm, from_contact
+            logging.warning(dict(message='Unsupported type',
+                                 contact_type=to_contact.type, **logmsg))
+            # self.db_session.remove()
+            raise APIcrudSendError('unsupported type=%s' % to_contact.type)
+        self.db_session.commit()
+
+    def smtp_session(self):
+        """Open an SMTP connection to the account's defined smtp_smarthost
+
+        Args:
+            settings (obj): settings object
+        Raises:
+            APIcrudSendError
+        """
+        session = smtplib.SMTP(self.settings.get.smtp_smarthost,
+                               self.settings.get.smtp_port)
+        session.starttls(context=self.ssl_context)
+        if (hasattr(self.settings.get, 'smtp_credential_id') and
+                self.settings.get.smtp_credential_id):
+            logging.warning(dict(step=1,
+                                 host=self.settings.get.smtp_smarthost))
+            try:
+                cred = self.db_session.query(self.models.Credential).filter_by(
+                    id=self.settings.get.smtp_credential_id).one()
+                session.login(cred.key, cred.secret)
+                logging.warning(dict(step=2))
+            except Exception as ex:
+                logging.error(dict(action='send_contact', message=str(ex)))
+                # self.db_session.remove()
+                raise APIcrudSendError('Credential problem: %s' % str(ex))
+            logging.warning(dict(step=3))
+        return session
+
+    def _get_settings(self, model, account_id=None):
+        if account_id is None:
+            try:
+                account_id = self.db_session.query(model).filter_by(
+                    name='admin').one().id
+            except NoResultFound:
+                logging.error('action=_get_settings message="Missing admin"')
+                raise APIcrudSendError('Missing admin')
+        return AccountSettings(account_id, db_session=self.db_session)
+
+    def _get_frm(self, frm, to_contact):
+        """Get the from_contact record which matches the to_contact's
+        type (sms, email etc)
+
+        Args:
+            frm (uid): the sender
+            to_contact (obj): Contact record
+
+        Returns: tuple
+            frm (uid): sender uid (or administrator if noen)
+            from_contact (obj): Contact record
+        """
+        logmsg = dict(action='_get_frm', from_id=frm, to=to_contact.info)
+        if frm is None:
+            frm = self.settings.get.administrator_id
+        from_contact = None
+        Contact = self.models.Contact
+        try:
+            from_contact = self.db_session.query(Contact).filter_by(
+                uid=frm, type=to_contact.type).filter(
+                    (Contact.status.in_(['active', 'unconfirmed']))).first()
+        except Exception:
+            # We don't care at all why this fails; next step catches error
+            pass
+        if not from_contact:
+            try:
+                from_contact = self.db_session.query(
+                    Contact).filter_by(uid=frm).filter(
+                        (Contact.status.in_(['active', 'unconfirmed']))
+                        ).order_by(Contact.rank).first()
+            except NoResultFound:
+                # self.db_session.remove()
+                raise APIcrudSendError('Contact for uid=%s not found' % frm)
+            if from_contact:
+                logging.warning(dict(message='missing contact type', **logmsg))
+            else:
+                logging.error(dict(message='garbled_from', **logmsg))
+                # self.db_session.remove()
+                raise APIcrudSendError('uid=%s cannot get From address' % frm)
+        return frm, from_contact

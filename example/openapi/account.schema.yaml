@@ -11,13 +11,9 @@ Account:
       maxItems: 8
       type: array
     created:
-      format: date-time
-      readOnly: true
-      type: string
+      $ref: '#/components/schemas/base/properties/created'
     id:
-      maxLength: 10
-      minLength: 10
-      type: string
+      $ref: '#/components/schemas/base/properties/id'
     invalid_attempts:
       default: 0
       maximum: 100
@@ -27,17 +23,11 @@ Account:
       default: false
       type: boolean
     last_invalid_attempt:
-      format: date-time
-      readOnly: true
-      type: string
+      $ref: '#/components/schemas/base/properties/modified'
     last_login:
-      format: date-time
-      readOnly: true
-      type: string
+      $ref: '#/components/schemas/base/properties/modified'
     modified:
-      format: date-time
-      readOnly: true
-      type: string
+      $ref: '#/components/schemas/base/properties/modified'
     name:
       description: A user's login name
       maxLength: 32
@@ -48,11 +38,7 @@ Account:
       default: false
       type: boolean
     status:
-      description: Status
-      enum:
-      - active
-      - disabled
-      type: string
+      $ref: '#/components/schemas/base/properties/status'
     uid:
       $ref: '#/components/schemas/base/properties/id'
   required:

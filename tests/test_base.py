@@ -41,10 +41,6 @@ class TestBase(unittest.TestCase):
             unittest.mock.patch(
                 'apicrud.service_registry.ServiceRegistry.update').start()
             setup_db(db_url=db_url, redis_conn=redis_conn)
-
-            # TODO figure out how to divert logging under pytest
-            # global_fixture['logfile_name'] = tempfile.mkstemp(
-            #     prefix='_test')[1]
         yield global_fixture
         try:
             if os.environ.get('DBCLEAN', None) != '0':
@@ -98,6 +94,7 @@ class TestBase(unittest.TestCase):
                           name='default')
         db_session.add(record)
 
+        self.global_admin_id = 'x-23450001'
         self.admin_name = 'testadmin'
         self.admin_pw = 'opens3crEt'
         self.adm_account_id = 'x-6hj1BXEH'
@@ -133,11 +130,6 @@ class TestBase(unittest.TestCase):
         except IntegrityError:
             db_session.rollback()
         db_session.remove()
-
-    @classmethod
-    def tearDownClass(self):
-        # os.remove(self.logfile_name)
-        pass
 
     def authorize(self, username=None, password=None, apikey=None,
                   new_session=False):

@@ -15,6 +15,7 @@ Python Classes
      BasicCRUD
      const
      database
+     exceptions
      geocode
      Grants
      health

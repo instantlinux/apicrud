@@ -27,9 +27,8 @@ initialize.app(application)
 babel = Babel(application.app)
 
 
-@application.app.before_first_request
 def setup_db(db_url=None, redis_conn=None):
-    """Database setup
+    """Database and service registry setup
 
     Args:
       db_url (str): URL with db host, credentials and db name
@@ -37,8 +36,8 @@ def setup_db(db_url=None, redis_conn=None):
     """
     db_url = db_url or config.DB_URL
     ServiceRegistry().register(controllers.resources())
-    if not setup_db_only_once:
-        database.initialize_db(db_url=db_url, redis_conn=redis_conn)
+    if not setup_db_only_once and database.initialize_db(
+            db_url=db_url, redis_conn=redis_conn):
         setup_db_only_once['initialized'] = True
 
 
@@ -79,4 +78,5 @@ def get_locale():
 
 
 if __name__ == '__main__':
+    setup_db(db_url=config.DB_URL)
     application.run(port=config.APP_PORT)

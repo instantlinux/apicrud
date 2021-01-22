@@ -4,9 +4,7 @@ Scope:
     name: list-manage
   properties:
     id:
-      type: string
-      minLength: 10
-      maxLength: 10
+      $ref: '#/components/schemas/base/properties/id'
     name:
       type: string
       minLength: 4
@@ -15,15 +13,9 @@ Scope:
     settings_id:
       $ref: '#/components/schemas/base/properties/id'
     created:
-      type: string
-      format: date-time
-      readOnly: true
+      $ref: '#/components/schemas/base/properties/created'
     status:
-      description: status
-      enum:
-      - active
-      - disabled
-      type: string
+      $ref: '#/components/schemas/base/properties/status'
   required:
   - name
   title: a scope

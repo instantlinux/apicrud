@@ -18,13 +18,9 @@ Contact:
     category_id:
       $ref: '#/components/schemas/Category/properties/id'
     created:
-      format: date-time
-      readOnly: true
-      type: string
+      $ref: '#/components/schemas/base/properties/created'
     id:
-      maxLength: 10
-      minLength: 10
-      type: string
+      $ref: '#/components/schemas/base/properties/id'
     info:
       description: Contact info
       maxLength: 255
@@ -40,13 +36,9 @@ Contact:
       - work
       type: string
     last_attempted:
-      format: date-time
-      readOnly: true
-      type: string
+      $ref: '#/components/schemas/base/properties/modified'
     modified:
-      format: date-time
-      readOnly: true
-      type: string
+      $ref: '#/components/schemas/base/properties/modified'
     muted:
       default: false
       description: Whether this contact receives notifications

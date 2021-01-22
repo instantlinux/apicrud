@@ -83,7 +83,7 @@ class TestLists(test_base.TestBase):
     def test_list_add_members(self):
         record = dict(
             name='list4', category_id=self.cat_id)
-        members = [self.test_uid, 'x-23450001']
+        members = (self.test_uid, self.global_admin_id)
         expected = dict(
             category='default', description=None, uid=self.test_uid,
             status='active', privacy='public', owner=self.test_person_name,

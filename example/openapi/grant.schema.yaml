@@ -4,9 +4,7 @@ Grant:
     name: name
   properties:
     created:
-      format: date-time
-      readOnly: true
-      type: string
+      $ref: '#/components/schemas/base/properties/created'
     expires:
       format: date-time
       type: string
@@ -30,11 +28,7 @@ Grant:
       $ref: '#/components/schemas/Person/properties/name'
       readOnly: true
     status:
-      description: status
-      enum:
-      - active
-      - disabled
-      type: string
+      $ref: '#/components/schemas/base/properties/status'
     uid:
       $ref: '#/components/schemas/base/properties/id'
     value:

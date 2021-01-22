@@ -18,7 +18,9 @@ class ListController(BasicCRUD):
         members = body.pop('members', None)
         retval = super(ListController, ListController).create(body)
         if members and retval[1] == 201:
-            return self._update_many(retval[0]['id'], 'members', members)
+            retval = self._update_many(retval[0]['id'], 'members', members)
+            if retval[1] == 200:
+                return retval[0], 201
         return retval
 
     @staticmethod

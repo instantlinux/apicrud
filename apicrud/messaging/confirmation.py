@@ -49,7 +49,7 @@ class Confirmation:
             the http response code
         """
 
-        ttl = self.token_timeout if not ttl else ttl
+        ttl = ttl or self.token_timeout
         contact = g.db.query(self.models.Contact).filter_by(id=id).one()
         if not contact:
             return dict(id=id, message='Not Found'), 404
@@ -67,7 +67,6 @@ class Confirmation:
                      (id, contact.info))
         if func_send:
             # TODO: stop token value from leaking into celery logs
-            logging.info(dict(token=token, to=id, template=template))
             func_send(to=id, template=template, token=token, type=contact.type)
         return dict(token=token, id=id, uid=contact.uid), 200
 
