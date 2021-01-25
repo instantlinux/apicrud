@@ -54,7 +54,7 @@ class RateLimit(object):
             # No limit on anonymous requests, TODO make this smarter to
             #  protect against brute-force DDOS / security attacks
             return False
-        limit = int(Grants().get('ratelimit', uid=uid))
+        limit = Grants().get('ratelimit', uid=uid)
         curr = round(time.time()) % (self.interval * 2) // self.interval
         key = 'rate:%s:%s:%d' % (service, uid, curr)
         altkey = 'rate:%s:%s:%d' % (service, uid, 0 if curr else 1)
@@ -69,7 +69,7 @@ class RateLimit(object):
                 pipe.incr(key).expire(
                     key, self.interval - 1).delete(altkey).execute()
             except Exception as ex:
-                logging.error('action=ratelimit.call message=%s' % str(ex))
+                logging.error(dict(action='ratelimit.call', message=str(ex)))
         else:
             logging.info(dict(action='ratelimit.call', uid=uid,
                               service=service, message='limit exceeded'))

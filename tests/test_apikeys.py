@@ -90,10 +90,14 @@ class TestAPIkeys(test_base.TestBase):
     @mock.patch('logging.info')
     def test_use_invalid_apikey(self, mock_logging):
         bad_key = 'deadbeef.01234567890123456789012345678901'
+        bad_key2 = 'tooshort_abc'
         ret = self.authorize(apikey=bad_key)
         self.assertEqual(ret, 401)
         mock_logging.assert_called_with(dict(
             action='api_key', key_id='deadbeef', message='not found'))
+
+        ret = self.authorize(apikey=bad_key2)
+        self.assertEqual(ret, 401)
 
     @pytest.mark.slow
     @mock.patch('messaging.send_contact.delay')
@@ -135,7 +139,7 @@ class TestAPIkeys(test_base.TestBase):
                          'message=%s' % (response.status_code,
                                          response.get_json().get('message')))
         self.assertEqual(response.get_json(), dict(
-            message=u'max allowed API keys exceeded', allowed=max_apikeys))
+            message=u'user limit exceeded', allowed=max_apikeys))
 
     def test_get_apikey_restricted(self):
         """Attempt to fetch apikey from admin user

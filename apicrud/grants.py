@@ -46,10 +46,8 @@ class Grants(object):
           name (str): name of a grant, as defined in service config
           uid (str): user ID
         Returns:
-          str: granted limit
+          int or str: granted limit or None if undefined
         """
-        if name not in GRANTS['defaults']:
-            raise AttributeError('Unknown grant %s' % name)
         if not uid:
             uid = AccessControl().uid
         if uid not in GRANTS or utils.utcnow() > GRANTS[uid]['expires']:
@@ -62,14 +60,20 @@ class Grants(object):
                     grants['expires'] = min(record.expires, grants['expires'])
             GRANTS[uid] = grants
         if name in GRANTS[uid] and utils.utcnow() < GRANTS[uid]['expires']:
-            return GRANTS[uid][name]
-        return GRANTS['defaults'][name]
+            ret = GRANTS[uid].get(name)
+        else:
+            ret = GRANTS['defaults'].get(name)
+        try:
+            return int(ret, 0)
+        except (TypeError, ValueError):
+            return ret
 
     def crud_get(self, crud_results, id):
         """Process results from BasicCRUD.get() for grants endpoint.
         If the id is found in database, perform the standard CRUD
         get(). Otherwise, look for a hybrid id in form uid:grant and
-        return the cached Grant value.
+        return the cached Grant value. Grant values are serialized as
+        strings even if they are integers (decimal, octal, hex).
 
         Args:
             crud_results (tuple): preliminary response

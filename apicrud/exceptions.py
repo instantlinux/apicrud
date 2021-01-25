@@ -12,9 +12,5 @@ class APIcrudFormatError(APIcrudException):
     pass
 
 
-class APIcrudGrantsError(APIcrudException):
-    pass
-
-
 class APIcrudSendError(APIcrudException):
     pass

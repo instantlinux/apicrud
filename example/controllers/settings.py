@@ -21,5 +21,5 @@ class SettingsController(BasicCRUD):
                     name='admin').one().id
             except NoResultFound:
                 logging.warning('action=update message="Missing admin"')
-            AccountSettings(account_id).clear()
+            AccountSettings(account_id).uncache()
         return retval

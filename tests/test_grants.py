@@ -35,7 +35,7 @@ class TestGrants(test_base.TestBase):
         with self.app.test_request_context():
             g.db = database.get_session()
             self.assertEqual(Grants().get(
-                record['name'], uid=self.test_uid), record['value'])
+                record['name'], uid=self.test_uid), int(record['value']))
             g.db.remove()
 
     def test_get_multiple_grants(self):
@@ -142,10 +142,9 @@ class TestGrants(test_base.TestBase):
         response = self.call_endpoint('/grant?name=invalid', 'get')
         self.assertEqual(response.status_code, 400)
 
-        with self.assertRaises(AttributeError):
-            with self.app.test_request_context():
-                g.db = database.get_session()
-                Grants().get('invalid')
+        with self.app.test_request_context():
+            g.db = database.get_session()
+            self.assertIsNone(Grants().get('invalid'))
 
     def test_get_expired_grant(self):
         record = dict(name='lists', value="20", uid=self.test_uid, expires=(
@@ -158,7 +157,7 @@ class TestGrants(test_base.TestBase):
             g.db = database.get_session()
 
             self.assertEqual(
-                Grants().get(record['name'], uid=self.test_uid),
+                int(Grants().get(record['name'], uid=self.test_uid)),
                 self.config.DEFAULT_GRANTS[record['name']])
 
             response = self.call_endpoint('/grant', 'post', data=record)

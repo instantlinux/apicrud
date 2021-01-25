@@ -4,6 +4,7 @@ created 27-may-2019 by richb@instantlinux.net
 """
 
 from apicrud import BasicCRUD, Grants
+import logging
 
 
 class GrantController(BasicCRUD):
@@ -12,8 +13,9 @@ class GrantController(BasicCRUD):
 
     @staticmethod
     def create(body):
+        ret = super(GrantController, GrantController).create(body)
         Grants().uncache(body.get('uid'))
-        return super(GrantController, GrantController).create(body)
+        return ret
 
     @staticmethod
     def update(id, body):
@@ -48,5 +50,6 @@ class GrantController(BasicCRUD):
         Args:
             kwargs: as defined in openapi.yaml
         """
+        logging.info(dict(step=11, kwargs=kwargs))
         return Grants().find(super(GrantController, GrantController).find(
             **kwargs), **kwargs)

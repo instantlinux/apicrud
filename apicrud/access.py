@@ -15,7 +15,6 @@ from sqlalchemy import or_
 from sqlalchemy.orm.exc import NoResultFound
 import yaml
 
-from .exceptions import APIcrudGrantsError
 from .service_config import ServiceConfig
 from .utils import gen_id, utcnow
 
@@ -284,26 +283,16 @@ class AccessControl(object):
         actions -= deny_delete
         return actions if len(actions) else defaults
 
-    def apikey_create(self, max_keys=1):
-        """Check that user hasn't exceeded max grant for API keys, then
-        generate an API key - a 41-byte string. First 8 characters (48
+    def apikey_create(self):
+        """Generate an API key - a 41-byte string. First 8 characters (48
         bits) are an access key ID prefix; last 32 characters (192
         bits) are the secret key.
 
-        Args:
-          max_keys (int) - maximum number of keys granted for current uid
         Returns: tuple
           key ID (str) - public portion of key
           secret (str) - secret portion
           hashvalue (str) - hash value for database
-        Raises: APIcrudGrantsError
         """
-        logmsg = dict(action='create', resource='apikey', uid=self.uid)
-        if g.db.query(self.models.APIkey).filter_by(
-                uid=self.uid).count() >= max_keys:
-            msg = _(u'max allowed API keys exceeded')
-            logging.warning(dict(message=msg, allowed=max_keys, **logmsg))
-            raise APIcrudGrantsError(msg)
         secret = gen_id(length=35, prefix='')[-32:]
         key_id = gen_id(prefix='')
         return key_id, secret, self.apikey_hash(secret)

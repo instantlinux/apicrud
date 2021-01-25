@@ -162,7 +162,7 @@ class TestContacts(test_base.TestBase):
         self.assertEqual(response.status_code, 405, 'unexpected message=%s' %
                          response.get_json().get('message'))
         self.assertEqual(response.get_json(), dict(
-            message=u'max allowed contacts exceeded', allowed=max_contacts))
+            message=u'user limit exceeded', allowed=max_contacts))
         mock_messaging.assert_has_calls(calls)
 
     def test_get_contact_restricted(self):

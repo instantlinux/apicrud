@@ -18,7 +18,6 @@ from sqlalchemy.orm.exc import NoResultFound
 from .access import AccessControl
 from .account_settings import AccountSettings
 from .const import Constants
-from .exceptions import APIcrudGrantsError
 from .grants import Grants
 from .service_config import ServiceConfig
 from . import geocode, singletons, utils
@@ -52,7 +51,7 @@ class BasicCRUD(object):
             singletons.controller[self.resource] = self
 
     @staticmethod
-    def create(body, id_prefix='x-'):
+    def create(body, id_prefix='x-', limit_related={}):
         """Controller for POST endpoints. This method assigns a new
         object ID, sets the _created_ timestamp, evaluates user's
         permissions, adds a default category_id if the model has
@@ -62,6 +61,8 @@ class BasicCRUD(object):
           body (dict): resource fields as defined by openapi.yaml schema
           id_prefix (str): generated objects will be assigned a random 10-
             to 16-character ID; you can set a unique prefix if desired
+          limit_related (dict): limits on number of related records,
+            keyed by relationship name
         Returns:
           tuple:
             first element is a dict with the id, second element is
@@ -79,7 +80,7 @@ class BasicCRUD(object):
         if 'id' in body:
             return dict(message='id is a read-only property',
                         title='Bad Request'), 405
-        body['id'] = utils.gen_id(prefix=id_prefix)
+        body['id'] = id = utils.gen_id(prefix=id_prefix)
         body['created'] = utils.utcnow()
         if body.get('expires'):
             try:
@@ -98,8 +99,8 @@ class BasicCRUD(object):
                 message='access denied', uid=uid, **logmsg))
             return dict(message=_(u'access denied')), 403
         logmsg['uid'] = body.get('uid')
-        info = {}
-        logging.info(dict(id=body['id'], name=body.get('name'), **logmsg))
+        ret_info = {}
+        logging.info(dict(id=id, name=body.get('name'), **logmsg))
         if not body.get('category_id') and hasattr(self.model, 'category_id'):
             if acc.account_id:
                 body['category_id'] = AccountSettings(
@@ -112,15 +113,30 @@ class BasicCRUD(object):
                 return dict(message=_(u'access denied')), 403
         if hasattr(self.model, 'status'):
             body['status'] = body.get('status', 'active')
+
+        limit = Grants().get(self.resource if self.resource.endswith('s')
+                             else self.resource + 's', uid=uid)
+        if limit and g.db.query(self.model).filter_by(
+                uid=uid).count() >= limit:
+            msg = _('user limit exceeded')
+            logging.info(dict(message=msg, allowed=limit, **logmsg))
+            return dict(message=msg, allowed=limit), 405
+        related_items = None
+        if hasattr(self.model, '__rest_related__'):
+            related_items = {
+                item: body[item] for item in self.model.__rest_related__
+                if item in body}
+            for related in self.model.__rest_related__:
+                if (related in body and related in limit_related and
+                        len(body[related]) > limit_related[related]):
+                    logging.warning(dict(message='limit exceeded',
+                                         field=related, **logmsg))
+                    return dict(message=_(u'limit exceeded')), 405
+                body.pop(related, None)
         if self.resource == 'apikey':
-            max_keys = int(Grants().get('apikeys', uid=body['uid']))
-            try:
-                body['prefix'], secret, body['hashvalue'] = acc.apikey_create(
-                    max_keys=max_keys)
-            except APIcrudGrantsError as ex:
-                return dict(message=str(ex), allowed=max_keys), 405
-            info = dict(apikey=body['prefix'] + '.' + secret,
-                        name=body['name'])
+            body['prefix'], secret, body['hashvalue'] = acc.apikey_create()
+            ret_info = dict(apikey=body['prefix'] + '.' + secret,
+                            name=body['name'])
         try:
             record = self.model(**body)
         except (AttributeError, TypeError) as ex:
@@ -128,6 +144,10 @@ class BasicCRUD(object):
             return dict(message=str(ex)), 405
         g.db.add(record)
         try:
+            if related_items:
+                g.db.commit()
+                for related, records in related_items.items():
+                    self._update_related(id, related, records)
             g.db.commit()
         except IntegrityError as ex:
             message = 'duplicate or other conflict'
@@ -136,7 +156,7 @@ class BasicCRUD(object):
         except Exception as ex:
             logging.warning(dict(message=str(ex), **logmsg))
             return dict(message=str(ex), data=str(body)), 405
-        return dict(id=body['id'], **info), 201
+        return dict(id=id, **ret_info), 201
 
     @staticmethod
     def get(id):
@@ -188,7 +208,7 @@ class BasicCRUD(object):
             return dict(message=_(u'access denied'), id=id), 403
 
     @staticmethod
-    def update(id, body, access='u'):
+    def update(id, body, access='u', limit_related={}):
         """Controller for PUT endpoints. This method looks for an existing
         record, evaluates user's permissions, and updates the row in
         the back-end database.
@@ -196,6 +216,8 @@ class BasicCRUD(object):
         Args:
           body (dict): fields to be updated
           access (str): access-level required for RBAC evaluation
+          limit_related (dict): limits on number of related records,
+            indexed by relationship name
         Returns:
           dict:
             first element is a dict with the id, second element is
@@ -213,6 +235,15 @@ class BasicCRUD(object):
             except ValueError:
                 body['expires'] = datetime.strptime(
                     body['expires'], '%Y-%m-%dT%H:%M:%SZ')
+        if hasattr(self.model, '__rest_related__'):
+            for related in self.model.__rest_related__:
+                if related in body:
+                    ret = self._update_related(
+                        id, related, body.pop(related, None),
+                        limit=(limit_related[related]
+                               if related in limit_related else None))
+                    if ret[1] != 200:
+                        return ret
         logmsg = dict(action='update', resource=self.resource, id=id,
                       ident=AccessControl().identity)
         try:
@@ -361,12 +392,11 @@ class BasicCRUD(object):
                     query = query.filter(getattr(self.model, key).in_(items))
         if hasattr(self.model, 'starts'):
             if filter.get('prev'):
-                # TODO confirm whether to use utcnow()
-                query = query.filter(self.model.starts < datetime.now())
+                query = query.filter(self.model.starts < utils.utcnow())
             else:
                 # Filter out records that start more than 12 hours ago
                 query = query.filter(self.model.starts >
-                                     datetime.now() - timedelta(hours=12))
+                                     utils.utcnow() - timedelta(hours=12))
             filter.pop('prev', None)
         try:
             query = query.filter_by(**filter).order_by(
@@ -437,14 +467,6 @@ class BasicCRUD(object):
                 'admin' not in AccessControl().auth):
             logging.warning(dict(message=_(u'access denied'), **logmsg))
             return dict(message=_(u'access denied')), 403
-        self = singletons.controller[request.url_rule.rule.split('/')[3]]
-        # Counter-measure against spammers: enforce MAX_CONTACTS_PER_USER
-        max_contacts = int(Grants().get('contacts', uid=body['uid']))
-        if g.db.query(self.model).filter_by(uid=body[
-                'uid']).count() >= max_contacts:
-            msg = _(u'max allowed contacts exceeded')
-            logging.warning(dict(message=msg, allowed=max_contacts, **logmsg))
-            return dict(message=msg, allowed=max_contacts), 405
         if not body.get('status'):
             body['status'] = 'unconfirmed'
         return dict(status='ok'), 201
@@ -503,6 +525,42 @@ class BasicCRUD(object):
             return dict(message=_(u'conflict with existing')), 405
 
         return dict(id=id, message=_(u'updated')), 200
+
+    def _update_related(self, id, attr, related_ids, limit=None):
+        """Update the list of records in the many-to-many association
+        model for one column in the record. Adds and/or removes entries
+        from the association table to make the list match related_ids.
+
+        Args:
+          id (str): ID of record in current model
+          attr (str): relationship attribute name
+          related_ids (list): list of existing records in related table
+          limit (int): maximum number of allowed records
+
+        Returns: tuple
+          flask-compatible status dict, http return status
+        """
+        if limit and len(related_ids) > limit:
+            msg = 'Limit exceeded'
+            logging.warn(dict(
+                action='update', resource=self.resource, allowed=limit,
+                field=attr, uid=AccessControl().uid, message=msg))
+            return dict(message=msg, allowed=limit), 405
+        if attr == 'members':
+            model = getattr(self.models, 'Person')
+        else:
+            model = getattr(self.models, attr.capitalize().strip('s'))
+        query = g.db.query(self.model).filter_by(id=id).one()
+        current = [item.id for item in getattr(query, attr)]
+        for missing_member in set(related_ids) - set(current):
+            getattr(query, attr).append(g.db.query(model).filter_by(
+                id=missing_member).one())
+        g.db.flush()
+        for removed_member in set(current) - set(related_ids):
+            getattr(query, attr).remove(g.db.query(model).filter_by(
+                id=removed_member).one())
+        g.db.commit()
+        return dict(id=id, status='ok', items=len(related_ids)), 200
 
     @staticmethod
     def _tob64(text):

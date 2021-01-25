@@ -5,11 +5,13 @@ Tests for rate limit
 created 1-jan-2021 by richb@instantlinux.net
 """
 
+from flask import g
 import pytest
+from redis.exceptions import ConnectionError, DataError
 from unittest import mock
 
 import test_base
-from apicrud import ServiceConfig
+from apicrud import database, RateLimit, ServiceConfig
 
 
 class TestRateLimit(test_base.TestBase):
@@ -61,3 +63,26 @@ class TestRateLimit(test_base.TestBase):
         response = self.call_endpoint('/account/%s' % acc, 'get')
         self.assertEqual(response.status_code, 200)
         ServiceConfig().set('ratelimit_enable', True)
+
+    @mock.patch('logging.error')
+    @mock.patch('redis.Redis.pipeline')
+    @mock.patch('redis.Redis.get')
+    def test_ratelimit_exceptions(self, mock_get, mock_pipeline, mock_error):
+
+        with self.app.test_request_context():
+            g.db = database.get_session()
+
+            self.assertFalse(RateLimit().call(uid=None),
+                             msg='Anonymous requests should not be limited')
+
+            mock_get.side_effect = ConnectionError('testlimit')
+            self.assertFalse(RateLimit().call(uid=self.test_uid))
+            mock_error.assert_called_with(dict(action='ratelimit.call',
+                                               message='testlimit'))
+            mock_get.side_effect = None
+
+            mock_pipeline.side_effect = DataError('key not set')
+            self.assertFalse(RateLimit().call(uid=self.test_uid))
+            mock_error.assert_called_with(dict(action='ratelimit.call',
+                                               message='key not set'))
+            g.db.remove()

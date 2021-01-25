@@ -96,7 +96,7 @@ class AccountSettings(object):
         self.db_session = db_session
         self.default_locale = ServiceConfig().config.BABEL_DEFAULT_LOCALE
 
-    def clear(self):
+    def uncache(self):
         """Clear the cached settings for account_id"""
         SETTINGS.pop(self.account_id, None)
 

@@ -13,16 +13,23 @@ Grant:
       minLength: 10
       type: string
     name:
+      # When customizing, make sure defaults for each of these are specified
+      #  in config.yaml
       enum:
+      - albums
+      - album_size
       - apikeys
       - contacts
       - daily_email
       - daily_sms
       - lists
       - list_size
+      - media_size_max
       - monthly_email
       - monthly_sms
+      - photo_res_max
       - ratelimit
+      - video_duration_max
       type: string
     owner:
       $ref: '#/components/schemas/Person/properties/name'
