@@ -11,6 +11,7 @@ created 3-feb-2020 by richb@instantlinux.net
 
 import celery
 from datetime import datetime
+import dateutil
 import hashlib
 import io
 import logging
@@ -19,12 +20,10 @@ from PIL.ExifTags import GPSTAGS, TAGS
 
 from ..account_settings import AccountSettings
 from ..database import get_session
+from ..exceptions import MediaUploadError
+from ..grants import Grants
 from ..service_config import ServiceConfig
 from .storage import StorageAPI
-
-
-class MediaUploadException(Exception):
-    pass
 
 
 class MediaProcessing(object):
@@ -39,21 +38,21 @@ class MediaProcessing(object):
     def __init__(self, uid, file_id, db_session=None):
         self.config = config = ServiceConfig().config
         self.models = ServiceConfig().models
-        self.api = StorageAPI(uid=uid, db_session=db_session)
         self.db_session = db_session or get_session(
             scopefunc=celery.utils.threads.get_ident, db_url=config.DB_URL)
+        self.api = StorageAPI(uid=uid, db_session=self.db_session)
         self.file_id = file_id
         self.meta = self.api.get_file_meta(file_id)
+        self.uid = uid
 
     def __del__(self):
         self.api.del_file_meta(self.file_id, self.meta)
         self.db_session.remove()
 
-    def photo(self, uid, meta):
+    def photo(self, meta):
         """metadata and scaling for still images
 
         Args:
-          uid (str): User ID
           meta (dict): Image metadata
         """
 
@@ -65,8 +64,8 @@ class MediaProcessing(object):
         suffix = "." + meta["ctype"]
         raw = self.api.get_object(meta["sid"], meta["path"] + suffix)
         if not raw:
-            raise MediaUploadException("get_object failed for path=%s" %
-                                       meta["path"])
+            raise MediaUploadError("get_object failed for path=%s" %
+                                   meta["path"])
         img = Image.open(io.BytesIO(raw))
 
         # parse its EXIF fields
@@ -76,6 +75,7 @@ class MediaProcessing(object):
         geolat, geolong, altitude = None, None, None
         if exif.get("GPSInfo"):
             geolat, geolong, altitude = self._gpsexif(exif)
+        date_orig = self._datetime(exif)
 
         # generate the 50-pixel thumbnail
         thumbnail = img.copy()
@@ -85,6 +85,7 @@ class MediaProcessing(object):
         thumbnail.save(tbytes, meta["ctype"])
 
         # construct and save a pictures db record
+        modified = None
         try:
             if meta["modified"]:
                 modified = datetime.strptime(meta["modified"],
@@ -96,11 +97,11 @@ class MediaProcessing(object):
             id=meta["fid"],
             name=meta["name"],
             path=meta["path"],
-            uid=uid,
+            uid=self.uid,
             category_id=AccountSettings(None, db_session=self.db_session,
                                         uid=meta["oid"]).get.category_id,
             compression=_exif_get("Compression", 16),
-            datetime_original=exif.get("DateTimeOriginal") or modified,
+            datetime_original=date_orig or modified,
             format_original=meta["ctype"],
             geolat=geolat,
             geolong=geolong,
@@ -120,6 +121,8 @@ class MediaProcessing(object):
             width=img.width,
         )
         self.db_session.add(record)
+        # TODO remove
+        self.db_session.commit()
 
         # add picture to album; first added is initial cover picture
         album = self.db_session.query(self.models.Album).filter_by(
@@ -152,28 +155,26 @@ class MediaProcessing(object):
                         meta["path"], alt_size, suffix),
                     tbytes.getvalue(),
                     content_type="image/%s" % meta["ctype"]):
-                raise MediaUploadException("put_object failed")
+                raise MediaUploadError("put_object failed")
 
         # stay in budget--throw away originals larger than max
-        # TODO grants needs to work under celery
-        # res_max = Grants(db_session=self.db_session,
-        #                  ttl=config.CACHE_TTL).get('photo_res_max')
-        res_max = self.config.DEFAULT_GRANTS.get('photo_res_max')
+        res_max = Grants(db_session=self.db_session).get('photo_res_max',
+                                                         uid=self.uid)
         if img.height > res_max:
             self.api.del_object(meta["sid"], meta["path"] + suffix)
 
         # TODO (eventually)-apply encryption when gallery frontend has support
         #  and strip exif tags
 
-    def video(self, uid, meta):
+    def video(self, meta):
         """metadata for videos - construct and save a pictures db record
 
         Args:
-          uid (str): User ID
           meta (dict): Video metadata
         """
         # TODO decide whether to bother with exif or thumbnail
 
+        modified = None
         try:
             if meta["modified"]:
                 modified = datetime.strptime(meta["modified"],
@@ -181,11 +182,17 @@ class MediaProcessing(object):
         except ValueError:
             logging.warn("action=video message=invalid_date id=%s "
                          "modified=%s" % (meta["fid"], meta["modified"]))
+        # fetch the video, to calculate checksums
+        suffix = "." + meta["ctype"]
+        raw = self.api.get_object(meta["sid"], meta["path"] + suffix)
+        if not raw:
+            raise MediaUploadError("get_object failed for path=%s" %
+                                   meta["path"])
         record = self.models.Picture(
             id=meta["fid"],
             name=meta["name"],
             path=meta["path"],
-            uid=uid,
+            uid=self.uid,
             category_id=AccountSettings(None, db_session=self.db_session,
                                         uid=meta["oid"]).get.category_id,
             compression=None,
@@ -201,8 +208,8 @@ class MediaProcessing(object):
             model=None,
             orientation=None,
             privacy=u"invitee",
-            sha1=None,
-            sha256=None,
+            sha1=hashlib.sha1(raw).digest(),
+            sha256=hashlib.sha256(raw).digest(),
             thumbnail50x50=None,
             size=meta["size"],
             status="active",
@@ -226,6 +233,8 @@ class MediaProcessing(object):
         """Convert GPS exif data to fixed-decimal format. For some
         reason there"s no good standard python library for doing this.
 
+        Args:
+          exif (dict): the image's exif data
         Returns:
           tuple (lat, long, alt):
             first two are converted to fixed-precision int to fit in 32 bits
@@ -246,6 +255,26 @@ class MediaProcessing(object):
         if exif.get("GPSAltitude"):
             altitude = exif["GPSAltitude"][0] / exif["GPSAltitude"][1]
         return geolat, geolong, altitude
+
+    def _datetime(self, exif):
+        """Convert DateTimeOriginal exif data to python datetime.
+
+        Args:
+          exif (dict): the image's exif data
+        Returns: datetime
+        """
+        date_orig = exif.get("DateTimeOriginal")
+        if date_orig:
+            try:
+                # An old format with all colons
+                return datetime.strptime(date_orig, "%Y:%m:%d %H:%M:%S")
+            except ValueError:
+                pass
+            try:
+                ret = dateutil.parser.parse(date_orig)
+            except ValueError:
+                return None
+            return ret
 
     @staticmethod
     def _decimal_from_degrees(dms, hemisphere):

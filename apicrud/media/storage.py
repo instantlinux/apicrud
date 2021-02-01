@@ -17,6 +17,7 @@ from botocore.config import Config
 from botocore.exceptions import ClientError
 from datetime import datetime
 from flask import g
+from flask_babel import _
 import json
 import logging
 import re
@@ -29,6 +30,8 @@ from ..const import Constants
 from ..grants import Grants
 from ..service_config import ServiceConfig
 import apicrud.utils as utils
+
+saved_redis = None
 
 
 class StorageAPI(object):
@@ -43,11 +46,14 @@ class StorageAPI(object):
 
     def __init__(self, credential_ttl=None, redis_conn=None,
                  uid=None, db_session=None):
+        global saved_redis
+
         config = ServiceConfig().config
         self.models = ServiceConfig().models
         self.redis_conn = (
-            redis_conn or redis.Redis(host=config.REDIS_HOST,
-                                      port=config.REDIS_PORT, db=0))
+            redis_conn or saved_redis or redis.Redis(
+                host=config.REDIS_HOST, port=config.REDIS_PORT, db=0))
+        saved_redis = self.redis_conn
         self.cache_ttl = config.REDIS_TTL
         self.credential_ttl = credential_ttl or 86400
         self.uid = uid or AccessControl().uid
@@ -92,14 +98,14 @@ class StorageAPI(object):
                     'parent_id'), message='album not found'), 404
             max_size = Grants(db_session=self.db).get('album_size')
             if album_size >= max_size:
-                msg = 'album is full (max=%d)' % max_size
+                msg = _('album is full (max=%d)') % max_size
                 logging.info(dict(message=msg, **logmsg))
                 return dict(message=msg), 405
         if not AccessControl(model=model).with_permission(
                     'u', query=record):
-            msg = 'access_denied'
+            msg = _('access_denied')
             logging.warning(dict(message=msg, **logmsg))
-            return dict(message='access denied'), 403
+            return dict(message=msg), 403
 
         self.vendor = storage.credentials.vendor
         id = utils.gen_id(prefix='f-')
@@ -114,13 +120,13 @@ class StorageAPI(object):
             duration_max = Grants(
                 db_session=self.db).get('video_duration_max')
             if body.get('duration') and body['duration'] > duration_max:
-                msg = 'video exceeds maximum duration=%f' % duration_max
+                msg = _('video exceeds maximum duration=%f') % duration_max
                 logging.warning(dict(message=msg, **logmsg))
                 return dict(message=msg), 405
         max_size = Grants(
             db_session=self.db).get('media_size_max')
         if body.get('size') and body['size'] > max_size:
-            msg = 'file size exceeds max=%d' % max_size
+            msg = _('file size exceeds max=%d') % max_size
             logging.info(dict(message=msg, **logmsg))
             return dict(message=msg), 405
         if self.vendor == 'backblaze':
@@ -172,8 +178,8 @@ class StorageAPI(object):
         except TypeError:
             return None
         except Exception as ex:
-            logging.warn('action=get_upload_state uid=%s exception=%s' %
-                         (self.uid, str(ex)))
+            logging.warning('action=get_upload_state uid=%s exception=%s' %
+                            (self.uid, str(ex)))
             return None
         return meta
 
@@ -189,8 +195,8 @@ class StorageAPI(object):
             self.redis_conn.set(key, json.dumps(meta), ex=self.cache_ttl,
                                 nx=True)
         except Exception as ex:
-            logging.warn('action=update_file_meta uid=%s exception=%s' %
-                         (self.uid, str(ex)))
+            logging.warning('action=update_file_meta uid=%s exception=%s' %
+                            (self.uid, str(ex)))
 
     def del_file_meta(self, file_id, meta):
         """Remove a metadata item from cache
@@ -203,8 +209,8 @@ class StorageAPI(object):
         try:
             self.redis_conn.delete(key)
         except Exception as ex:
-            logging.warn('action=del_file_meta uid=%s exception=%s' %
-                         (self.uid, str(ex)))
+            logging.warning('action=del_file_meta uid=%s exception=%s' %
+                            (self.uid, str(ex)))
 
     def upload_complete(self, file_id, status, func_worker):
         """Finalize upload - pass to the worker
@@ -225,7 +231,7 @@ class StorageAPI(object):
             func_worker(self.uid, file_id)
             return dict(file_id=file_id), 201
         else:
-            msg = 'unhandled frontend status'
+            msg = _('unhandled frontend status')
             logging.warning('action=upload_complete status=%s message=%s' %
                             (status, msg))
             return dict(file_id=file_id, message=msg), 405

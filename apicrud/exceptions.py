@@ -14,3 +14,7 @@ class APIcrudFormatError(APIcrudException):
 
 class APIcrudSendError(APIcrudException):
     pass
+
+
+class MediaUploadError(Exception):
+    pass
