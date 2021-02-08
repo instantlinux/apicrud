@@ -74,7 +74,7 @@ class TestContacts(test_base.TestBase):
             status='unconfirmed', muted=False, rank=1, rbac='dru',
             owner=self.test_person_name, **record)
         confirmed = dict(
-            auth='pending', info=record['info'], iss=self.config.JWT_ISSUER,
+            auth='person', info=record['info'], iss=self.config.JWT_ISSUER,
             name=self.test_person_name, sub=self.test_uid, type=record['type'])
 
         response = self.call_endpoint('/contact', 'post', data=record)
@@ -171,7 +171,7 @@ class TestContacts(test_base.TestBase):
         expected = dict(message='access denied', id=self.adm_contact_2)
         response = self.call_endpoint(
             '/contact/%s' % self.adm_contact_2, 'get')
-        self.assertEqual(response.status_code, 403, 'get failed message=%s' %
+        self.assertEqual(response.status_code, 403, 'unexpected message=%s' %
                          response.get_json().get('message'))
         result = response.get_json()
         self.assertEqual(result, expected)

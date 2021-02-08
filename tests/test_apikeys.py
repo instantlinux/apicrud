@@ -24,7 +24,8 @@ class TestAPIkeys(test_base.TestBase):
             expires=None, last_used=None,
             owner=self.test_person_name, rbac='dru', status='active', **record)
         response = self.call_endpoint('/apikey', 'post', data=record)
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 201, response.get_json().get(
+            'message'))
         self.assertEqual(len(response.get_json()['apikey']), 41)
         id = response.get_json()['id']
         response = self.call_endpoint('/apikey/%s' % id, 'get')

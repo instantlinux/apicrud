@@ -9,10 +9,10 @@ class ListController(BasicCRUD):
     def create(body):
         return super(ListController, ListController).create(
             body, limit_related=dict(
-                members=int(Grants().get('list_size'))))
+                members=Grants().get('list_size')))
 
     @staticmethod
     def update(id, body):
         return super(ListController, ListController).update(
             id, body, limit_related=dict(
-                members=int(Grants().get('list_size'))))
+                members=Grants().get('list_size')))

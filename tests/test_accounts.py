@@ -39,6 +39,8 @@ class TestAccounts(test_base.TestBase):
         response = self.call_endpoint(
             '/account_password/%s' % uid, 'put', data=password)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), dict(
+            id=id, uid=uid, username=record['username']))
 
         self.authorize(username=self.admin_name, password=self.admin_pw)
         response = self.call_endpoint('/account/%s' % id, 'get')

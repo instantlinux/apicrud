@@ -70,6 +70,7 @@ class BasicCRUD(object):
         """
 
         self = singletons.controller[request.url_rule.rule.split('/')[3]]
+        # TODO reject extraneous keys beyond those in the openapi path spec
         if self.resource == 'contact':
             retval = self._create_contact(body)
             if retval[1] != 201:

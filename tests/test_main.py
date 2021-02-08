@@ -96,3 +96,14 @@ class TestMain(test_base.TestBase):
         result = response.get_json()
         del(result['created'])
         self.assertEqual(result, expected)
+
+    # TODO not yet implemented - extraneous-key rejection
+    """
+    def test_strict_validation(self):
+        record = dict(id=self.adm_cat_id, uid=self.admin_uid,
+                      name='default', extraneous='rejected')
+        self.authorize(username=self.admin_name, password=self.admin_pw)
+        response = self.call_endpoint('/category/%s' % self.adm_cat_id, 'put',
+                                      data=record)
+        self.assertEqual(response.status_code, 400, 'unexpected')
+    """

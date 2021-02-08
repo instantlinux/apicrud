@@ -4,7 +4,6 @@ created 27-may-2019 by richb@instantlinux.net
 """
 
 from apicrud import BasicCRUD, Grants
-import logging
 
 
 class GrantController(BasicCRUD):
@@ -50,6 +49,5 @@ class GrantController(BasicCRUD):
         Args:
             kwargs: as defined in openapi.yaml
         """
-        logging.info(dict(step=11, kwargs=kwargs))
         return Grants().find(super(GrantController, GrantController).find(
             **kwargs), **kwargs)

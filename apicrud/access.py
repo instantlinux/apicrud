@@ -233,7 +233,7 @@ class AccessControl(object):
         deny_delete = set()
         if query and self.resource == 'contact':
             if self.uid and self.uid != owner_uid:
-                owner_uid = query.one().owner.referrer_id
+                owner_uid = query.one().owner.referrer_id or owner_uid
             # TODO redesign fragile dependency on primary contact
             try:
                 g.db.query(self.models.Person).filter_by(
@@ -246,6 +246,9 @@ class AccessControl(object):
         if privacy == 'public' or (
                 self.auth and id and '%s-%s-%s' % (membership, id, privacy)
                 in self.auth):
+            # TODO this needs another check that the current resource's
+            # id is in fact attached to the record identified by
+            # membership and id (which is, say, an event-id)
             defaults = set('r')
 
         for policy in self.policies[self.resource]:

@@ -63,7 +63,7 @@ class RateLimit(object):
         except ConnectionError as ex:
             logging.error(dict(action='ratelimit.call', message=str(ex)))
             return False
-        if not calls or int(calls.decode()) < limit:
+        if limit and not calls or int(calls.decode()) < limit:
             try:
                 pipe = self.redis.pipeline()
                 pipe.incr(key).expire(

@@ -70,11 +70,12 @@ class Confirmation:
             func_send(to=id, template=template, token=token, type=contact.type)
         return dict(token=token, id=id, uid=contact.uid), 200
 
-    def confirm(self, token):
+    def confirm(self, token, clear_session=False):
         """Confirm a contact if token is still valid
 
         Args:
           token (str): the token generated previously
+          clear_session (bool): whether to wipe out token after use
 
         Returns:
           tuple:
@@ -89,8 +90,8 @@ class Confirmation:
                 max_age=self.token_timeout).split(':')
         except Exception as ex:
             return dict(token=token, message=str(ex)), 403
-        if g.session.get(id, nonce, 'param') != token:
-            logging.warning('action=confirm id=%s info=%s'
+        if g.session.get(id, nonce, arg='param') != token:
+            logging.warning('action=confirm id=%s info=%s '
                             'message=invalid_token' % (id, info))
             return dict(id=id, message='invalid token'), 403
         try:
@@ -107,7 +108,11 @@ class Confirmation:
         # Create a login session with permissions to modify a Person/Contact
         logging.info('action=confirm type=%s info=%s' %
                      (contact.type, info))
-        g.session.delete(id, nonce)
+        auth = 'person'
+        if clear_session:
+            g.session.delete(id, nonce)
+            auth = 'pending'
+        logging.info(dict(step=1, info=info, auth=auth))
         return dict(g.session.create(
-            contact.uid, ['pending'], info=info, type=contact.type,
+            contact.uid, [auth], info=info, type=contact.type,
             contact_id=id, name=contact.owner.name)), 200

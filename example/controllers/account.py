@@ -4,6 +4,7 @@ created 31-mar-2019 by richb@instantlinux.net
 """
 
 from flask import g, request
+from flask_babel import _
 from sqlalchemy.orm.exc import NoResultFound
 
 from apicrud import BasicCRUD, SessionAuth, singletons
@@ -65,7 +66,7 @@ class AccountController(BasicCRUD):
             account = g.db.query(self.model).filter_by(
                 uid=uid, status='active').one()
         except NoResultFound:
-            return dict(id=uid, message='account not found'), 404
+            return dict(id=uid, message=_(u'account not found')), 404
         return dict(id=uid, username=account.name), 200
 
     @staticmethod

@@ -297,7 +297,8 @@ class SessionAuth(object):
                 logging.warning(dict(message=msg, **logmsg))
                 return dict(username=account.name, message=msg), 403
         else:
-            retval = Confirmation().confirm(reset_token)
+            retval = Confirmation().confirm(reset_token,
+                                            clear_session=True)
             if retval[1] != 200:
                 msg = _(u'invalid token')
                 logging.warning(dict(message=msg, **logmsg))

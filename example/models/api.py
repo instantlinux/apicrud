@@ -61,8 +61,7 @@ class APIkey(AsDictMixin, Base):
 
     id = Column(String(16), primary_key=True, unique=True)
     name = Column(String(32), nullable=False)
-    uid = Column(ForeignKey(u'people.id', ondelete='CASCADE'), nullable=False,
-                 unique=True)
+    uid = Column(ForeignKey(u'people.id', ondelete='CASCADE'), nullable=False)
     prefix = Column(String(8), nullable=False, unique=True)
     hashvalue = Column(StringEncryptedType(Unicode, aes_secret, AesEngine,
                                            'pkcs5', length=96), nullable=False)
@@ -70,7 +69,8 @@ class APIkey(AsDictMixin, Base):
     last_used = Column(TIMESTAMP)
     created = Column(TIMESTAMP, nullable=False, server_default=func.now())
     modified = Column(TIMESTAMP)
-    status = Column(Enum(u'active', u'disabled'), nullable=False)
+    status = Column(Enum(u'active', u'disabled'), nullable=False,
+                    server_default=u'active')
 
     scopes = relationship('Scope', secondary='apikeyscopes',
                           backref=backref('scope'), order_by='Scope.name')
