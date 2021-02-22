@@ -83,7 +83,10 @@ class ServiceConfig(object):
                     else:
                         state[key] = os.environ[key.upper()]
                 elif key in overrides:
-                    state[key] = overrides[key]
+                    if key in ('metrics',):
+                        state[key].update(overrides[key])
+                    else:
+                        state[key] = overrides[key]
                 elif key in kwargs:
                     state[key] = kwargs[key]
                 elif 'default' in schema:
@@ -97,6 +100,7 @@ class ServiceConfig(object):
             # Special cases
             state['secret_key'] = binascii.unhexlify(
                 state['flask_secret_key'])
+            state['metrics'] = self._compose_metrics(state['metrics'])
             state['log_level'] = self._compose_loglevel(state['log_level'])
             state['template_folders'].append(
                     os.path.join(os.path.dirname(__file__), 'templates'))
@@ -151,6 +155,26 @@ class ServiceConfig(object):
         return dict(
             debug=logging.DEBUG, info=logging.INFO, warning=logging.WARNING,
             error=logging.ERROR, critical=logging.CRITICAL)[level]
+
+    @staticmethod
+    def _compose_metrics(metrics):
+        """Fill in default values for scope, style, period
+
+        Args:
+            metrics (dict): usage metric definitions
+                period: hour, day, week, month, indefinite
+                scope: user, instance, sitewide
+                style: grant, usage
+        """
+        ret = metrics
+        for key, item in metrics.items():
+            if set(item.keys()) - set(['notify', 'period', 'scope', 'style']):
+                raise AttributeError('Invalid metric configuration')
+            ret[key]['notify'] = item.get('notify', 0)
+            ret[key]['period'] = item.get('period', 'day')
+            ret[key]['scope'] = item.get('scope', 'user')
+            ret[key]['style'] = item.get('style', 'grant')
+        return ret
 
     def set(self, key, value):
         """Set a single value

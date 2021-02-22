@@ -2,7 +2,7 @@ apikey:
   get:
     summary: Find APIkeys by conditions
     description: Find APIkeys based on conditions
-    operationId: find
+    operationId: APIkeyController.find
     parameters:
     - description: APIkey ID
       in: query
@@ -93,10 +93,10 @@ apikey:
     tags:
     - apikey
     x-codegen-request-body-name: conditions
-    x-openapi-router-controller: controllers.apikey.APIkeyController
+    x-openapi-router-controller: controllers.apikey
   post:
     summary: Create a new APIkey
-    operationId: create
+    operationId: APIkeyController.create
     requestBody:
       content:
         application/json:
@@ -113,12 +113,12 @@ apikey:
     tags:
     - apikey
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.apikey.APIkeyController
+    x-openapi-router-controller: controllers.apikey
 apikey-id:
   get:
     summary: Find APIkey by ID
     description: Returns a single APIkey
-    operationId: get
+    operationId: APIkeyController.get
     parameters:
     - description: ID of APIkey to return
       in: path
@@ -146,10 +146,10 @@ apikey-id:
     - basic: []
     tags:
     - apikey
-    x-openapi-router-controller: controllers.apikey.APIkeyController
+    x-openapi-router-controller: controllers.apikey
   put:
     summary: Update an existing APIkey
-    operationId: update
+    operationId: APIkeyController.update
     requestBody:
       content:
         application/json:
@@ -178,11 +178,11 @@ apikey-id:
     tags:
     - apikey
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.apikey.APIkeyController
+    x-openapi-router-controller: controllers.apikey
 apikey-ids:
   delete:
     summary: Delete one or more APIkeys
-    operationId: delete
+    operationId: APIkeyController.delete
     parameters:
     - description: APIkey ids to delete
       in: path
@@ -209,4 +209,4 @@ apikey-ids:
     - basic: []
     tags:
     - apikey
-    x-openapi-router-controller: controllers.apikey.APIkeyController
+    x-openapi-router-controller: controllers.apikey

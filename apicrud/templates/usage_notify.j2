@@ -1,0 +1,14 @@
+{% if selector == 'subject' -%}
+{{ _('Usage is approaching limit') }}
+{% elif selector == 'html' -%}
+<!DOCTYPE HTML PUBLIC “-//W3C//DTD HTML 3.2//EN”>
+<html>
+{{ _('Usage notice from') }} {{ appname }}: {{ resource }} _('exceeded') {{ percent }}{{ _('% of limit per') }} {{ period }}.
+<p>
+</html>
+{% elif selector == 'email' -%}
+{{ _('Usage notice from') }} {{ appname }}: {{ resource }} _('exceeded') {{ percent }}{{ _('% of limit per') }} {{ period }}.
+
+{% elif selector == 'sms' -%}
+{{ _('Usage notice from') }} {{ appname }}: {{ resource }} _('exceeded') {{ percent }}{{ _('% of limit per') }} {{ period }}
+{% endif -%}

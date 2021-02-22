@@ -11,6 +11,7 @@ import os
 from . import grants
 from .access import AccessControl
 from .const import Constants
+from .metrics import Metrics
 from .service_config import ServiceConfig
 
 
@@ -24,8 +25,6 @@ def app(application):
     Returns:
       obj: Flask app
     """
-    global babel
-
     config = ServiceConfig().config
     logging.basicConfig(level=config.LOG_LEVEL,
                         format='%(asctime)s %(levelname)s %(message)s',
@@ -43,6 +42,7 @@ def app(application):
     CORS(application.app,
          resources={r"/api/*": {'origins': config.CORS_ORIGINS}},
          supports_credentials=True)
+
     AccessControl().load_rbac(config.RBAC_FILE)
     grants.Grants().load_defaults(config.DEFAULT_GRANTS)
     logging.info(dict(action='initialize_app', port=config.APP_PORT))
@@ -56,6 +56,7 @@ def render_status_4xx(error):
     Args:
       error (obj): the error object with name and description
     """
+    Metrics().store('api_errors_total', labels=['code=%s' % error.code])
     return jsonify(dict(
         message=error.description,
         error=dict(status=error.name, code=error.code))), error.code
@@ -69,6 +70,7 @@ def render_problem(error):
     Args:
       error (obj): the error object with name and description
     """
+    Metrics().store('api_errors_total', labels=['code=%s' % error.status])
     return jsonify(dict(
         message=error.detail,
         error=dict(status=error.title, code=error.status))), error.status

@@ -19,6 +19,7 @@ import time
 from .access import AccessControl
 from .const import Constants
 from .messaging.confirmation import Confirmation
+from .metrics import Metrics
 from .service_config import ServiceConfig
 from .service_registry import ServiceRegistry
 from .utils import gen_id, utcnow
@@ -61,6 +62,7 @@ class SessionAuth(object):
             with mapping of endpoints registered to microservices
         """
 
+        metrics = Metrics()
         try:
             if '@' in username:
                 account = g.db.query(self.models.Account).join(
@@ -83,6 +85,7 @@ class SessionAuth(object):
             account.last_invalid_attempt + timedelta(
                 seconds=self.login_lockout_interval) > datetime.utcnow()):
             time.sleep(5)
+            metrics.store('logins_fail_total')
             return dict(username=username, message=_(u'locked out')), 403
         if account.password == '':
             logging.error("username=%s, message='no password'" % username)
@@ -133,6 +136,7 @@ class SessionAuth(object):
                 settings_id=account.settings_id)
             if hasattr(account.settings, 'default_storage_id'):
                 retval['storage_id'] = account.settings.default_storage_id
+            metrics.store('logins_success_total')
             return retval, 201
         else:
             return dict(message=_(u'DB operational error')), 500
@@ -483,4 +487,5 @@ def api_key(apikey, required_scopes=None):
         logging.info(dict(action='api_key', prefix=apikey.split('.')[0],
                           scopes=retval['scopes'], message='denied'))
         return None
+    Metrics().store('api_key_auth_total')
     return retval

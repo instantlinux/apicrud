@@ -7,14 +7,15 @@ created 31-mar-2019 by richb@instantlinux.net
 
 import connexion
 from datetime import datetime
-from flask import abort, g, request
+from flask import g, request
 from flask_babel import Babel
 import os
 
-from apicrud import AccessControl, AccountSettings, RateLimit, ServiceConfig, \
-    ServiceRegistry, SessionManager, database, initialize
+from apicrud import AccessControl, AccountSettings, Metrics, ServiceConfig, \
+    ServiceRegistry, database, initialize
 
 import controllers
+from messaging import send_contact
 import models
 
 setup_db_only_once = {}
@@ -38,6 +39,8 @@ def setup_db(db_url=None, redis_conn=None):
     ServiceRegistry().register(controllers.resources())
     if not setup_db_only_once and database.initialize_db(
             db_url=db_url, redis_conn=redis_conn):
+        Metrics(redis_conn=redis_conn, func_send=send_contact.delay).store(
+            'api_start_timestamp', value=int(datetime.now().timestamp()))
         setup_db_only_once['initialized'] = True
 
 
@@ -45,17 +48,16 @@ def setup_db(db_url=None, redis_conn=None):
 def before_request():
     """Request-setup function - get sessions to database and auth
     """
-    g.db = database.get_session()
-    g.session = SessionManager()
-    g.request_start_time = datetime.utcnow()
-    if request.method != 'OPTIONS' and RateLimit().call():
-        abort(429)
+    database.before_request()
 
 
 @application.app.after_request
 def add_header(response):
     """All responses get a cache-control header"""
     response.cache_control.max_age = config.HTTP_RESPONSE_CACHE_MAX_AGE
+    Metrics().store(
+        'api_request_seconds_total', value=datetime.utcnow().timestamp() -
+        g.request_start_time.timestamp())
     return response
 
 

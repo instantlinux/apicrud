@@ -22,7 +22,7 @@ Python Classes
      initialize
      media
      messaging
-     metrics
+     Metrics
      Mutex
      RateLimit
      ServiceConfig

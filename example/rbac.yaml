@@ -130,6 +130,13 @@ policies:
     - principal: list-{{list_id}}-invitee
       resource: "{resource}:{{list_id}}"
       actions: cr
+  metric:
+    - principal: admin
+      resource: "{resource}:*"
+      actions: r
+    - principal: user/{{uid}}
+      resource: "{resource}:{{uid}}"
+      actions: r
   person:
     - principal: "*"
       resource: "{resource}:*"

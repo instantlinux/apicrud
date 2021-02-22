@@ -27,4 +27,4 @@ Your pull-requests and bug-reports are welcome here. See [CONTRIBUTING.md](CONTR
 
 ### License
 
-Software copyright &copy; 2020 by Richard Braun &bull; <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a> license <p />
+Software copyright &copy; 2021 by Richard Braun &bull; <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a> license <p />

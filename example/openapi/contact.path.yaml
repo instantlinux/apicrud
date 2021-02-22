@@ -2,7 +2,7 @@ contact:
   get:
     summary: Find contacts by conditions
     description: Find contacts based on conditions
-    operationId: find
+    operationId: ContactController.find
     parameters:
     - description: Contact ID
       in: query
@@ -67,13 +67,13 @@ contact:
         content: {}
         description: contact not found
     security:
-    - apikey: []
+    - apikey: [full, readonly]
     - basic: []
     tags:
     - contact
-    x-openapi-router-controller: controllers.contact.ContactController
+    x-openapi-router-controller: controllers.contact
   post:
-    operationId: create
+    operationId: ContactController.create
     requestBody:
       content:
         application/json:
@@ -86,17 +86,17 @@ contact:
         content: {}
         description: Invalid input
     security:
-    - apikey: ['full']
+    - apikey: [full]
     - basic: []
     summary: Create a new contact
     tags:
     - contact
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.contact.ContactController
+    x-openapi-router-controller: controllers.contact
 contact-id:
   get:
     description: Returns a single contact
-    operationId: get
+    operationId: ContactController.get
     parameters:
     - description: ID of contact to return
       in: path
@@ -120,14 +120,14 @@ contact-id:
         content: {}
         description: contact not found
     security:
-    - apikey: []
+    - apikey: [full, readonly]
     - basic: []
     summary: Find contact by ID
     tags:
     - contact
-    x-openapi-router-controller: controllers.contact.ContactController
+    x-openapi-router-controller: controllers.contact
   put:
-    operationId: update
+    operationId: ContactController.update
     requestBody:
       content:
         application/json:
@@ -152,16 +152,16 @@ contact-id:
         content: {}
         description: Validation exception
     security:
-    - apikey: ['full']
+    - apikey: [full]
     - basic: []
     summary: Update an existing contact
     tags:
     - contact
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.contact.ContactController
+    x-openapi-router-controller: controllers.contact
 contact-ids:
   delete:
-    operationId: delete
+    operationId: ContactController.delete
     parameters:
     - description: contact ids to delete
       in: path
@@ -184,16 +184,16 @@ contact-ids:
         content: {}
         description: Invalid id value
     security:
-    - apikey: ['full']
+    - apikey: [full]
     - basic: []
     summary: Deletes one or more contacts
     tags:
     - contact
-    x-openapi-router-controller: controllers.contact.ContactController
+    x-openapi-router-controller: controllers.contact
 contact-confirmation_get-id:
   get:
     description: Get a token for contact confirmation
-    operationId: confirmation_get
+    operationId: ContactController.confirmation_get
     parameters:
     - description: ID of contact
       in: path
@@ -223,11 +223,11 @@ contact-confirmation_get-id:
     summary: Get a token for contact confirmation
     tags:
     - contact
-    x-openapi-router-controller: controllers.contact.ContactController
+    x-openapi-router-controller: controllers.contact
 contact-confirm-token:
   post:
     description: Present token for contact confirmation
-    operationId: confirm
+    operationId: ContactController.confirm
     parameters:
     - description: Token created by confirmation_get
       in: path
@@ -259,4 +259,4 @@ contact-confirm-token:
     summary: Present token for contact confirmation
     tags:
     - contact
-    x-openapi-router-controller: controllers.contact.ContactController
+    x-openapi-router-controller: controllers.contact

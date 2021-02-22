@@ -15,6 +15,7 @@ Out of the box, here are some of the capabilities included in the example applic
 * Microservice discovery
 * GeoIP location lookup and map display
 * Customizable per-account grant limits (such as list size, number of contacts)
+* Application and usage-billing metrics, along with a prometheus viewer
 * User-profile and settings screens
 * Authentication by password or API key
 * Extensible internationalization support
@@ -23,6 +24,7 @@ Out of the box, here are some of the capabilities included in the example applic
 * Storage and content-delivery support for AWS
 * Messaging via email and SMS
 * Per-user request-rate limiting
+* Courtesy warning notice as usage approaches a monthly limit
 * Scalability and fault-tolerance for all services
 
 ## About the Name

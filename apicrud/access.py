@@ -317,7 +317,7 @@ class AccessControl(object):
                 status='active').one()
             if not record.last_used or (
                     record.last_used + timedelta(hours=6) < utcnow()
-                    and record.expires < utcnow()):
+                    and (not record.expires or record.expires < utcnow())):
                 record.last_used = utcnow()
                 g.db.commit()
         except NoResultFound:

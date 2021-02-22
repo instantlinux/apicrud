@@ -2,7 +2,7 @@ grant:
   get:
     summary: Find grants by conditions
     description: Find grants based on conditions
-    operationId: find
+    operationId: GrantController.find
     parameters:
     - description: Grant ID
       in: query
@@ -80,10 +80,10 @@ grant:
     tags:
     - grant
     x-codegen-request-body-name: conditions
-    x-openapi-router-controller: controllers.grant.GrantController
+    x-openapi-router-controller: controllers.grant
   post:
     summary: Create a new grant
-    operationId: create
+    operationId: GrantController.create
     requestBody:
       content:
         application/json:
@@ -100,12 +100,12 @@ grant:
     tags:
     - grant
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.grant.GrantController
+    x-openapi-router-controller: controllers.grant
 grant-id:
   get:
     summary: Find grant by ID
     description: Returns a single grant
-    operationId: get
+    operationId: GrantController.get
     parameters:
     - description: ID of grant to return
       in: path
@@ -133,10 +133,10 @@ grant-id:
     - basic: []
     tags:
     - grant
-    x-openapi-router-controller: controllers.grant.GrantController
+    x-openapi-router-controller: controllers.grant
   put:
     summary: Update an existing grant
-    operationId: update
+    operationId: GrantController.update
     requestBody:
       content:
         application/json:
@@ -165,11 +165,11 @@ grant-id:
     tags:
     - grant
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.grant.GrantController
+    x-openapi-router-controller: controllers.grant
 grant-ids:
   delete:
     summary: Delete one or more grants
-    operationId: delete
+    operationId: GrantController.delete
     parameters:
     - description: grant ids to delete
       in: path
@@ -196,4 +196,4 @@ grant-ids:
     - basic: []
     tags:
     - grant
-    x-openapi-router-controller: controllers.grant.GrantController
+    x-openapi-router-controller: controllers.grant

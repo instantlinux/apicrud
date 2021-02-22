@@ -45,28 +45,25 @@ example/openapi.yaml: $(wildcard example/openapi/*.yaml)
 
 # for the create_image rule, do this instead for openapi.yaml
 openapi_deploy:
-	pip install dollar-ref
-	ls -l $(find . -name dref)
-	/build/.local/bin/dref example/openapi/api.yaml example/openapi.yaml
+	which dref || pip install dollar-ref
+	dref example/openapi/api.yaml example/openapi.yaml
 	chmod 644 example/openapi.yaml
 
-flake8: test_requirements
+flake8: dev_requirements
 	@echo "Running flake8 code analysis"
 	. $(VDIR)/bin/activate && flake8 apicrud example tests \
 	 --per-file-ignores='example/alembic/versions/*:E501,E122,E128' 
 
-$(VDIR)/lib/python$(VER_PY)/site-packages/pytest.py: python_env
-	@echo "Installing test requirements"
-	(. $(VDIR)/bin/activate && pip3 freeze && \
-	 pip3 install -r tests/requirements.txt)
-$(VDIR)/lib/python$(VER_PY)/site-packages/flask/app.py: python_env
-	@echo "Installing main requirements"
-	(. $(VDIR)/bin/activate && \
-	 pip3 install -r requirements.txt)
-py_requirements: $(VDIR)/lib/python$(VER_PY)/site-packages/flask/app.py
-test_requirements: $(VDIR)/lib/python$(VER_PY)/site-packages/pytest.py
+dev_requirements: python_env
+	@echo "Installing dev requirements"
+	. $(VDIR)/bin/activate && pip install -r requirements-dev.txt
 
-test: test_requirements py_requirements apicrud/i18n/en/LC_MESSAGES/messages.mo \
+dev_requirements.txt: python_env
+	@echo Updating Pipfile.lock and requirements-dev.txt
+	. $(VDIR)/bin/activate && \
+	  pipenv lock --requirements --dev > requirements-dev.txt
+
+test: dev_requirements apicrud/i18n/en/LC_MESSAGES/messages.mo \
 	  example/openapi.yaml
 	@echo "Running pytest unit tests"
 	cd apicrud && \
@@ -81,8 +78,9 @@ test: test_requirements py_requirements apicrud/i18n/en/LC_MESSAGES/messages.mo 
 	 --cov ../example \
 	 --cov .)
 
-dist/apicrud-$(VERSION).tar.gz: i18n_deploy test_requirements
+dist/apicrud-$(VERSION).tar.gz: i18n_deploy
 	@echo "Building package"
+	pipenv --site-packages sync
 	pip show wheel >/dev/null; \
 	if [ $$? -ne 0 ]; then \
 	  (. $(VDIR)/bin/activate ; python setup.py sdist bdist_wheel); \
@@ -95,8 +93,8 @@ clean:
 	 */*/__pycache__ */.coverage */.proto.sqlite */coverage.xml */htmlcov \
 	 */results.xml docs/_build docs/content/stubs example/openapi.yaml
 	find . -name '*.pyc' -or -name '*~' -or -name '*.created' \
-	 -exec rm -rf {} \;
-	find example -name __pycache__ -exec rm -rf {} \;
+	 -exec rm \{} \;
+	find example -name __pycache__ -exec rm -rf \{} \;
 wipe_clean: clean
-	find apicrud/i18n example/i18n -name '*.mo' -exec rm -rf {} \;
+	find apicrud/i18n example/i18n -name '*.mo' -exec rm -rf \{} \;
 	rm -rf python_env

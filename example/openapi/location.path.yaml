@@ -2,7 +2,7 @@ location:
   get:
     summary: Find locations by conditions
     description: Find locations based on conditions
-    operationId: find
+    operationId: LocationController.find
     parameters:
     - description: Location ID
       in: query
@@ -68,9 +68,9 @@ location:
         description: location not found
     tags:
     - location
-    x-openapi-router-controller: controllers.location.LocationController
+    x-openapi-router-controller: controllers.location
   post:
-    operationId: create
+    operationId: LocationController.create
     requestBody:
       content:
         application/json:
@@ -89,11 +89,11 @@ location:
     tags:
     - location
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.location.LocationController
+    x-openapi-router-controller: controllers.location
 location-id:
   get:
     description: Returns a single location
-    operationId: get
+    operationId: LocationController.get
     parameters:
     - description: ID of location to return
       in: path
@@ -122,9 +122,9 @@ location-id:
     summary: Find location by ID
     tags:
     - location
-    x-openapi-router-controller: controllers.location.LocationController
+    x-openapi-router-controller: controllers.location
   put:
-    operationId: update
+    operationId: LocationController.update
     requestBody:
       content:
         application/json:
@@ -155,10 +155,10 @@ location-id:
     tags:
     - location
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.location.LocationController
+    x-openapi-router-controller: controllers.location
 location-ids:
   delete:
-    operationId: delete
+    operationId: LocationController.delete
     parameters:
     - description: Location ids to delete
       in: path
@@ -186,4 +186,4 @@ location-ids:
     summary: Deletes one or more locations
     tags:
     - location
-    x-openapi-router-controller: controllers.location.LocationController
+    x-openapi-router-controller: controllers.location

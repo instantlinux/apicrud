@@ -2,7 +2,7 @@ person:
   get:
     summary: Find people by conditions
     description: Find people based on conditions
-    operationId: find
+    operationId: PersonController.find
     parameters:
     - description: Person ID
       in: query
@@ -71,9 +71,9 @@ person:
     - basic: []
     tags:
     - person
-    x-openapi-router-controller: controllers.person.PersonController
+    x-openapi-router-controller: controllers.person
   post:
-    operationId: create
+    operationId: PersonController.create
     requestBody:
       content:
         application/json:
@@ -92,11 +92,11 @@ person:
     tags:
     - person
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.person.PersonController
+    x-openapi-router-controller: controllers.person
 person-id:
   get:
     description: Returns a single person
-    operationId: get
+    operationId: PersonController.get
     parameters:
     - description: ID of person to return
       in: path
@@ -125,9 +125,9 @@ person-id:
     summary: Find person by ID
     tags:
     - person
-    x-openapi-router-controller: controllers.person.PersonController
+    x-openapi-router-controller: controllers.person
   put:
-    operationId: update
+    operationId: PersonController.update
     requestBody:
       content:
         application/json:
@@ -158,10 +158,10 @@ person-id:
     tags:
     - person
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.person.PersonController
+    x-openapi-router-controller: controllers.person
 person-ids:
   delete:
-    operationId: delete
+    operationId: PersonController.delete
     parameters:
     - description: person ids to delete
       in: path
@@ -189,4 +189,4 @@ person-ids:
     summary: Deletes one or more people
     tags:
     - person
-    x-openapi-router-controller: controllers.person.PersonController
+    x-openapi-router-controller: controllers.person

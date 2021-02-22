@@ -12,6 +12,7 @@ class GrantController(BasicCRUD):
 
     @staticmethod
     def create(body):
+        print('grant.create: %s' % body)
         ret = super(GrantController, GrantController).create(body)
         Grants().uncache(body.get('uid'))
         return ret

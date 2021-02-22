@@ -2,7 +2,7 @@ tz:
   get:
     summary: Find TZs by conditions
     description: Find TZs based on conditions
-    operationId: find
+    operationId: TZController.find
     parameters:
     - description: TZ ID
       in: query
@@ -80,10 +80,10 @@ tz:
     tags:
     - tz
     x-codegen-request-body-name: conditions
-    x-openapi-router-controller: controllers.tz.TZController
+    x-openapi-router-controller: controllers.tz
   post:
     summary: Create a new tz
-    operationId: create
+    operationId: TZController.create
     requestBody:
       content:
         application/json:
@@ -100,12 +100,12 @@ tz:
     tags:
     - tz
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.tz.TZController
+    x-openapi-router-controller: controllers.tz
 tz-id:
   get:
     summary: Find tz by ID
     description: Returns a single tz
-    operationId: get
+    operationId: TZController.get
     parameters:
     - description: ID of tz to return
       in: path
@@ -133,10 +133,10 @@ tz-id:
     - basic: []
     tags:
     - tz
-    x-openapi-router-controller: controllers.tz.TZController
+    x-openapi-router-controller: controllers.tz
   put:
     summary: Update an existing tz
-    operationId: update
+    operationId: TZController.update
     requestBody:
       content:
         application/json:
@@ -165,11 +165,11 @@ tz-id:
     tags:
     - tz
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.tz.TZController
+    x-openapi-router-controller: controllers.tz
 tz-ids:
   delete:
     summary: Delete one or more TZs
-    operationId: delete
+    operationId: TZController.delete
     parameters:
     - description: tz ids to delete
       in: path
@@ -196,4 +196,4 @@ tz-ids:
     - basic: []
     tags:
     - tz
-    x-openapi-router-controller: controllers.tz.TZController
+    x-openapi-router-controller: controllers.tz

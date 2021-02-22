@@ -146,16 +146,19 @@ components:
             album_size: 64
             apikeys: 2
             contacts: 8
-            daily_email: 200
-            daily_sms: 100
+            email_daily_total: 200
+            email_monthly_total: 1000
             lists: 12
             list_size: 250
             media_size_max: 16777216
-            monthly_email: 1000
-            monthly_sms: 1000
+            message_daily_total: 200
             photo_res_max: 1080
+            photo_daily_total: 200
             ratelimit: 500
+            sms_daily_total: 100
+            sms_monthly_total: 1000
             video_duration_max: 60
+            video_daily_total: 50
           description: >
             List of quota grants and their default values for users who
             have not upgraded to higher levels
@@ -228,6 +231,40 @@ components:
           default: 168
           description: Validity of a magic-token (after an event)
           type: integer
+        metrics:
+          default:
+            api_calls_total: { scope: instance, style: counter }
+            api_errors_total: { scope: instance, style: counter }
+            api_key_auth_total:  { scope: sitewide, style: counter }
+            api_request_seconds_total: { scope: instance, style: counter }
+            api_start_timestamp: { scope: instance, style: gauge }
+            email_daily_total: {}
+            email_monthly_total: { period: month }
+            geo_lookup_total: { scope: sitewide, style: counter }
+            logins_fail_total: { scope: sitewide, style: counter }
+            logins_success_total: { scope: sitewide, style: counter }
+            message_daily_total: {}
+            photo_daily_total: {}
+            photo_processing_seconds_total: { scope: sitewide, style: counter }
+            photo_uploads_total: { scope: sitewide, style: counter }
+            process_cpu_seconds_total: { scope: instance, style: counter }
+            process_max_fds: { scope: instance, style: gauge }
+            process_open_fds: { scope: instance, style: gauge }
+            process_start_time_seconds: { scope: instance, style: gauge }
+            process_resident_memory_bytes: { scope: instance, style: gauge }
+            process_virtual_memory_bytes: { scope: instance, style: gauge }
+            sms_daily_total: {}
+            sms_monthly_total: { period: month }
+            video_daily_total: {}
+            video_processing_seconds_total: { scope: sitewide, style: counter }
+            video_uploads_total: { scope: sitewide, style: counter }
+          description: >
+            Usage metrics - scope is user [default], instance, or
+            sitewide; style is grant [default], counter, or gauge; period
+            is hour, day [default], week, month, or indefinite; notify is
+            a percentage for triggering user notification, default [0] don't
+            notify. If style is grant, the counter will decrement from current
+            account's grant entitlement whenever the counter is initialized.
         openapi_file:
           default: openapi.yaml
           description: Name of the openapi resource definition file
