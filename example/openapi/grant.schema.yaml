@@ -20,16 +20,19 @@ Grant:
       - album_size
       - apikeys
       - contacts
-      - daily_email
-      - daily_sms
+      - email_daily_total
+      - email_monthly_total
       - lists
       - list_size
       - media_size_max
-      - monthly_email
-      - monthly_sms
+      - message_daily_total
       - photo_res_max
+      - photo_daily_total
       - ratelimit
+      - sms_daily_total
+      - sms_monthly_total
       - video_duration_max
+      - video_daily_total
       type: string
     owner:
       $ref: '#/components/schemas/Person/properties/name'

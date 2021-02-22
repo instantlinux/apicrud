@@ -11,6 +11,7 @@ APIcrud UI
 ├── media API
 ├── media processor
 ├── mariadb database
+├── prometheus metrics collector
 ├── rabbitMQ message broker
 └── redis memory cache
 ```

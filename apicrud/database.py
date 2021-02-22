@@ -8,7 +8,8 @@ created 31-mar-2019 by richb@instantlinux.net
 import alembic.config
 import alembic.script
 from alembic.runtime.environment import EnvironmentContext
-from flask import _app_ctx_stack
+from datetime import datetime
+from flask import _app_ctx_stack, abort, g, request
 import logging
 import os.path
 from sqlalchemy import create_engine
@@ -23,7 +24,9 @@ import time
 import yaml
 
 from .const import Constants
-from .session_manager import Mutex
+from .metrics import Metrics
+from .ratelimit import RateLimit
+from .session_manager import Mutex, SessionManager
 from .service_config import ServiceConfig
 
 Base = declarative_base()
@@ -62,6 +65,23 @@ def get_session(scopefunc=None, scoped=True, db_url=None, engine=None):
     else:
         Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
         return Session
+
+
+def before_request():
+    """flask session setup - database and metrics
+    """
+    g.db = get_session()
+    g.session = SessionManager()
+    g.request_start_time = datetime.utcnow()
+    try:
+        resource = request.url_rule.rule.split('/')[3]
+    except Exception:
+        resource = None
+    if resource != 'metrics':
+        Metrics().store('api_calls_total', labels=['resource=%s' % resource])
+    if request.method != 'OPTIONS' and RateLimit().call():
+        Metrics().store('api_errors_total', labels=['code=%d' % 429])
+        abort(429)
 
 
 def initialize_db(db_url=None, engine=None, redis_conn=None):

@@ -2,7 +2,7 @@ settings-id:
   get:
     summary: Find settings by ID
     description: Returns a single settings object
-    operationId: get
+    operationId: SettingsController.get
     parameters:
     - description: ID of settings to return
       in: path
@@ -30,10 +30,10 @@ settings-id:
     - basic: []
     tags:
     - settings
-    x-openapi-router-controller: controllers.settings.SettingsController
+    x-openapi-router-controller: controllers.settings
   put:
     summary: Update existing settings
-    operationId: update
+    operationId: SettingsController.update
     requestBody:
       content:
         application/json:
@@ -62,11 +62,11 @@ settings-id:
     tags:
     - settings
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.settings.SettingsController
+    x-openapi-router-controller: controllers.settings
 settings-ids:
   delete:
     summary: Delete one or more settings objects
-    operationId: delete
+    operationId: SettingsController.delete
     parameters:
     - description: settings ids to delete
       in: path
@@ -93,4 +93,4 @@ settings-ids:
     - basic: []
     tags:
     - settings
-    x-openapi-router-controller: controllers.settings.SettingsController
+    x-openapi-router-controller: controllers.settings

@@ -1,0 +1,31 @@
+Metric:
+  description: A metric
+  example:
+    name: name
+  properties:
+    created:
+      $ref: '#/components/schemas/base/properties/created'
+    id:
+      $ref: '#/components/schemas/base/properties/id'
+    label:
+      type: string
+      minLength: 2
+      maxLength: 32
+      pattern: ^[a-z\u00C0-\u00FF@_.-]+$
+    modified:
+      $ref: '#/components/schemas/base/properties/modified'
+    name:
+      type: string
+      minLength: 2
+      maxLength: 64
+      pattern: ^[a-z\u00C0-\u00FF@_.-]+$
+    privacy:
+      $ref: '#/components/schemas/base/properties/privacy'
+    status:
+      $ref: '#/components/schemas/base/properties/status'
+    uid:
+      $ref: '#/components/schemas/base/properties/id'
+  title: a metric
+  type: object
+  xml:
+    name: Metric

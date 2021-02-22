@@ -31,11 +31,13 @@ class Grants(object):
     def __init__(self, db_session=None, ttl=None):
         self.ttl = ttl or ServiceConfig().config.REDIS_TTL
         self.models = ServiceConfig().models
-        try:
-            self.session = db_session or g.db
-        except RuntimeError as ex:
-            if 'Working outside of application context' not in str(ex):
-                raise
+        self.session = db_session
+        if not self.session:
+            try:
+                self.session = g.db
+            except RuntimeError as ex:
+                if 'Working outside of application context' not in str(ex):
+                    raise
 
     def get(self, name, uid=None):
         """Get the cached value of a named grant, if it hasn't expired
@@ -52,12 +54,15 @@ class Grants(object):
             uid = AccessControl().uid
         if uid not in GRANTS or utils.utcnow() > GRANTS[uid]['expires']:
             records = self.session.query(self.models.Grant).filter_by(
-                uid=uid).all()
+                uid=uid, status='active').all()
             grants = dict(expires=utils.utcnow() + timedelta(seconds=self.ttl))
-            for record in records:
-                grants[record.name] = record.value
-                if record.expires:
-                    grants['expires'] = min(record.expires, grants['expires'])
+            for rec in records:
+                if rec.expires:
+                    if rec.expires > utils.utcnow():
+                        grants['expires'] = min(rec.expires, grants['expires'])
+                    else:
+                        continue
+                grants[rec.name] = rec.value
             GRANTS[uid] = grants
         if name in GRANTS[uid] and utils.utcnow() < GRANTS[uid]['expires']:
             ret = GRANTS[uid].get(name)

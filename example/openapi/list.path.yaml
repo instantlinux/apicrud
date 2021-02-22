@@ -2,7 +2,7 @@ list:
   get:
     summary: Find lists by conditions
     description: Find lists based on conditions
-    operationId: find
+    operationId: ListController.find
     parameters:
     - description: List ID
       in: query
@@ -71,9 +71,9 @@ list:
     - basic: []
     tags:
     - list
-    x-openapi-router-controller: controllers.list.ListController
+    x-openapi-router-controller: controllers.list
   post:
-    operationId: create
+    operationId: ListController.create
     requestBody:
       content:
         application/json:
@@ -92,11 +92,11 @@ list:
     tags:
     - list
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.list.ListController
+    x-openapi-router-controller: controllers.list
 list-id:
   get:
     description: Returns a single list
-    operationId: get
+    operationId: ListController.get
     parameters:
     - description: ID of list to return
       in: path
@@ -125,9 +125,9 @@ list-id:
     summary: Find list by ID
     tags:
     - list
-    x-openapi-router-controller: controllers.list.ListController
+    x-openapi-router-controller: controllers.list
   put:
-    operationId: update
+    operationId: ListController.update
     requestBody:
       content:
         application/json:
@@ -158,10 +158,10 @@ list-id:
     tags:
     - list
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.list.ListController
+    x-openapi-router-controller: controllers.list
 list-ids:
   delete:
-    operationId: delete
+    operationId: ListController.delete
     parameters:
     - description: list ids to delete
       in: path
@@ -189,4 +189,4 @@ list-ids:
     summary: Deletes one or more lists
     tags:
     - list
-    x-openapi-router-controller: controllers.list.ListController
+    x-openapi-router-controller: controllers.list

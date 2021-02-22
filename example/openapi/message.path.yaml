@@ -2,7 +2,7 @@ message:
   get:
     summary: Find messages by conditions
     description: Find messages based on conditions
-    operationId: find
+    operationId: MessageController.find
     parameters:
     - description: Message ID
       in: query
@@ -66,9 +66,9 @@ message:
     - basic: []
     tags:
     - message
-    x-openapi-router-controller: controllers.message.MessageController
+    x-openapi-router-controller: controllers.message
   post:
-    operationId: create
+    operationId: MessageController.create
     requestBody:
       content:
         application/json:
@@ -87,11 +87,11 @@ message:
     tags:
     - message
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.message.MessageController
+    x-openapi-router-controller: controllers.message
 message-id:
   get:
     description: Returns a single message
-    operationId: get
+    operationId: MessageController.get
     parameters:
     - description: ID of message to return
       in: path
@@ -120,9 +120,9 @@ message-id:
     summary: Find message by ID
     tags:
     - message
-    x-openapi-router-controller: controllers.message.MessageController
+    x-openapi-router-controller: controllers.message
   put:
-    operationId: update
+    operationId: MessageController.update
     requestBody:
       content:
         application/json:
@@ -153,10 +153,10 @@ message-id:
     tags:
     - message
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.message.MessageController
+    x-openapi-router-controller: controllers.message
 message-ids:
   delete:
-    operationId: delete
+    operationId: MessageController.delete
     parameters:
     - description: Message ids to delete
       in: path
@@ -184,4 +184,4 @@ message-ids:
     summary: Deletes one or more messages
     tags:
     - message
-    x-openapi-router-controller: controllers.message.MessageController
+    x-openapi-router-controller: controllers.message

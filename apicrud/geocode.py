@@ -10,6 +10,7 @@ import geocoder
 import logging
 
 from .access import AccessControl
+from .metrics import Metrics
 
 
 def lookup(address=None, neighborhood=None, city=None, state=None,
@@ -49,6 +50,7 @@ def lookup(address=None, neighborhood=None, city=None, state=None,
         neighborhood = 'A neighborhood%s' % (' in %s' % city if city else '')
     logging.info('geocode: lat=%f long=%f neighborhood="%s"' % (
         geo.lat, geo.lng, neighborhood))
+    Metrics().store('geo_lookup_total')
     return (geolat, geolong, neighborhood)
 
 

@@ -57,6 +57,7 @@ This example serves a simple message-board. The `source code <https://github.com
     │   ├── list.py
     │   ├── location.py
     │   ├── message.py
+    │   ├── metric.py
     │   ├── person.py
     │   ├── profile.py
     │   ├── scope.py
@@ -69,6 +70,7 @@ This example serves a simple message-board. The `source code <https://github.com
     │   ├── media-worker.yaml
     │   ├── media.yaml
     │   ├── prod.yaml
+    │   ├── prometheus.yaml
     │   ├── redis.yaml
     │   ├── rmq.yaml
     │   ├── ui.yaml

@@ -25,7 +25,7 @@ config = ServiceConfig(
 
 
 @app.task(name='tasks.messaging.send_contact')
-def send_contact(frm=None, to=None, template=None, **kwargs):
+def send_contact(frm=None, to=None, to_uid=None, template=None, **kwargs):
     """
     Args:
       frm (uid): person
@@ -35,4 +35,5 @@ def send_contact(frm=None, to=None, template=None, **kwargs):
     Raises:
       SendException
     """
-    Messaging().send(frm=frm, to=to, template=template, **kwargs)
+    Messaging().send(
+        frm=frm, to=to, to_uid=to_uid, template=template, **kwargs)

@@ -2,7 +2,7 @@ profile:
   get:
     summary: Find profile items by conditions
     description: Find profile items based on conditions
-    operationId: find
+    operationId: ProfileController.find
     parameters:
     - description: Profile item ID
       in: query
@@ -80,10 +80,10 @@ profile:
     tags:
     - profile
     x-codegen-request-body-name: conditions
-    x-openapi-router-controller: controllers.profile.ProfileController
+    x-openapi-router-controller: controllers.profile
   post:
     summary: Create a new profile item
-    operationId: create
+    operationId: ProfileController.create
     requestBody:
       content:
         application/json:
@@ -100,12 +100,12 @@ profile:
     tags:
     - profile
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.profile.ProfileController
+    x-openapi-router-controller: controllers.profile
 profile-id:
   get:
     summary: Find profile item by ID
     description: Returns a single profile item
-    operationId: get
+    operationId: ProfileController.get
     parameters:
     - description: ID of profile item to return
       in: path
@@ -133,10 +133,10 @@ profile-id:
     - basic: []
     tags:
     - profile
-    x-openapi-router-controller: controllers.profile.ProfileController
+    x-openapi-router-controller: controllers.profile
   put:
     summary: Update an existing profile item
-    operationId: update
+    operationId: ProfileController.update
     requestBody:
       content:
         application/json:
@@ -165,11 +165,11 @@ profile-id:
     tags:
     - profile
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.profile.ProfileController
+    x-openapi-router-controller: controllers.profile
 profile-ids:
   delete:
     summary: Delete one or more profile items
-    operationId: delete
+    operationId: ProfileController.delete
     parameters:
     - description: profile ids to delete
       in: path
@@ -196,4 +196,4 @@ profile-ids:
     - basic: []
     tags:
     - profile
-    x-openapi-router-controller: controllers.profile.ProfileController
+    x-openapi-router-controller: controllers.profile

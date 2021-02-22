@@ -1,0 +1,174 @@
+metric:
+  get:
+    summary: Find metrics by conditions
+    description: Find metrics based on conditions
+    operationId: MetricController.find
+    parameters:
+    - description: Metric ID
+      in: query
+      name: id
+      schema:
+        $ref: '#/components/schemas/base/properties/id'
+    - description: Metric name
+      in: query
+      name: name
+      schema:
+        $ref: '#/components/schemas/Metric/properties/name'
+    - description: Metric label
+      in: query
+      name: label
+      schema:
+        $ref: '#/components/schemas/Metric/properties/label'
+    - description: Maximum records to fetch
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 10000
+    - description: Record offset for pagination
+      in: query
+      name: offset
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 2147483647
+    - description: Sort-by field
+      in: query
+      name: sort
+      schema:
+        type: string
+        maxLength: 20
+    - description: Sort-order field
+      in: query
+      name: order
+      schema:
+        enum:
+        - asc
+        - desc
+        type: string
+    - description: Filter field
+      in: query
+      name: filter
+      schema:
+        type: string
+        maxLength: 2048
+    - description: Pagination token
+      in: query
+      name: cursor_next
+      schema:
+        type: string
+        format: b64string
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              items:
+                type: array
+                $ref: '#/components/schemas/Metric'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid conditions supplied
+      404:
+        content: {}
+        description: metric not found
+    security:
+    - apikey: ['full', 'metric']
+    - basic: []
+    tags:
+    - metric
+    x-codegen-request-body-name: conditions
+    x-openapi-router-controller: controllers.metric
+metric-collect:
+  get:
+    summary: Metrics for collectd
+    operationId: MetricController.collect
+    parameters:
+    - description: Metric ID
+      in: query
+      name: id
+      schema:
+        $ref: '#/components/schemas/base/properties/id'
+    - description: Metric name
+      in: query
+      name: name
+      schema:
+        $ref: '#/components/schemas/Metric/properties/name'
+    - description: Metric label
+      in: query
+      name: label
+      schema:
+        $ref: '#/components/schemas/Metric/properties/label'
+    - description: Status
+      in: query
+      name: status
+      schema:
+        $ref: '#/components/schemas/Metric/properties/status'
+    - description: Maximum records to fetch
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 10000
+    - description: Filter field
+      in: query
+      name: filter
+      schema:
+        type: string
+        maxLength: 2048
+    responses:
+      200:
+        content:
+          text/plain:
+            schema:
+              type: string
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid conditions supplied
+      404:
+        content: {}
+        description: metric not found
+    # TODO auth
+    # security:
+    # - apikey: ['full', 'metric']
+    tags:
+    - metric
+    x-codegen-request-body-name: conditions
+    x-openapi-router-controller: controllers.metric
+metric-id:
+  get:
+    summary: Find metric by ID
+    description: Returns a single metric
+    operationId: MetricController.get
+    parameters:
+    - description: ID of metric to return
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 35
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Metric'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid ID supplied
+      404:
+        content: {}
+        description: metric not found
+    security:
+    - apikey: []
+    - basic: []
+    tags:
+    - metric
+    x-openapi-router-controller: controllers.metric

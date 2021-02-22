@@ -15,6 +15,8 @@ Here are items to add/modify for any new resource:
 [ ] Role permissions in rbac.yaml
 [ ] Additions to config.yaml, if any
 [ ] Any new grants (add to service_config.yaml, Grant schema in openapi.yaml)
+[ ] Metrics for usage or application status
 [ ] Unit tests
 [ ] Any new i18n text strings (backend often won't need changes)
 [ ] Blank-database seed records, if any, in db_seed.yaml
+[ ] Kubernetes resources

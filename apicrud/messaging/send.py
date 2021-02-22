@@ -12,6 +12,7 @@ import ssl
 from ..account_settings import AccountSettings
 from ..database import get_session
 from ..exceptions import APIcrudSendError
+from ..metrics import Metrics
 from ..service_config import ServiceConfig
 from ..utils import utcnow
 from .format import MessageFormat
@@ -46,21 +47,37 @@ class Messaging(object):
             self.smtp.quit()
         self.db_session.remove()
 
-    def send(self, frm=None, to=None, template=None, attachments=[], **kwargs):
+    def send(self, frm=None, to=None, to_uid=None, template=None,
+             attachments=[], **kwargs):
         """
         Send a message to one contact
 
         Args:
             frm (uid): person
-            to (Contact): recipient
+            to (Contact): recipient (specific contact address)
+            to_uid (uid): recipient (generic, use primary contact)
             template (str): jinja2 template name
             attachments (list): additional MIMEBase / MimeText objects
             kwargs: kv pairs
         Raises:
             APIcrudSendError
         """
-        to_contact = self.db_session.query(
-            self.models.Contact).filter_by(id=to).one()
+        try:
+            if to:
+                to_contact = self.db_session.query(
+                    self.models.Contact).filter_by(id=to).one()
+            else:
+                to_contact = self.db_session.query(
+                    self.models.Contact).join(self.models.Person).filter(
+                        self.models.Contact.info ==
+                        self.models.Person.identity,
+                        self.models.Contact.type == 'email',
+                        self.models.Contact.status == 'active',
+                        self.models.Person.id == to_uid).one().id
+        except NoResultFound:
+            msg = 'Recipient cid=%s, uid=%s not found' % (to, to_uid)
+            logging.error(msg)
+            raise APIcrudSendError(msg)
         logmsg = dict(action='send_contact', to_id=to, from_id=frm,
                       info=to_contact.info)
         if to_contact.status == 'disabled':
@@ -76,13 +93,24 @@ class Messaging(object):
                 self.smtp = self.smtp_session()
             logging.info('action=send_contact template=%s type=%s address=%s' %
                          (template, to_contact.type, to_contact.info))
+            metrics = Metrics(uid=frm, db_session=self.db_session)
             if to_contact.type == 'sms':
+                if (not metrics.store('sms_daily_total') or
+                        not metrics.store('sms_monthly_total')):
+                    msg = 'Daily limit for uid=%s exceeded'
+                    logging.info(dict(message=msg, **logmsg))
+                    raise APIcrudSendError(msg)
                 dest_email = (to_contact.info + '@' +
                               self.config.CARRIER_GATEWAYS[to_contact.carrier])
                 body = MessageFormat(db_session=self.db_session,
                                      settings=self.settings).sms(
                     template, from_contact, to_contact, **kwargs)
             else:
+                if (not metrics.store('email_daily_total') or
+                        not metrics.store('email_monthly_total')):
+                    msg = 'Daily limit for uid=%s exceeded'
+                    logging.info(dict(message=msg, **logmsg))
+                    raise APIcrudSendError(msg)
                 dest_email = to_contact.info
                 body = MessageFormat(db_session=self.db_session,
                                      settings=self.settings).email(

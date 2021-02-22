@@ -2,7 +2,7 @@ category:
   get:
     summary: Find categories by conditions
     description: Find categories based on conditions
-    operationId: find
+    operationId: CategoryController.find
     parameters:
     - description: Category ID
       in: query
@@ -80,10 +80,10 @@ category:
     tags:
     - category
     x-codegen-request-body-name: conditions
-    x-openapi-router-controller: controllers.category.CategoryController
+    x-openapi-router-controller: controllers.category
   post:
     summary: Create a new category
-    operationId: create
+    operationId: CategoryController.create
     requestBody:
       content:
         application/json:
@@ -100,12 +100,12 @@ category:
     tags:
     - category
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.category.CategoryController
+    x-openapi-router-controller: controllers.category
 category-id:
   get:
     summary: Find category by ID
     description: Returns a single category
-    operationId: get
+    operationId: CategoryController.get
     parameters:
     - description: ID of category to return
       in: path
@@ -133,10 +133,10 @@ category-id:
     - basic: []
     tags:
     - category
-    x-openapi-router-controller: controllers.category.CategoryController
+    x-openapi-router-controller: controllers.category
   put:
     summary: Update an existing category
-    operationId: update
+    operationId: CategoryController.update
     requestBody:
       content:
         application/json:
@@ -165,11 +165,11 @@ category-id:
     tags:
     - category
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.category.CategoryController
+    x-openapi-router-controller: controllers.category
 category-ids:
   delete:
     summary: Delete one or more categories
-    operationId: delete
+    operationId: CategoryController.delete
     parameters:
     - description: category ids to delete
       in: path
@@ -196,4 +196,4 @@ category-ids:
     - basic: []
     tags:
     - category
-    x-openapi-router-controller: controllers.category.CategoryController
+    x-openapi-router-controller: controllers.category

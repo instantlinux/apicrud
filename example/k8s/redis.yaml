@@ -28,6 +28,20 @@ spec:
     spec:
       containers:
       - name: redis
+        #   args: [--requirepass, $(REDIS_PASS)]
+        #   env:
+        #   - name: REDIS_PASS
+        #     valueFrom:
+        #       secretKeyRef:
+        #         name: $SERVICE_NAME-redis-password
+        #         key: $SERVICE_NAME-redis-password
         image: redis:$VERSION_REDIS-alpine
         ports:
         - containerPort: 6379
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: $SERVICE_NAME-redis

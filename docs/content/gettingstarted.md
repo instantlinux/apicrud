@@ -49,6 +49,7 @@ Clone this repo to your local environment. To start the example application in a
   * See usage instructions for [media service](https://github.com/instantlinux/apicrud-media#usage), starting with the `admin` login
   * Subsequent logins will now have access to media features in the UI
 * Optional: if running API within a docker container, update the kubernetes secrets defined below; see instructions in [example/Makefile.sops](https://github.com/instantlinux/apicrud/blob/master/example/Makefile.sops)
+* Optional: `make prometheus_adhoc` will start the metric collector, with a GUI on port 9090 of its container IP address
 * Optional for Linux: a full ansible-based bare-metal k8s cluster management suite is published at [instantlinux/docker-tools](https://github.com/instantlinux/docker-tools)
 
 The example MVC application provided here in this repo is also used as a fixture for its unit tests. You can fork / clone this repo and experiment with your own extensions to the database models, controller logic, and openapi.yaml REST endpoints. See [instantlinux/apicrud-ui](https://github.com/instantlinux/apicrud-ui) for definitions of the views (as React.js code).

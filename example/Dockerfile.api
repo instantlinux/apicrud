@@ -1,4 +1,4 @@
-FROM instantlinux/python-wsgi:3.8.5-alpine3.12
+FROM instantlinux/python-wsgi:3.8.7-alpine3.13
 
 MAINTAINER Rich Braun "richb@instantlinux.net"
 ARG BUILD_DATE
@@ -14,8 +14,8 @@ ENV AMQ_HOST=example-rmq \
 
 EXPOSE 8080
 WORKDIR /opt/example
-COPY requirements.txt example/uwsgi.ini /usr/src/
-RUN pip3 install -r /usr/src/requirements.txt && \
+COPY Pipfile* example/uwsgi.ini /usr/src/
+RUN cd /usr/src && pipenv install --system --deploy && \
     mkdir /var/opt/example && chown uwsgi /var/opt/example
 
 COPY example/ /opt/example

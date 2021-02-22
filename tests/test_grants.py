@@ -38,6 +38,10 @@ class TestGrants(test_base.TestBase):
                 record['name'], uid=self.test_uid), int(record['value']))
             g.db.remove()
 
+        # Clean up the grant
+        response = self.call_endpoint('/grant/%s' % id, 'delete')
+        self.assertEqual(response.status_code, 204)
+
     def test_get_multiple_grants(self):
         person = dict(name='Ulysses Grant III', identity='grant3@aol.com')
         record = dict(name='lists', value='12')
@@ -174,3 +178,7 @@ class TestGrants(test_base.TestBase):
                 Grants().get(record['name'], uid=self.test_uid),
                 self.config.DEFAULT_GRANTS[record['name']])
             g.db.remove()
+
+        # Clean up the grant
+        response = self.call_endpoint('/grant/%s' % id, 'delete')
+        self.assertEqual(response.status_code, 204)

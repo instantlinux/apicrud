@@ -2,7 +2,7 @@ account:
   get:
     summary: Find accounts by conditions
     description: Find accounts based on conditions
-    operationId: find
+    operationId: AccountController.find
     parameters:
     - description: Account ID
       in: query
@@ -83,15 +83,15 @@ account:
         content: {}
         description: account not found
     security:
-    - apikey: []
+    - apikey: [full, readonly]
     - basic: []
     tags:
     - account
     x-codegen-request-body-name: conditions
-    x-openapi-router-controller: controllers.account.AccountController
+    x-openapi-router-controller: controllers.account
   post:
     summary: Create a new account
-    operationId: register
+    operationId: AccountController.register
     requestBody:
       content:
         application/json:
@@ -105,12 +105,12 @@ account:
     tags:
     - account
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.account.AccountController
+    x-openapi-router-controller: controllers.account
 account-id:
   get:
     summary: Find account by ID
     description: Returns a single account
-    operationId: get
+    operationId: AccountController.get
     parameters:
     - description: ID of account to return
       in: path
@@ -134,14 +134,14 @@ account-id:
         content: {}
         description: account not found
     security:
-    - apikey: []
+    - apikey: [full, readonly]
     - basic: []
     tags:
     - account
-    x-openapi-router-controller: controllers.account.AccountController
+    x-openapi-router-controller: controllers.account
   put:
     summary: Update an existing account
-    operationId: update
+    operationId: AccountController.update
     requestBody:
       content:
         application/json:
@@ -165,16 +165,16 @@ account-id:
         content: {}
         description: Validation exception
     security:
-    - apikey: ['full']
+    - apikey: [full]
     - basic: []
     tags:
     - account
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.account.AccountController
+    x-openapi-router-controller: controllers.account
 account-ids:
   delete:
     summary: Delete one or more accounts
-    operationId: delete
+    operationId: AccountController.delete
     parameters:
     - description: account ids to delete
       in: path
@@ -197,15 +197,15 @@ account-ids:
         content: {}
         description: Invalid id value
     security:
-    - apikey: ['full']
+    - apikey: [full]
     - basic: []
     tags:
     - account
-    x-openapi-router-controller: controllers.account.AccountController
+    x-openapi-router-controller: controllers.account
 account_password-uid:
   put:
     summary: Change a password
-    operationId: change_password
+    operationId: AccountController.change_password
     requestBody:
       content:
         application/json:
@@ -231,10 +231,10 @@ account_password-uid:
     tags:
     - account
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.account.AccountController
+    x-openapi-router-controller: controllers.account
   get:
     summary: Dummy read for editing account password
-    operationId: get_password
+    operationId: AccountController.get_password
     parameters:
     - description: user ID of account
       in: path
@@ -259,11 +259,11 @@ account_password-uid:
         description: account not found
     tags:
     - account
-    x-openapi-router-controller: controllers.account.AccountController
+    x-openapi-router-controller: controllers.account
 auth:
   post:
     summary: Authenticate
-    operationId: login
+    operationId: AuthController.login
     requestBody:
       content:
         application/json:
@@ -277,11 +277,11 @@ auth:
     tags:
     - auth
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.auth.AuthController
+    x-openapi-router-controller: controllers.auth
 logout:
   get:
     summary: Log out
-    operationId: logout
+    operationId: AuthController.logout
     responses:
       200:
         content: {}
@@ -291,4 +291,4 @@ logout:
         description: Invalid input
     tags:
     - auth
-    x-openapi-router-controller: controllers.auth.AuthController
+    x-openapi-router-controller: controllers.auth

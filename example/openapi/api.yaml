@@ -40,6 +40,8 @@ components:
       $ref: 'location.schema.yaml#/Location'
     Message:
       $ref: 'message.schema.yaml#/Message'
+    Metric:
+      $ref: 'metric.schema.yaml#/Metric'
     Person:
       $ref: 'person.schema.yaml#/Person'
     Profile:
@@ -131,6 +133,12 @@ paths:
     $ref: 'message.path.yaml#/message-id'
   /message/{ids}:
     $ref: 'message.path.yaml#/message-ids'
+  /metric:
+    $ref: 'metric.path.yaml#/metric'
+  /metric/{id}:
+    $ref: 'metric.path.yaml#/metric-id'
+  /metrics:
+    $ref: 'metric.path.yaml#/metric-collect'
   /person:
     $ref: 'person.path.yaml#/person'
   /person/{id}:

@@ -63,6 +63,7 @@ class ServiceRegistry(object):
         """
 
         global service_data
+
         try:
             ipv4 = socket.gethostbyname(instance_id)
         except socket.gaierror:
@@ -83,6 +84,14 @@ class ServiceRegistry(object):
         self._save_entry()
         refresh_thread = threading.Timer(1, ServiceRegistry.update, ())
         refresh_thread.start()
+
+    def get(self):
+        """return service registration for local instance
+
+        Returns: dict(name, id, info)
+          Key info is dict(endpoints, ipv4, port, public_url, created)
+        """
+        return service_data
 
     @staticmethod
     def update():

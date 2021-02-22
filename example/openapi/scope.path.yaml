@@ -2,7 +2,7 @@ scope:
   get:
     summary: Find scopes by conditions
     description: Find scopes based on conditions
-    operationId: find
+    operationId: ScopeController.find
     parameters:
     - description: Scope ID
       in: query
@@ -66,9 +66,9 @@ scope:
     - basic: []
     tags:
     - scope
-    x-openapi-router-controller: controllers.scope.ScopeController
+    x-openapi-router-controller: controllers.scope
   post:
-    operationId: create
+    operationId: ScopeController.create
     requestBody:
       content:
         application/json:
@@ -87,11 +87,11 @@ scope:
     tags:
     - scope
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.scope.ScopeController
+    x-openapi-router-controller: controllers.scope
 scope-id:
   get:
     description: Returns a single scope
-    operationId: get
+    operationId: ScopeController.get
     parameters:
     - description: ID of scope to return
       in: path
@@ -120,9 +120,9 @@ scope-id:
     summary: Find scope by ID
     tags:
     - scope
-    x-openapi-router-controller: controllers.scope.ScopeController
+    x-openapi-router-controller: controllers.scope
   put:
-    operationId: update
+    operationId: ScopeController.update
     requestBody:
       content:
         application/json:
@@ -153,10 +153,10 @@ scope-id:
     tags:
     - scope
     x-codegen-request-body-name: body
-    x-openapi-router-controller: controllers.scope.ScopeController
+    x-openapi-router-controller: controllers.scope
 scope-ids:
   delete:
-    operationId: delete
+    operationId: ScopeController.delete
     parameters:
     - description: Scope ids to delete
       in: path
@@ -184,4 +184,4 @@ scope-ids:
     summary: Deletes one or more scopes
     tags:
     - scope
-    x-openapi-router-controller: controllers.scope.ScopeController
+    x-openapi-router-controller: controllers.scope

@@ -1,4 +1,4 @@
-FROM instantlinux/python-wsgi:3.8.5-alpine3.12
+FROM instantlinux/python-wsgi:3.8.7-alpine3.13
 MAINTAINER Rich Braun "richb@instantlinux.net"
 
 ARG BUILD_DATE
@@ -17,9 +17,9 @@ EXPOSE 5555
 WORKDIR /opt/example
 COPY example/ /opt/example
 COPY apicrud/ /opt/apicrud
-COPY requirements*.txt /usr/src/
-RUN pip3 install -r /usr/src/requirements.txt \
-      -r /usr/src/requirements-messaging.txt && \
+COPY Pipfile* requirements-messaging.txt /usr/src/
+RUN cd /usr/src && pipenv install --system --deploy && \
+    pip3 install -r /usr/src/requirements-messaging.txt && \
     chmod -R g-w,o-w /opt/example && \
     adduser -u $CELERY_UID -D -s /bin/false -G users celery
 
