@@ -25,7 +25,7 @@ i18n_update: $(POT_FILE)
 	  pybabel update -i $(file) -d $(shell dirname $(file)); \
 	)
 i18n_deploy:
-	pip install flask-babel
+	pip3 install flask-babel
 	umask=022; pybabel compile -d apicrud/i18n; \
 	pybabel compile -d $(DIR)/i18n
 

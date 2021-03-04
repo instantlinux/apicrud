@@ -78,9 +78,9 @@ test: dev_requirements apicrud/i18n/en/LC_MESSAGES/messages.mo \
 	 --cov ../example \
 	 --cov .)
 
-dist/apicrud-$(VERSION).tar.gz: i18n_deploy
+dist/apicrud-$(VERSION).tar.gz: i18n_deploy python_env
 	@echo "Building package"
-	pipenv --site-packages sync
+	. $(VDIR)/bin/activate && pipenv --site-packages sync
 	pip show wheel >/dev/null; \
 	if [ $$? -ne 0 ]; then \
 	  (. $(VDIR)/bin/activate ; python setup.py sdist bdist_wheel); \
