@@ -80,12 +80,12 @@ test: dev_requirements apicrud/i18n/en/LC_MESSAGES/messages.mo \
 
 dist/apicrud-$(VERSION).tar.gz: i18n_deploy python_env
 	@echo "Building package"
-	. $(VDIR)/bin/activate && pipenv --site-packages sync
-	pip show wheel >/dev/null; \
+	. $(VDIR)/bin/activate && pipenv install --dev --deploy && \
+	pip3 show wheel >/dev/null; \
 	if [ $$? -ne 0 ]; then \
 	  (. $(VDIR)/bin/activate ; python setup.py sdist bdist_wheel); \
 	else \
-	  python setup.py sdist bdist_wheel ; \
+	  python3 setup.py sdist bdist_wheel ; \
 	fi
 
 clean:
