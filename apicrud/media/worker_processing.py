@@ -278,9 +278,15 @@ class MediaProcessing(object):
 
     @staticmethod
     def _decimal_from_degrees(dms, hemisphere):
-        degrees = int((dms[0][0] / dms[0][1] +
-                       dms[1][0] / dms[1][1] / 60.0 +
-                       dms[2][0] / dms[2][1] / 3600.0) * 1e7)
+        """
+        Convert a DMS object to fixed-precision floating-point; we store
+        geo coordinates with 7 digits of precision to fit in a 32-bit int.
+
+        Args:
+          dms (tuple): degrees / minutes / seconds
+          hemisphere (str): N, S, E, W
+        """
+        degrees = int((dms[0] + dms[1] / 60.0 + dms[2] / 3600.0) * 1e7)
         if hemisphere in ("S", "W"):
             degrees = -degrees
         return degrees
