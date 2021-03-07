@@ -130,6 +130,32 @@ class Metrics(object):
             self.connection.set(key, value)
         return True
 
+    def check(self, name):
+        """Check remaining credit against grant-style metric
+
+        Params:
+          name (str): a metric name
+
+        Returns:
+          float: amount of credit remaining, or None
+        """
+        if name not in self.metrics:
+            raise AssertionError('name=%s not defined in config' % name)
+
+        metric = self.metrics[name]
+        labels = ['uid=%s' % self.uid] if self.uid else []
+        key = 'mtr:%s:%s' % (name, ",".join(labels))
+        if metric['style'] != 'grant':
+            raise AssertionError('name=%s is not a grant metric' % name)
+
+        current = self.connection.get(key)
+        limit = Grants(db_session=self.db_session).get(name, uid=self.uid)
+        if current is None or float(current) >= limit:
+            return float(limit)
+        elif float(current) > 0:
+            return float(current)
+        return None
+
     def find(self, **kwargs):
         """Look up metrics defined by filter
 

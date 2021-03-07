@@ -4,6 +4,7 @@ created 18-apr-2019 by richb@instantlinux.net
 """
 
 import celery
+from flask_babel import _
 import logging
 import smtplib
 from sqlalchemy.orm.exc import NoResultFound
@@ -97,7 +98,7 @@ class Messaging(object):
             if to_contact.type == 'sms':
                 if (not metrics.store('sms_daily_total') or
                         not metrics.store('sms_monthly_total')):
-                    msg = 'Daily limit for uid=%s exceeded'
+                    msg = _(u'daily limit exceeded')
                     logging.info(dict(message=msg, **logmsg))
                     raise APIcrudSendError(msg)
                 dest_email = (to_contact.info + '@' +
@@ -108,7 +109,7 @@ class Messaging(object):
             else:
                 if (not metrics.store('email_daily_total') or
                         not metrics.store('email_monthly_total')):
-                    msg = 'Daily limit for uid=%s exceeded'
+                    msg = _(u'daily limit exceeded')
                     logging.info(dict(message=msg, **logmsg))
                     raise APIcrudSendError(msg)
                 dest_email = to_contact.info

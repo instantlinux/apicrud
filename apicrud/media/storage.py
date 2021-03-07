@@ -28,6 +28,7 @@ import uuid
 from ..access import AccessControl
 from ..const import Constants
 from ..grants import Grants
+from ..metrics import Metrics
 from ..service_config import ServiceConfig
 import apicrud.utils as utils
 
@@ -119,8 +120,19 @@ class StorageAPI(object):
         if ctype in Constants.MIME_VIDEO_TYPES:
             duration_max = Grants(
                 db_session=self.db).get('video_duration_max')
+            if not Metrics(uid=self.uid, db_session=self.db).check(
+                    'video_daily_total'):
+                msg = _(u'daily video upload limit exceeded')
+                logging.warning(dict(message=msg, **logmsg))
+                return dict(message=msg), 405
             if body.get('duration') and body['duration'] > duration_max:
                 msg = _('video exceeds maximum duration=%f') % duration_max
+                logging.warning(dict(message=msg, **logmsg))
+                return dict(message=msg), 405
+        elif ctype in Constants.MIME_IMAGE_TYPES:
+            if not Metrics(uid=self.uid, db_session=self.db).check(
+                    'photo_daily_total'):
+                msg = _(u'daily photo upload limit exceeded')
                 logging.warning(dict(message=msg, **logmsg))
                 return dict(message=msg), 405
         max_size = Grants(
@@ -229,6 +241,21 @@ class StorageAPI(object):
             logging.info(dict(action='upload_complete', file_id=file_id,
                               duration='%.3f' % duration))
             func_worker(self.uid, file_id)
+            Metrics().store('file_upload_bytes_total', labels=[
+                'ctype=%s' % meta.get('ctype')], value=meta.get('size'))
+            ret = True
+            if meta.get('ctype') in Constants.MIME_IMAGE_TYPES:
+                ret = Metrics(uid=self.uid, db_session=self.db).store(
+                    'photo_daily_total')
+            elif meta.get('ctype') in Constants.MIME_VIDEO_TYPES:
+                ret = Metrics(uid=self.uid, db_session=self.db).store(
+                    'video_daily_total')
+            if not ret:
+                # A user should not be able to get an upload URL after
+                # reaching limit, but we log here just in case
+                logging.warning(dict(
+                    uid=self.uid, action='upload', size=meta.get('size'),
+                    ctype=meta.get('ctype'), message='limit exceeded'))
             return dict(file_id=file_id), 201
         else:
             msg = _('unhandled frontend status')

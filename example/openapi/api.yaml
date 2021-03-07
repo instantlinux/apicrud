@@ -135,8 +135,6 @@ paths:
     $ref: 'message.path.yaml#/message-ids'
   /metric:
     $ref: 'metric.path.yaml#/metric'
-  /metric/{id}:
-    $ref: 'metric.path.yaml#/metric-id'
   /metrics:
     $ref: 'metric.path.yaml#/metric-collect'
   /person:

@@ -1,6 +1,7 @@
 from flask import g
+from flask_babel import _
 
-from apicrud import AccessControl, BasicCRUD
+from apicrud import AccessControl, BasicCRUD, Metrics
 
 from models import ListMessage
 
@@ -15,7 +16,9 @@ class MessageController(BasicCRUD):
         list_id = body.get('list_id')
         # TODO use many-to-many table instead, once UI is fixed
         # body.pop('list_id', None)
-        body['sender_id'] = AccessControl().uid
+        body['sender_id'] = uid = AccessControl().uid
+        if not Metrics(uid=uid, db_session=g.db).store('message_daily_total'):
+            return dict(message=_(u'daily limit exceeded')), 405
         retval = super(MessageController, MessageController).create(body)
         if retval[1] == 201 and list_id:
             message_id = retval[0]['id']

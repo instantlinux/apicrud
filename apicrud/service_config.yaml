@@ -240,12 +240,13 @@ components:
             api_start_timestamp: { scope: instance, style: gauge }
             email_daily_total: {}
             email_monthly_total: { period: month }
+            file_upload_bytes_total: {scope: sitewide, style: counter }
             geo_lookup_total: { scope: sitewide, style: counter }
             logins_fail_total: { scope: sitewide, style: counter }
             logins_success_total: { scope: sitewide, style: counter }
             message_daily_total: {}
             photo_daily_total: {}
-            photo_processing_seconds_total: { scope: sitewide, style: counter }
+            photo_processing_seconds_total: { scope: instance, style: counter }
             photo_uploads_total: { scope: sitewide, style: counter }
             process_cpu_seconds_total: { scope: instance, style: counter }
             process_max_fds: { scope: instance, style: gauge }
@@ -256,7 +257,7 @@ components:
             sms_daily_total: {}
             sms_monthly_total: { period: month }
             video_daily_total: {}
-            video_processing_seconds_total: { scope: sitewide, style: counter }
+            video_processing_seconds_total: { scope: instance, style: counter }
             video_uploads_total: { scope: sitewide, style: counter }
           description: >
             Usage metrics - scope is user [default], instance, or

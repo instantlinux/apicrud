@@ -8,16 +8,7 @@ from apicrud import BasicCRUD, Metrics
 
 class MetricController(BasicCRUD):
     def __init__(self):
-        super().__init__(resource='metric')
-
-    @staticmethod
-    def get(id):
-        """Get one metric
-
-        Args:
-            id (str): Database or hybrid metric ID
-        """
-        return Metrics().get(id)
+        self.resource = 'metric'
 
     @staticmethod
     def find(**kwargs):

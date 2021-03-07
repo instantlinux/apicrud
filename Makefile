@@ -26,9 +26,8 @@ analysis: flake8
 package: dist/apicrud-$(VERSION).tar.gz
 publish: package
 	@echo Publishing python package
-	(. $(VDIR)/bin/activate && \
-	 twine upload --repository-url $(PYPI_URL) \
-	   -u $(PYPI_USER) -p $(PYPI_PASSWORD) dist/*)
+	pipenv run twine upload --repository-url $(PYPI_URL) \
+	   -u $(PYPI_USER) -p $(PYPI_PASSWORD) dist/*
 
 test_functional:
 	@echo "Run Functional Tests - not yet implemented"
@@ -54,14 +53,13 @@ flake8: dev_requirements
 	. $(VDIR)/bin/activate && flake8 apicrud example tests \
 	 --per-file-ignores='example/alembic/versions/*:E501,E122,E128' 
 
-dev_requirements: python_env
+dev_requirements: python_env requirements-dev.txt
 	@echo "Installing dev requirements"
 	. $(VDIR)/bin/activate && pip install -r requirements-dev.txt
 
-dev_requirements.txt: python_env
+requirements-dev.txt: python_env
 	@echo Updating Pipfile.lock and requirements-dev.txt
-	. $(VDIR)/bin/activate && \
-	  pipenv lock --requirements --dev > requirements-dev.txt
+	. $(VDIR)/bin/activate && pipenv lock --requirements --dev > $@
 
 test: dev_requirements apicrud/i18n/en/LC_MESSAGES/messages.mo \
 	  example/openapi.yaml
@@ -78,15 +76,10 @@ test: dev_requirements apicrud/i18n/en/LC_MESSAGES/messages.mo \
 	 --cov ../example \
 	 --cov .)
 
-dist/apicrud-$(VERSION).tar.gz: i18n_deploy python_env
+dist/apicrud-$(VERSION).tar.gz: i18n_deploy
 	@echo "Building package"
-	. $(VDIR)/bin/activate && pipenv install --dev --ignore-pipfile && \
-	pip3 show wheel >/dev/null; \
-	if [ $$? -ne 0 ]; then \
-	  (. $(VDIR)/bin/activate ; python setup.py sdist bdist_wheel); \
-	else \
-	  python3 setup.py sdist bdist_wheel ; \
-	fi
+	pipenv --site-packages install --dev --ignore-pipfile
+	pipenv run python3 setup.py sdist bdist_wheel
 
 clean:
 	rm -rf build dist *.egg-info .cache .pytest_cache */__pycache__ \

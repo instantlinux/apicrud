@@ -33,11 +33,8 @@ analysis:
   - make analysis
   - XARGS=--runslow make test
   artifacts:
-    paths:
-    - apicrud/htmlcov/
-    - tests/results.xml
-    reports:
-      junit: tests/results.xml
+    paths: [ apicrud/htmlcov/, tests/results.xml ]
+    reports: { junit: tests/results.xml }
   coverage: '/TOTAL.*\s(\d+)%/'
 
 api:

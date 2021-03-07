@@ -100,7 +100,11 @@ class TestMetrics(test_base.TestBase):
             '/metrics?filter={"label":"alsotruncated', 'get')
         self.assertEqual(response.status_code, 405)
 
-    def test_store_invalid(self):
+    def test_check_store_invalid(self):
+        with self.assertRaises(AssertionError):
+            Metrics().check('bogus_metric')
+        with self.assertRaises(AssertionError):
+            Metrics().check('api_calls_total')
         with self.assertRaises(AssertionError):
             Metrics().store('bogus_metric')
         with self.assertRaises(AssertionError):
@@ -143,6 +147,16 @@ class TestMetrics(test_base.TestBase):
                       db_seed_file=os.path.join(path, 'db_seed.yaml'),
                       db_migrations=os.path.join(path, 'alembic'),
                       rbac_file='/tmp/rbac.yaml')
+
+    def test_check_limit_decrement(self):
+        grant = 'sms_monthly_total'
+        db_session = database.get_session(db_url=self.config.DB_URL)
+        metrics = Metrics(uid=self.test_uid, db_session=db_session)
+        current = metrics.check(grant)
+        metrics.store(grant)
+        next = metrics.check(grant)
+        self.assertEqual(next, current - 1)
+        db_session.remove()
 
     def test_warn_threshold_50(self):
         grant = 'photo_daily_total'
