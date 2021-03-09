@@ -92,14 +92,12 @@ class BasicCRUD(object):
                     body['expires'], '%Y-%m-%dT%H:%M:%SZ')
         if hasattr(self.model, 'uid') and not body.get('uid'):
             body['uid'] = acc.uid
-        uid = body.get('uid')
+        uid = logmsg['uid'] = body.get('uid')
         if not acc.with_permission('c', new_uid=uid,
                                    membership=acc.primary_res,
                                    id=body.get('event_id')):
-            logging.warning(dict(
-                message='access denied', uid=uid, **logmsg))
+            logging.warning(dict(message='access denied', **logmsg))
             return dict(message=_(u'access denied')), 403
-        logmsg['uid'] = body.get('uid')
         ret_info = {}
         logging.info(dict(id=id, name=body.get('name'), **logmsg))
         if not body.get('category_id') and hasattr(self.model, 'category_id'):
@@ -117,9 +115,9 @@ class BasicCRUD(object):
 
         grant = (self.resource if self.resource.endswith('s')
                  else self.resource + 's')
+        limit = Grants().get(grant, uid=uid)
         if grant in ServiceConfig().config.DEFAULT_GRANTS and g.db.query(
-                self.model).filter_by(uid=uid).count() >= Grants().get(
-                    grant, uid=uid):
+                self.model).filter_by(uid=uid).count() >= limit:
             msg = _('user limit exceeded')
             logging.info(dict(message=msg, allowed=limit, **logmsg))
             return dict(message=msg, allowed=limit), 405
