@@ -115,10 +115,11 @@ class BasicCRUD(object):
         if hasattr(self.model, 'status'):
             body['status'] = body.get('status', 'active')
 
-        limit = Grants().get(self.resource if self.resource.endswith('s')
-                             else self.resource + 's', uid=uid)
-        if limit and g.db.query(self.model).filter_by(
-                uid=uid).count() >= limit:
+        grant = (self.resource if self.resource.endswith('s')
+                 else self.resource + 's')
+        if grant in ServiceConfig().config.DEFAULT_GRANTS and g.db.query(
+                self.model).filter_by(uid=uid).count() >= Grants().get(
+                    grant, uid=uid):
             msg = _('user limit exceeded')
             logging.info(dict(message=msg, allowed=limit, **logmsg))
             return dict(message=msg, allowed=limit), 405

@@ -8,7 +8,7 @@ created 18-apr-2019 by richb@instantlinux.net
 import celery
 import os
 
-from apicrud import ServiceConfig
+from apicrud import Metrics, ServiceConfig
 from apicrud.messaging.send import Messaging
 
 import celeryconfig
@@ -37,3 +37,7 @@ def send_contact(frm=None, to=None, to_uid=None, template=None, **kwargs):
     """
     Messaging().send(
         frm=frm, to=to, to_uid=to_uid, template=template, **kwargs)
+
+
+# Register send_contact, for usage-alert notifications
+Metrics(func_send=send_contact.delay)

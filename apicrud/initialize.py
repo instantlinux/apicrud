@@ -8,7 +8,6 @@ from flask_cors import CORS
 import logging
 import os
 
-from . import grants
 from .access import AccessControl
 from .const import Constants
 from .metrics import Metrics
@@ -44,7 +43,6 @@ def app(application):
          supports_credentials=True)
 
     AccessControl().load_rbac(config.RBAC_FILE)
-    grants.Grants().load_defaults(config.DEFAULT_GRANTS)
     logging.info(dict(action='initialize_app', port=config.APP_PORT))
     return application.app
 

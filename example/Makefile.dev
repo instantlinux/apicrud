@@ -18,7 +18,7 @@ run_local: dev_requirements envsubst redis_adhoc mariadb_adhoc \
 
 messaging_worker: rmq_adhoc
 	. $(VDIR)/bin/activate && cd example && \
-	  AMQ_HOST=$(RABBITMQ_IP) TZ=UTC PYTHONPATH=.. \
+	  AMQ_HOST=$(RABBITMQ_IP) REDIS_HOST=$(REDIS_IP) TZ=UTC PYTHONPATH=.. \
 	  celery -A messaging worker -Q messaging_$(APP_ENV) \
 	  -n messaging1@%h --loglevel=INFO
 

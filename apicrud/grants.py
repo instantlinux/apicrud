@@ -6,6 +6,7 @@ created 27-may-2019 by richb@instantlinux.net
 from flask import g
 from datetime import timedelta
 import json
+import logging
 
 from .access import AccessControl
 from .service_config import ServiceConfig
@@ -29,7 +30,6 @@ class Grants(object):
     """
 
     def __init__(self, db_session=None, ttl=None):
-        self.ttl = ttl or ServiceConfig().config.REDIS_TTL
         self.models = ServiceConfig().models
         self.session = db_session
         if not self.session:
@@ -38,6 +38,10 @@ class Grants(object):
             except RuntimeError as ex:
                 if 'Working outside of application context' not in str(ex):
                     raise
+        config = ServiceConfig().config
+        self.ttl = ttl or config.REDIS_TTL
+        if 'defaults' not in GRANTS:
+            GRANTS['defaults'] = config.DEFAULT_GRANTS
 
     def get(self, name, uid=None):
         """Get the cached value of a named grant, if it hasn't expired
@@ -67,6 +71,8 @@ class Grants(object):
         if name in GRANTS[uid] and utils.utcnow() < GRANTS[uid]['expires']:
             ret = GRANTS[uid].get(name)
         else:
+            if name not in GRANTS['defaults']:
+                logging.error('Grant name=%s undefined in config.yaml' % name)
             ret = GRANTS['defaults'].get(name)
         try:
             return int(ret, 0)

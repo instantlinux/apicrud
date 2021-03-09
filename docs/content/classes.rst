@@ -27,6 +27,6 @@ Python Classes
      RateLimit
      ServiceConfig
      ServiceRegistry
-     session_auth
+     SessionAuth
      SessionManager
      utils
