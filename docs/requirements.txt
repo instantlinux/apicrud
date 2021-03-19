@@ -15,7 +15,7 @@ sphinx-markdown-tables==0.0.15
 sphinx-rtd-theme==0.5.1
 
 -r ../requirements-dev.txt
-Pillow==7.2.0
+Pillow==8.1.1
 
 # transitive dependencies
 alabaster==0.7.12
