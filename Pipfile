@@ -31,7 +31,7 @@ redis = "==3.5.3"
 SQLAlchemy = "==1.3.23"
 SQLAlchemy-Utils = "==0.36.8"
 swagger-ui-bundle = "==0.0.8"
-urllib3 = "==1.26.2"
+urllib3 = "==1.26.3"
 
 # Transitive dependencies pinned to versions of python-wsgi base image
 arrow = "==1.0.1"
