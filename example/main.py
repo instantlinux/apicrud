@@ -12,7 +12,7 @@ from flask_babel import Babel
 import os
 
 from apicrud import AccessControl, AccountSettings, Metrics, ServiceConfig, \
-    ServiceRegistry, database, initialize
+    database, initialize
 
 import controllers
 from messaging import send_contact
@@ -20,11 +20,9 @@ import models
 
 setup_db_only_once = {}
 application = connexion.FlaskApp(__name__)
-path = os.path.dirname(os.path.abspath(__file__))
-config = ServiceConfig(
-    babel_translation_directories='i18n;%s' % os.path.join(path, 'i18n'),
-    reset=True, file=os.path.join(path, 'config.yaml'), models=models).config
-initialize.app(application)
+initialize.app(application, controllers, models, os.path.dirname(
+    os.path.abspath(__file__)))
+config = ServiceConfig().config
 babel = Babel(application.app)
 
 
@@ -37,7 +35,6 @@ def setup_db(db_url=None, redis_conn=None):
       redis_conn (obj): connection to redis
     """
     db_url = db_url or config.DB_URL
-    ServiceRegistry().register(controllers.resources())
     if not setup_db_only_once and database.initialize_db(
             db_url=db_url, redis_conn=redis_conn):
         Metrics(redis_conn=redis_conn, func_send=send_contact.delay).store(
@@ -56,6 +53,12 @@ def before_request():
 def add_header(response):
     """All responses get a cache-control header"""
     response.cache_control.max_age = config.HTTP_RESPONSE_CACHE_MAX_AGE
+    try:
+        if request.url_rule.rule.split('/')[3] == 'auth':
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+    except (AttributeError, IndexError):
+        pass
     Metrics().store(
         'api_request_seconds_total', value=datetime.utcnow().timestamp() -
         g.request_start_time.timestamp())
@@ -80,6 +83,6 @@ def get_locale():
     return request.accept_languages.best_match(config.LANGUAGES)
 
 
-if __name__ == '__main__':
+if __name__ in ('__main__', 'uwsgi_file_main'):
     setup_db(db_url=config.DB_URL)
     application.run(port=config.APP_PORT)

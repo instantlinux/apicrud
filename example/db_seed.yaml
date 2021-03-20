@@ -7,14 +7,14 @@ category:
 person:
 - id: x-23450001
   name: Example User
-  identity: example@instantlinux.net
+  identity: user@example.com
   privacy: public
   status: active
 contact:
 - id: x-4566a239
   uid: x-23450001
   type: email
-  info: example@instantlinux.net
+  info: user@example.com
   muted: True
   privacy: public
   status: active

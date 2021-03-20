@@ -72,7 +72,7 @@ data:
     - job_name: $SERVICE_NAME
       metrics_path: /api/v1/metrics
       static_configs:
-      - targets: ['$FQDN:$EXAMPLE_API_PORT']
+      - targets: ['$TARGET_PROMETHEUS:$EXAMPLE_API_PORT']
     - job_name: prometheus
       static_configs:
       - targets: ['localhost:9090']

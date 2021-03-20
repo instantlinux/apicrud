@@ -5,11 +5,6 @@ Account:
     status: active
     uid: existingval
   properties:
-    contacts:
-      items:
-        $ref: '#/components/schemas/base/properties/id'
-      maxItems: 8
-      type: array
     created:
       $ref: '#/components/schemas/base/properties/created'
     id:
@@ -32,7 +27,7 @@ Account:
       description: A user's login name
       maxLength: 32
       minLength: 4
-      pattern: ^[a-z0-9@_.-]+$
+      pattern: ^[a-z0-9_.-]+$
       type: string
     password_must_change:
       default: false
@@ -112,6 +107,7 @@ Auth:
   properties:
     username:
       $ref: '#/components/schemas/Account/properties/name'
+      nullable: true
     password:
       description: >
         Password, use at least 3 of the following types of characters:
@@ -121,6 +117,7 @@ Auth:
       minLength: 8
       maxLength: 64
       format: password
+      nullable: true
     guest_id:
       $ref: '#/components/schemas/base/properties/id'
     magic:
@@ -128,4 +125,9 @@ Auth:
       type: string
       minLength: 8
       maxLength: 8
+    method:
+      description: Login method, local or name of provider
+      type: string
+      maxLength: 16
+      default: local
   type: object

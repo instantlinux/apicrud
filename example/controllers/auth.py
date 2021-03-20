@@ -7,6 +7,7 @@ from flask import g, request
 import logging
 
 from apicrud import SessionAuth, singletons
+from messaging import send_contact
 import models
 
 
@@ -22,15 +23,16 @@ class AuthController(object):
         """Login a new session
 
         Args:
-          body (dict): specify username and password
+          body (dict): specify method, or username and password
         Returns:
           dict:
             Fields include jwt_token (contains uid / account ID),
             ID of entry in settings database, and a sub-dictionary
             with mapping of endpoints registered to microservices
         """
-        return SessionAuth().account_login(
-            body['username'], body['password'], roles_from=models.List)
+        return SessionAuth(roles_from=models.List).account_login(
+            body.get('username'), body.get('password'),
+            method=body.get('method', 'local'))
 
     def logout():
         """Logout
@@ -43,3 +45,19 @@ class AuthController(object):
             g.session.delete(creds.username, creds.password)
             logging.info('action=logout id=%s' % creds.username)
         return dict(message='logged out'), 200
+
+    @staticmethod
+    def auth_callback(method, code, state):
+        return SessionAuth(func_send=send_contact.delay,
+                           roles_from=models.List).oauth_callback(
+                               method, code=code, state=state)
+
+    @staticmethod
+    def auth_params():
+        """Get authorizaion info"""
+        return SessionAuth().auth_params()
+
+    @staticmethod
+    def find():
+        """Find auth methods - for the frontend's Login screen"""
+        return SessionAuth().methods()

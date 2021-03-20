@@ -3,28 +3,48 @@
 created 26-mar-2020 by richb@instantlinux.net
 """
 from datetime import datetime, timedelta
-from flask import g, request
+from flask import g, redirect, request, session as flask_session
 from flask_babel import _
 import jwt
 import logging
+import os
 from passlib.hash import sha256_crypt
 from redis.exceptions import ConnectionError
 from sqlalchemy import or_
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import DataError, IntegrityError, OperationalError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy_utils.types.encrypted.padding import InvalidPaddingError
 import string
 import time
+from urllib.parse import parse_qs, urlparse
 
 from .access import AccessControl
+from .account_settings import AccountSettings
 from .const import Constants
+from .initialize import oauth
 from .messaging.confirmation import Confirmation
 from .metrics import Metrics
 from .service_config import ServiceConfig
 from .service_registry import ServiceRegistry
-from .utils import gen_id, utcnow
+from .utils import gen_id, utcnow, identity_normalize
 
 APIKEYS = {}
+OC = {}
+
+
+class Ocache(object):
+    def __init__(self):
+        if 'cache' not in OC:
+            OC['cache'] = {}
+        self.cache = OC['cache']
+
+    def set(self, key, value, expires=None):
+        print('Ocache.set key=%s val=%s' % (key, value))
+        self.cache[key] = value
+
+    def get(self, key):
+        print('Ocache.get key=%s val=%s' % (key, self.cache.get(key)))
+        return self.cache.get(key)
 
 
 class SessionAuth(object):
@@ -34,9 +54,10 @@ class SessionAuth(object):
 
     Args:
       func_send(function): name of function for sending message
+      roles_from (obj): model for which to look up authorizations
     """
 
-    def __init__(self, func_send=None):
+    def __init__(self, func_send=None, roles_from=None):
         config = self.config = ServiceConfig().config
         self.models = ServiceConfig().models
         self.jwt_secret = config.JWT_SECRET
@@ -45,15 +66,16 @@ class SessionAuth(object):
         self.login_session_limit = config.LOGIN_SESSION_LIMIT
         self.login_admin_limit = config.LOGIN_ADMIN_LIMIT
         self.func_send = func_send
+        self.oauth = oauth['init']
+        self.roles_from = roles_from
 
-    def account_login(self, username, password, roles_from=None):
-        """ Log in with username or email
+    def account_login(self, username, password, method='local'):
+        """Log in using local or OAuth2 credentials
 
         Args:
           username (str): account name or email
           password (str): credential
-          identity_from (obj):  model from which to find contact info
-          roles_from (obj): model for which to look up authorizations
+          method (str): local, or google / facebook / twitter etc
 
         Returns:
           dict:
@@ -61,8 +83,48 @@ class SessionAuth(object):
             ID of entry in settings database, and a sub-dictionary
             with mapping of endpoints registered to microservices
         """
+        if not method or method == 'local':
+            return self._login_local(username, password)
+        elif method in self.config.AUTH_PARAMS.keys():
+            logmsg = dict(action='account_login', method=method)
+            try:
+                client = self.oauth.create_client(method)
+            except RuntimeError as ex:
+                msg = _(u'login client missing')
+                logging.error(dict(message=msg, error=str(ex), **logmsg))
+                return dict(message=msg), 405
+            msg, error = _(u'openid client failure'), ''
+            try:
+                retval = client.authorize_redirect(
+                    '%s%s/%s/%s' % (self.config.PUBLIC_URL,
+                                    self.config.BASE_URL,
+                                    'auth_callback', method))
+                """
+                callback_uri='%s/%s/%s' % (self.config.BASE_URL,
+                                           'auth_callback', method))
+                """
+                # TODO this cache is only needed for non-http dev
+                state = parse_qs(urlparse(retval.location).query).get(
+                    'state')[0]
+                Ocache().set('session_foo_state', state, expires=120)
+                if retval.status_code == 302:
+                    return dict(location=retval.location), 200
+            except RuntimeError as ex:
+                error = str(ex)
+            logging.error(dict(message=msg, error=error, **logmsg))
+            return dict(message=msg), 405
+        else:
+            msg = _(u'unsupported login method')
+            logging.error(dict(message=msg, **logmsg))
+            return dict(message=msg), 405
 
-        metrics = Metrics()
+    def _login_local(self, username, password):
+        """Login using credentials stored in local database
+
+        Args:
+          username (str): the username or email identity
+          password (str): password
+        """
         try:
             if '@' in username:
                 account = g.db.query(self.models.Account).join(
@@ -76,7 +138,7 @@ class SessionAuth(object):
         except InvalidPaddingError:
             logging.error('action=login message="invalid DB_AES_SECRET"')
             return dict(message=_(u'DB operational error')), 503
-        except NoResultFound:
+        except (NoResultFound, TypeError):
             return dict(username=username, message='not valid'), 403
         except OperationalError as ex:
             logging.error('action=login message=%s' % str(ex))
@@ -85,7 +147,7 @@ class SessionAuth(object):
             account.last_invalid_attempt + timedelta(
                 seconds=self.login_lockout_interval) > datetime.utcnow()):
             time.sleep(5)
-            metrics.store('logins_fail_total')
+            Metrics().store('logins_fail_total')
             return dict(username=username, message=_(u'locked out')), 403
         if account.password == '':
             logging.error("username=%s, message='no password'" % username)
@@ -98,8 +160,65 @@ class SessionAuth(object):
                 (username, account.invalid_attempts))
             g.db.commit()
             return dict(username=username, message=_(u'not valid')), 403
-        logging.info('action=login username=%s account_id=%s' %
-                     (username, account.id))
+
+        return self._login_accepted(username, account, 'local')
+
+    def oauth_callback(self, method, code=None, state=None):
+        """Callback from 3rd-party OAuth2 provider auth
+
+        Parse the response, look up the account based on email
+        address, and proceed if login_accepted
+
+        Args:
+          method (str): provider name, such as google
+          code (str): validation code from provider
+          state (str): provider state
+        """
+        client = self.oauth.create_client(method)
+        logmsg = dict(action='oauth_callback', method=method)
+        if not client:
+            msg = _(u'login client missing')
+            logging.error(dict(message=msg, **logmsg))
+            return dict(message=msg), 405
+        # TODO: put this under dev conditional
+        flask_session['_%s_authlib_state_' % method] = Ocache().get(
+            'session_foo_state')
+        try:
+            token = client.authorize_access_token()
+        except Exception as ex:
+            msg = _(u'openid client failure')
+            logging.warning(dict(message=msg, error=str(ex), **logmsg))
+            return dict(message=msg), 405
+        if 'id_token' in token:
+            user = client.parse_id_token(token)
+        else:
+            user = client.userinfo()
+        identity = identity_normalize(user.get('email'))
+        if not identity or '@' not in identity:
+            logging.warning(dict(message='identity missing', **logmsg))
+            return dict(message=_(u'access denied')), 403
+        try:
+            # TODO: match secondary contacts
+            account = g.db.query(self.models.Account).join(
+                self.models.Person).filter(
+                    self.models.Person.identity == identity,
+                    self.models.Account.status == 'active').one()
+            username = account.name
+        except NoResultFound:
+            return self._handle_unknown_user(method, user)
+        logging.info(dict(usermeta=user, **logmsg))
+        return self._login_accepted(username, account, method)
+
+    def _login_accepted(self, username, account, method):
+        """Login accepted from provider: create a session
+
+        Args:
+          username (str): the account's unique username
+          account (obj): account object in database
+          method (str): method, e.g. local or google
+        """
+        logging.info('action=login username=%s method=%s account_id=%s' %
+                     (username, method, account.id))
         account.last_login = datetime.utcnow()
         account.invalid_attempts = 0
         g.db.commit()
@@ -112,7 +231,7 @@ class SessionAuth(object):
         # TODO research concerns raised in:
         # https://paragonie.com/blog/2017/03/jwt-json-web-tokens-is-bad-
         #  standard-that-everyone-should-avoid
-        if (account.password_must_change):
+        if (account.password_must_change and method == 'local'):
             roles = ['person', 'pwchange']
         # TODO parameterize model name contact
         elif (g.db.query(self.models.Contact).filter(
@@ -120,8 +239,8 @@ class SessionAuth(object):
                 self.models.Contact.type == 'email'
                 ).one().status == 'active'):
             roles = ['admin', 'user'] if account.is_admin else ['user']
-            if roles_from:
-                roles += self.get_roles(account.uid, roles_from)
+            if self.roles_from:
+                roles += self.get_roles(account.uid, self.roles_from)
         else:
             roles = []
         duration = (self.login_admin_limit if account.is_admin
@@ -136,18 +255,106 @@ class SessionAuth(object):
                 settings_id=account.settings_id)
             if hasattr(account.settings, 'default_storage_id'):
                 retval['storage_id'] = account.settings.default_storage_id
-            metrics.store('logins_success_total')
-            return retval, 201
+            Metrics().store('logins_success_total')
+            if method == 'local':
+                return retval, 201
+            else:
+                return redirect('%s/#/login/ext?token=%s' % (
+                    account.settings.url, retval['jwt_token']))
         else:
             return dict(message=_(u'DB operational error')), 500
 
-    def api_access(self, apikey, roles_from=None):
-        """ Access using API key
+    def _handle_unknown_user(self, method, usermeta):
+        """Handle unknown external user access based on configured
+        LOGIN_EXTERNAL_POLICY.
+
+        Args:
+          method (str): login method, as in 'google'
+          usermeta (dict): the metadata object from external provider
+        """
+        identity = identity_normalize(usermeta.get('email'))
+        name = usermeta.get('name')
+        picture = usermeta.get('picture') or usermeta.get('avatar_url')
+        if not picture and usermeta.get('gravatar_id'):
+            picture = 'https://2.gravatar.com/avatar/%s' % usermeta.get(
+                'gravatar_id')
+        username = '%s-%s' % (
+            identity.split('@')[0][:15],
+            gen_id(length=6, prefix='',
+                   chars=string.digits + string.ascii_lowercase))
+        logmsg = dict(action='login', method=method, identity=identity)
+        logging.warning(dict(step=1, usermeta=usermeta, **logmsg))
+
+        if self.config.LOGIN_EXTERNAL_POLICY == 'closed':
+            msg = _(u'not valid')
+            logging.info(dict(msg=msg, **logmsg))
+            return dict(message=msg), 403
+        elif self.config.LOGIN_EXTERNAL_POLICY == 'auto':
+            # suppress the registration confirmation email
+            # TODO make this configurable
+            self.func_send = None
+            ret = self.register(identity, username, name, picture=picture)
+            if ret[1] != 200:
+                return ret
+            try:
+                g.db.query(self.models.Contact).filter_by(
+                    id=ret[0]['id']).one().status = 'active'
+                g.db.commit()
+            except Exception as ex:
+                g.db.rollback()
+                msg = _(u'contact activation problem')
+                logging.error(dict(msg=msg, error=str(ex), **logmsg))
+                return dict(message=msg), 500
+            ret = self.account_add(username, uid=ret[0]['uid'])
+            if ret[1] != 201:
+                return ret
+            account = g.db.query(self.models.Account).filter_by(
+                id=ret[0]['id']).one()
+            return self._login_accepted(username, account, method)
+        elif self.config.LOGIN_EXTERNAL_POLICY == 'open':
+            ret = self.register(identity, username, name, picture=picture)
+            if ret[1] != 200:
+                return ret
+            ret2 = self.account_add(username, uid=ret[0]['uid'])
+            return ret2 if ret2 == 201 else ret
+
+        # TODO onrequest
+        return dict(message='unimplemented'), 403
+
+    def account_add(self, username, uid):
+        """Add an account with the given username
+
+        Args:
+          username (str): new / unique username
+          uid (str): existing user
+        """
+        logmsg = dict(action='account_add', username=username)
+        try:
+            settings_id = g.db.query(
+                self.models.Settings).filter_by(name='global').one().id
+        except Exception as ex:
+            msg = u'failed to read global settings'
+            logging.error(dict(message=msg, error=str(ex), **logmsg))
+            return dict(message=msg), 500
+        account = self.models.Account(
+            id=gen_id(), uid=uid, name=username,
+            password_must_change=True, password='',
+            settings_id=settings_id, status='active')
+        try:
+            g.db.add(account)
+            g.db.commit()
+        except Exception as ex:
+            msg = _(u'DB operational error')
+            logging.error(dict(message=msg, error=str(ex), **logmsg))
+            g.db.rollback()
+            return dict(message=msg), 500
+        return dict(id=account.id, uid=uid), 201
+
+    def api_access(self, apikey):
+        """Access using API key
 
         Args:
           apikey (str): the API key
-          roles_from (obj): model for which to look up authorizations
-
         Returns:
           dict: uid, scopes (None if not authorized)
         """
@@ -176,8 +383,9 @@ class SessionAuth(object):
                 identity=account.owner.identity,
                 roles=['admin', 'user'] if account.is_admin else ['user'],
                 scopes=[item.name for item in scopes], uid=uid)
-            if roles_from:
-                APIKEYS[key_id]['roles'] += self.get_roles(uid, roles_from)
+            if self.roles_from:
+                APIKEYS[key_id]['roles'] += self.get_roles(uid,
+                                                           self.roles_from)
         item = APIKEYS[key_id]
         uid = item['uid']
         logging.debug(dict(action='api_key', uid=uid, scopes=item['scopes']))
@@ -196,7 +404,34 @@ class SessionAuth(object):
         if ses:
             return dict(uid=uid, scopes=item['scopes'])
 
-    def register(self, identity, username, name, template='confirm_new'):
+    def auth_params(self):
+        """Get authorization info"""
+        account_id = AccessControl().account_id
+        settings = AccountSettings(account_id, db_session=g.db)
+        retval = dict(
+            resources=ServiceRegistry().find()['url_map'],
+            settings_id=settings.get.id)
+        storage_id = settings.get.default_storage_id
+        if storage_id:
+            retval['storage_id'] = storage_id
+        return retval, 200
+
+    def methods(self):
+        """Return list of available auth methods"""
+        internal_policy = self.config.LOGIN_INTERNAL_POLICY
+        if not self.config.LOGIN_LOCAL:
+            internal_policy = 'closed'
+        ret = ['local'] if self.config.LOGIN_LOCAL else []
+        for method in self.config.AUTH_PARAMS.keys():
+            if os.environ.get('%s_CLIENT_ID' % method.upper()):
+                ret.append(method)
+        return dict(
+            items=ret, count=len(ret),
+            login_internal_policy=internal_policy,
+            login_external_policy=self.config.LOGIN_EXTERNAL_POLICY), 200
+
+    def register(self, identity, username, name, template='confirm_new',
+                 picture=None):
         """Register a new account: create related records in database
         and send confirmation token to new user
 
@@ -207,13 +442,14 @@ class SessionAuth(object):
           identity (str): account's primary identity, usually an email
           username (str): account's username
           name (str): name
+          picture (url): URL of an avatar / photo
           template (str): template for message (confirming new user)
         Returns:
           tuple: the Confirmation.request dict and http response
         """
         if not username or not identity or not name:
             return dict(message=_(u'all fields required')), 400
-        identity = identity.lower()
+        identity = identity_normalize(identity)
         logmsg = dict(action='register', identity=identity,
                       username=username)
         try:
@@ -262,9 +498,22 @@ class SessionAuth(object):
         except Exception:
             default_lang = 'en'
         if lang and lang != default_lang:
-            g.db.add(self.models.Profile(id=gen_id(), uid=uid, item='lang',
-                                         value=lang, status='active'))
-            g.db.commit()
+            try:
+                g.db.add(self.models.Profile(id=gen_id(), uid=uid, item='lang',
+                                             value=lang, status='active'))
+                g.db.commit()
+            except IntegrityError:
+                # Dup entry from previous attempt
+                g.db.rollback()
+        if picture:
+            try:
+                g.db.add(self.models.Profile(
+                    id=gen_id(), uid=uid, item='picture', value=picture,
+                    status='active'))
+                g.db.commit()
+            except (DataError, IntegrityError):
+                # Dup entry from previous attempt or value too long
+                g.db.rollback()
         return Confirmation().request(cid, template=template,
                                       func_send=self.func_send)
 
@@ -324,7 +573,7 @@ class SessionAuth(object):
         Returns:
           tuple: the Confirmation.request dict and http response
         """
-
+        identity = identity_normalize(identity)
         logmsg = dict(action='forgot_password', identity=identity,
                       username=username)
         try:
@@ -479,7 +728,8 @@ def api_key(apikey, required_scopes=None):
     models = ServiceConfig().models
     if len(apikey) > 96 or '.' not in apikey:
         return None
-    retval = SessionAuth().api_access(apikey, roles_from=models.List)
+    # TODO - parameterize roles_from properly
+    retval = SessionAuth(roles_from=models.List).api_access(apikey)
     if not retval:
         return retval
     if required_scopes and (set(required_scopes) & set(retval['scopes']) !=

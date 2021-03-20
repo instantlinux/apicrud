@@ -14,6 +14,14 @@ components:
   schemas:
     Config:
       properties:
+        account_policy:
+          default: open
+          description: >
+            Policy for account creation: open means anyone can add themselves,
+            closed means only an administrator can invite a new user,
+            onrequest means anyone can request an invitation
+          type: string
+          enum: [ open, closed, onrequest ]
         app_port:
           default: 8080
           description: TCP port number for flask
@@ -32,6 +40,97 @@ components:
             Name of a list whose members are approved by email relay
             provider for From headers
           type: string
+        auth_params:
+          description: Per-vendor URL and args for OAuth2 registration
+          default:
+            azure:
+              client_kwargs: 
+                scope: openid email profile
+              server_metadata_url: 'https://login.microsoftonline.com/common/.well-known/openid-configuration'
+              type: oauth2
+            dropbox:
+              access_token_url: 'https://api.dropboxapi.com/oauth2/token'
+              api_base_url: 'https://api.dropboxapi.com/2/'
+              authorize_url: 'https://www.dropbox.com/oauth2/authorize'
+              userinfo_endpoint: users/get_current_account
+              type: oauth2
+            facebook:
+              access_token_url: 'https://graph.facebook.com/v7.0/oauth/access_token'
+              api_base_url: 'https://graph.facebook.com/v7.0/'
+              authorize_url: 'https://www.facebook.com/v7.0/dialog/oauth'
+              client_kwargs:
+                scope: email public_profile
+              userinfo_endpoint: me?fields=email,name
+              type: oauth2
+            github:
+              api_base_url: 'https://api.github.com/'
+              access_token_url: 'https://github.com/login/oauth/access_token'
+              authorize_url: 'https://github.com/login/oauth/authorize'
+              client_kwargs: 
+                scope: 'user:email'
+              userinfo_endpoint: 'https://api.github.com/user'
+              type: oauth2
+            gitlab:
+              access_token_url: 'https://gitlab.com/oauth/token'
+              api_base_url: 'https://gitlab.com/api/v4/'
+              authorize_url: 'https://gitlab.com/oauth/authorize'
+              client_kwargs:
+                scope: read_user
+              userinfo_endpoint: user
+              type: oauth2
+            google:
+              client_kwargs:
+                scope: openid email profile
+              server_metadata_url: 'https://accounts.google.com/.well-known/openid-configuration'
+              type: oauth2
+            instagram:
+              api_base_url: 'https://api.instagram.com'
+              access_token_url: 'https://instagram.com/login/oauth/access_token'
+              authorize_url: 'https://instagram.com/login/oauth/authorize'
+              client_kwargs:
+                response_type: code
+                scope: 'user:email'
+                token_endpoint_auth_method: client_secret_post
+              userinfo_endpoint: /v1/users/self
+              type: oauth2
+            linkedin:
+              api_base_url: 'https://api.linkedin.com/v2/'
+              access_token_url: 'https://www.linkedin.com/oauth/v2/accessToken'
+              authorize_url: 'https://www.linkedin.com/oauth/v2/authorization'
+              client_kwargs:
+                scope: r_liteprofile r_emailaddress
+                token_endpoint_auth_method: client_secret_post
+              userinfo_endpoint: me?projection=(id,firstName,lastName)
+              type: oauth2
+            reddit:
+              access_token_url: 'https://www.reddit.com/api/v1/access_token'
+              api_base_url: 'https://oauth.reddit.com/api/v1/'
+              authorize_url: 'https://www.reddit.com/api/v1/authorize'
+              client_kwargs:
+                scope: identity
+              userinfo_endpoint: me
+              type: oauth2
+            salesforce:
+              client_kwargs: 
+                scope: openid email profile
+              server_metadata_url: 'https://login.salesforce.com/.well-known/openid-configuration'
+              type: oauth2
+            slack:
+              access_token_url: 'https://slack.com/api/oauth.access'
+              api_base_url: 'https://slack.com/api/'
+              authorize_url: 'https://slack.com/oauth/authorize'
+              client_kwargs:
+                scope: identity.basic identity.avatar identity.email
+                token_endpoint_auth_method: client_secret_post
+              userinfo_endpoint: users.identity
+              type: oauth2
+            twitter:
+              access_token_url: 'https://api.twitter.com/oauth/access_token'
+              api_base_url: 'https://api.twitter.com/1.1/'
+              authorize_url: 'https://api.twitter.com/oauth/authenticate'
+              request_token_url: 'https://api.twitter.com/oauth/request_token'
+              userinfo_endpoint: account/verify_credentials.json?include_email=true&skip_status=true
+              type: oauth2
         babel_default_locale:
           default: en
           description: Locale default
@@ -214,11 +313,30 @@ components:
           default: 5
           description: How many password attempts are allowed for locking
           type: integer
+        login_local:
+          default: true
+          description: Enable local username/password auth
+          type: boolean
         login_lockout_interval:
           default: 600
           description: >
             How long to lock out an account after unsuccessful attempts
           type: integer
+        login_external_policy:
+          default: auto
+          description: >
+            How to handle unknown users with OAuth2 external credentials:
+            auto means create a new uid automatically; closed means
+            reject access; onrequest means submit for approval; open means
+            go through standard account registration
+          enum: [ auto, closed, onrequest, open ]
+        login_internal_policy:
+          default: open
+          description: >
+            How new users can register: closed means admin must send an
+            invite; onrequest means user submits for approval; open means
+            new accounts are active right away
+          enum: [ closed, onrequest, open ]
         login_session_limit:
           default: 7200
           description: Maximum duration of a regular user session

@@ -15,7 +15,7 @@ class TestContacts(test_base.TestBase):
 
     def setUp(self):
         self.authorize()
-        self.adm_default_identity = 'example@instantlinux.net'
+        self.adm_default_identity = 'user@example.com'
 
     @mock.patch('messaging.send_contact.delay')
     def test_add_and_fetch_contact(self, mock_messaging):

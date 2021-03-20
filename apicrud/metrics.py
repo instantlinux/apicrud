@@ -29,7 +29,7 @@ class Metrics(object):
 
     See this article for a description of how redis makes the implementation
     straightforward:
-     https://www.infoworld.com/article/3230455/how-to-use-redis-for-real-time-metering-applications.html
+    https://www.infoworld.com/article/3230455/how-to-use-redis-for-real-time-metering-applications.html
     The data store is in-memory, with snapshot/append persistence to disk.
 
     All metrics are defined in the metrics section of service_config.yaml.

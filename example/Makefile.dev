@@ -36,7 +36,7 @@ mariadb_adhoc:
 	SERVICE_IP=$(MARIADB_IP) make example/k8s/mariadb
 
 prometheus_adhoc:
-	make example/k8s/prometheus
+	TARGET_PROMETHEUS=$(FQDN) make example/k8s/prometheus
 
 redis_adhoc:
 	SERVICE_IP=$(REDIS_IP) make example/k8s/redis

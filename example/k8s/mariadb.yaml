@@ -43,7 +43,7 @@ spec:
         ports:
         - containerPort: 3306
         volumeMounts:
-        - name: database
+        - name: db
           mountPath: /var/lib/mysql
         - name: initdb
           mountPath: /etc/mysql/conf.d/my.cnf
@@ -52,12 +52,17 @@ spec:
           mountPath: /docker-entrypoint-initdb.d/setup.sql
           subPath: setup.sql
       volumes:
-      - name: database
-        persistentVolumeClaim:
-          claimName: $SERVICE_NAME-db
       - name: initdb
         configMap:
           name: $SERVICE_NAME-initdb
+  volumeClaimTemplates:
+  - metadata:
+      name: db
+    spec:
+      accessModes: [ ReadWriteOnce ]
+      resources:
+        requests:
+          storage: 500Mi
 ---
 apiVersion: v1
 kind: ConfigMap

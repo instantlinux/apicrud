@@ -278,6 +278,84 @@ auth:
     - auth
     x-codegen-request-body-name: body
     x-openapi-router-controller: controllers.auth
+auth_callback:
+  get:
+    summary: OAuth callback
+    operationId: AuthController.auth_callback
+    parameters:
+    - description: Provider method, e.g. github or google
+      in: path
+      name: method
+      required: true
+      schema:
+        type: string
+        maxLength: 16
+    - description: authuser
+      in: query
+      name: authuser
+      schema:
+        type: integer
+    - description: code
+      in: query
+      name: code
+      schema:
+        type: string
+        maxLength: 128
+    - description: prompt
+      in: query
+      name: prompt
+      schema:
+        type: string
+        nullable: true
+    - description: scope
+      in: query
+      name: scope
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 2048
+    - description: state
+      in: query
+      name: state
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 64
+    responses:
+      405:
+        content: {}
+        description: Invalid input
+    tags:
+    - auth
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.auth
+auth_methods:
+  get:
+    summary: Available auth methods
+    operationId: AuthController.find
+    responses:
+      200:
+        content: {}
+        description: items/count list of methods
+    tags:
+    - auth
+    x-codegen-request-body-name: conditions
+    x-openapi-router-controller: controllers.auth
+auth_params:
+  get:
+    summary: Retrieve authorization parameters
+    operationId: AuthController.auth_params
+    responses:
+      200:
+        content: {}
+        description: auth params
+    security:
+    - apikey: [full, readonly]
+    - basic: []
+    tags:
+    - auth
+    x-codegen-request-body-name: conditions
+    x-openapi-router-controller: controllers.auth
 logout:
   get:
     summary: Log out

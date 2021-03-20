@@ -77,6 +77,12 @@ paths:
     $ref: 'account.path.yaml#/account_password-uid'
   /auth:
     $ref: 'account.path.yaml#/auth'
+  /auth_callback/{method}:
+    $ref: 'account.path.yaml#/auth_callback'
+  /auth_methods:
+    $ref: 'account.path.yaml#/auth_methods'
+  /auth_params:
+    $ref: 'account.path.yaml#/auth_params'
   /logout:
     $ref: 'account.path.yaml#/logout'
   /apikey:
