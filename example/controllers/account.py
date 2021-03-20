@@ -3,14 +3,13 @@
 created 31-mar-2019 by richb@instantlinux.net
 """
 
-from flask import g, request
+from flask import g
 from flask_babel import _
 from sqlalchemy.orm.exc import NoResultFound
 
 from apicrud import BasicCRUD, SessionAuth, singletons
 
 from messaging import send_contact
-from models import Settings
 
 
 class AccountController(BasicCRUD):
@@ -19,22 +18,8 @@ class AccountController(BasicCRUD):
 
     @staticmethod
     def create(body):
-        self = singletons.controller[request.url_rule.rule.split('/')[3]]
-        return self._create(body)
-
-    def _create(self, body, identity=None):
-        try:
-            body['settings_id'] = g.db.query(
-                Settings).filter_by(name='global').one().id
-        except NoResultFound:
-            return dict(message='failed to read global settings'), 405
-        body['password'] = ''
-        body['password_must_change'] = True
-        retval = super(AccountController, AccountController).create(body)
-        if retval[1] != 201:
-            return retval
-        retval[0]['uid'] = body.get('uid')
-        return retval
+        return SessionAuth().account_add(body.get('identity'),
+                                         body.get('uid'))
 
     @staticmethod
     def change_password(uid, body):
@@ -84,8 +69,6 @@ class AccountController(BasicCRUD):
         Returns:
           tuple: id of account created, and http status
         """
-
-        self = singletons.controller.get('account')
         if body.get('forgot_password'):
             return SessionAuth(func_send=send_contact.delay).forgot_password(
                     body.get('identity'), body.get('username'))
@@ -93,6 +76,4 @@ class AccountController(BasicCRUD):
             body.get('identity'), body.get('username'), body.get('name'))
         if retval[1] > 201:
             return retval
-        body['identity'] = body.get('identity').lower()
-        return self._create(dict(uid=retval[0]['uid'], name=body['username'],
-                                 status='active'))
+        return SessionAuth().account_add(body['username'], retval[0]['uid'])

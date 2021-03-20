@@ -112,7 +112,6 @@ class Confirmation:
         if clear_session:
             g.session.delete(id, nonce)
             auth = 'pending'
-        logging.info(dict(step=1, info=info, auth=auth))
         return dict(g.session.create(
             contact.uid, [auth], info=info, type=contact.type,
             contact_id=id, name=contact.owner.name)), 200

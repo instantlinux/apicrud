@@ -31,7 +31,7 @@ def gen_id(length=8, prefix='x-', chars=(
             x % base] if x else chars[0]
     return (prefix +
             _int2base((utcnow() - datetime(2018, 1, 1)).days * 8 +
-                      random.randint(0, 8), chars) +
+                      random.randint(0, 8), chars, base=len(chars)) +
             ''.join(random.choice(chars) for i in range(length - 3)))
 
 
@@ -45,6 +45,22 @@ def req_duration():
 def utcnow():
     """For mocking: unittest.mock can't patch out datetime.utcnow directly """
     return datetime.utcnow()
+
+
+def identity_normalize(identity):
+    """Normalize an email address for use as an identity: downcase
+    and in certain cases remove characters
+
+    Args:
+      identity (str): a raw email address
+    Returns: str
+    """
+    if not identity:
+        return
+    if '@gmail.com' in identity:
+        identity = '%s@gmail.com' % identity.split(
+            '@')[0].replace('.', '').split('+')[0]
+    return identity.lower()
 
 
 def strip_tags(html):

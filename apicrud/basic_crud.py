@@ -458,7 +458,7 @@ class BasicCRUD(object):
                 return dict(message=_(u'invalid mobile number')), 405
             body['info'] = re.sub('[- ()]', '', body['info'])
         elif body.get('type') == 'email':
-            body['info'] = body['info'].strip().lower()
+            body['info'] = utils.identity_normalize(body['info'].strip())
             if not re.match(Constants.REGEX_EMAIL, body['info']):
                 return dict(message=_(u'invalid email address')), 405
         elif 'type' in body and body.get('type') not in ['sms', 'email']:
@@ -491,7 +491,7 @@ class BasicCRUD(object):
                 return dict(message=_(u'invalid mobile number')), 405
             body['info'] = re.sub('[- ()]', '', body['info'])
         elif body.get('type') == 'email':
-            body['info'] = body['info'].strip().lower()
+            body['info'] = utils.identity_normalize(body['info'].strip())
             if not re.match(Constants.REGEX_EMAIL, body['info']):
                 return dict(message=_(u'invalid email address')), 405
         if 'id' in body and body['id'] != id:

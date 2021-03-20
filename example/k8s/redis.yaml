@@ -11,7 +11,7 @@ spec:
     app.kubernetes.io/name: $SERVICE_NAME-redis
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: $SERVICE_NAME-redis
   labels:
@@ -21,6 +21,7 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: $SERVICE_NAME-redis
+  serviceName: $SERVICE_NAME-redis
   template:
     metadata:
       labels:
@@ -41,7 +42,11 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /data
-      volumes:
-      - name: data
-        persistentVolumeClaim:
-          claimName: $SERVICE_NAME-redis
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ ReadWriteOnce ]
+      resources:
+        requests:
+          storage: 500Mi

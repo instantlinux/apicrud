@@ -8,9 +8,9 @@ Clone this repo to your local environment. To start the example application in a
 
 * Install docker ([desktop for Mac](https://docs.docker.com/docker-for-mac/) or [Linux/Ubuntu](https://docs.docker.com/engine/install/ubuntu/)) and enable kubernetes; if you're on a Mac install [homebrew](https://brew.sh); Linux _kubeadm_ setup is beyond scope of this README
 * To run the full example demo in your local kubernetes:
-  * Make secrets available: `ln -s example/secrets/.gnupg ~` if you don't already use gpg, or `make sops-import-gpg` if gpg is already installed
-    * (If you've run through this once before and wiped your kubernetes configuration, run `make clean secrets`)
-  * Invoke `TAG=latest make deploy_local` and wait for services to come up:
+    * Make secrets available: `ln -s example/secrets/.gnupg ~` if you don't already use gpg, or `make sops-import-gpg` if gpg is already installed
+        * (If you've run through this once before and wiped your kubernetes configuration, run `make clean secrets`)
+    * Invoke `TAG=latest make deploy_local` and wait for services to come up:
 ```
     $ kubectl get pods
     example-api-9d898b479-c52hs               1/1     Running     3  32h
@@ -39,26 +39,26 @@ cat <<EOT >~/.bash_profile
 EOT
 source ~/.bash_profile
 ```
-  * Browse http://localhost:32180 as `admin` with password `p@ssw0rd`
+    * Browse http://localhost:32180 as `admin` with password `p@ssw0rd`
 * Or, to run only database/cache images for developing on your laptop:
-  * Optional: set environment variables (as defined below) if you wish to override default values
-  * Invoke `make run_local` to bring up the back-end API with its dependent services mariadb, redis and rabbitmq
-  * Invoke `make messaging_worker` to bring up the email/SMS worker back-end
-  * Clone the [instantlinux/apicrud-ui](https://github.com/instantlinux/apicrud-ui) repo to a separate directory and follow the instructions given in its README to start and log into the front-end
+    * Optional: set environment variables (as defined below) if you wish to override default values
+    * Invoke `make run_local` to bring up the back-end API with its dependent services mariadb, redis and rabbitmq
+    * Invoke `make messaging_worker` to bring up the email/SMS worker back-end
+    * Clone the [instantlinux/apicrud-ui](https://github.com/instantlinux/apicrud-ui) repo to a separate directory and follow the instructions given in its README to start and log into the front-end
 * Optional: configure outbound email (via GMail or another provider)
-  * Head to [App Passwords](https://myaccount.google.com/apppasswords) account settings in your GMail account and generate an app password
-  * Login as `admin` to the example demo UI (as above)
-  * At upper right, go into Settings and choose Credentials tab
-  * Add a new entry: `key` is your GMail email address, `secret` is the app password
-  * Choose Settings tab, set the smarthost to `smtp.gmail.com`, SMTP port to `587`, and select the SMTP credential you just created
-  * Also in Settings tab, update the URL to match the hostname and port number you see in address bar
-  * At upper right, go into Profile and select Contact Info
-  * Edit the admin email address to your GMail address
+    * Head to [App Passwords](https://myaccount.google.com/apppasswords) account settings in your GMail account and generate an app password
+    * Login as `admin` to the example demo UI (as above)
+    * At upper right, go into Settings and choose Credentials tab
+    * Add a new entry: `key` is your GMail email address, `secret` is the app password
+    * Choose Settings tab, set the smarthost to `smtp.gmail.com`, SMTP port to `587`, and select the SMTP credential you just created
+    * Also in Settings tab, update the URL to match the hostname and port number you see in address bar
+    * At upper right, go into Profile and select Contact Info
+    * Edit the admin email address to your GMail address
 * Optional: add the media service (requires AWS S3 or compatible service)
-  * Invoke `TAG=latest make deploy_media` to bring up the media API and worker
-  * Set up an S3 bucket in your AWS or compatible account
-  * See usage instructions for [media service](https://github.com/instantlinux/apicrud-media#usage), starting with the `admin` login
-  * Subsequent logins will now have access to media features in the UI
+    * Invoke `TAG=latest make deploy_media` to bring up the media API and worker
+    * Set up an S3 bucket in your AWS or compatible account
+    * See usage instructions for [media service](https://github.com/instantlinux/apicrud-media#usage), starting with the `admin` login
+    * Subsequent logins will now have access to media features in the UI
 * Optional: if running API within a docker container, update the kubernetes secrets defined below; see instructions in [example/Makefile.sops](https://github.com/instantlinux/apicrud/blob/master/example/Makefile.sops)
 * Optional: `make prometheus_adhoc` will start the metric collector, with a GUI on port 9090 of its container IP address
 * Optional for Linux: a full ansible-based bare-metal k8s cluster management suite is published at [instantlinux/docker-tools](https://github.com/instantlinux/docker-tools)
@@ -95,3 +95,21 @@ mapquest-api-key | API key for address lookups (sign-up: [mapquest](http://devel
 mariadb-root-password | Root password for MariaDB
 
 All service instances for a given deployment must share the same db-aes and redis secrets. Rotating the redis secret simply requires relaunching all instances (which will invalidate current user sessions). Rotating the db-aes secret requires creating a migration script (which remains TODO).
+
+### Single Sign On
+
+Authentication via external providers such as Google, Twitter, GitHub, Facebook or others that provide centralized login compatible with OAuth2 ([RFC-6749](https://tools.ietf.org/html/rfc6749)) can often be a challenge to set up in a new application. Because this framework provides both the front-end and back-end implementation, most of the work has been done for you. Here are steps for making it work in your environment:
+
+* Don't even try to begin setting up SSO without having your application running with a valid SSL certificate (served by an https URL). Details of doing that are beyond scope of this document; there are mechanisms such as cert-manager that automate this. To run a new service in your own environment this will be one of the first steps to prepare it for your users.
+
+* Look in the [service_config.yaml](https://github.com/instantlinux/apicrud/blob/master/apicrud/service_config.yaml) defaults to see if auth_params for your provider are defined; you can add others but most of the major providers are pre-configured.
+
+* When you request or reconfigure the provider's client, specify the "redirect URI" in the form `https://[your domain]/api/v1/auth_callback/[provider]`, such as `https://www.example.com/api/v1/auth_callback/google`.
+
+* Get a client-id and client-secret from the provider. Google calls this an "application client ID"; other vendors may use different terminology. Some will issue these credentials directly from their developer-settings console screen; others may require submitting a form for approval.
+
+* Add a secret containing the two values to your kubernetes installation.
+
+* From the secret, define the environment variables `[vendor]_CLIENT_ID` and `[vendor]_CLIENT_SECRET` in the container's kubernetes deployment definition.
+
+* Once properly configured, you should see a `sign in with [vendor]` button on the login page.

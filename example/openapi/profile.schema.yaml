@@ -25,6 +25,7 @@ Profile:
       - lang
       - location
       - partner
+      - picture
       - pronouns
       - reminders
       - tz
@@ -46,7 +47,7 @@ Profile:
     uid:
       $ref: '#/components/schemas/base/properties/id'
     value:
-      maxLength: 32
+      maxLength: 96
       nullable: true
       type: string
   required:

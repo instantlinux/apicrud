@@ -2,6 +2,7 @@
 
 created 9-jan-2021 by richb@instantlinux.net
 """
+from authlib.integrations.flask_client import OAuth
 import connexion
 from flask import jsonify
 from flask_cors import CORS
@@ -12,19 +13,30 @@ from .access import AccessControl
 from .const import Constants
 from .metrics import Metrics
 from .service_config import ServiceConfig
+from .service_registry import ServiceRegistry
+
+oauth = {}
 
 
-def app(application):
+def app(application, controllers, models, path):
     """Initialize the Flask app defined by openapi.yaml
 
     Args:
       application (obj): a connexion object
+      controllers (obj): all controllers
+      models (obj): all models
+      path (str): location of configuration .yaml / i18n files
       init_func (function): any other function to call
 
     Returns:
       obj: Flask app
     """
-    config = ServiceConfig().config
+    global oauth
+
+    config = ServiceConfig(
+        babel_translation_directories='i18n;%s' % os.path.join(path, 'i18n'),
+        reset=True, file=os.path.join(path, 'config.yaml'),
+        models=models).config
     logging.basicConfig(level=config.LOG_LEVEL,
                         format='%(asctime)s %(levelname)s %(message)s',
                         datefmt='%m-%d %H:%M:%S')
@@ -41,8 +53,17 @@ def app(application):
     CORS(application.app,
          resources={r"/api/*": {'origins': config.CORS_ORIGINS}},
          supports_credentials=True)
-
+    ServiceRegistry().register(controllers.resources())
     AccessControl().load_rbac(config.RBAC_FILE)
+    oauth['init'] = OAuth(application.app)
+    for provider in config.AUTH_PARAMS.keys():
+        client_id = os.environ.get('%s_CLIENT_ID' % provider.upper())
+        client_secret = os.environ.get('%s_CLIENT_SECRET' % provider.upper())
+        if client_id:
+            oauth['init'].register(name=provider, client_id=client_id,
+                                   client_secret=client_secret,
+                                   **config.AUTH_PARAMS[provider])
+            logging.info(dict(action='initialize', provider=provider))
     logging.info(dict(action='initialize_app', port=config.APP_PORT))
     return application.app
 

@@ -29,7 +29,7 @@ class TestMessaging(test_base.TestBase):
         self.assertEqual({}, kwargs)
 
         _from, _to, _body = args
-        self.assertEqual('example@instantlinux.net', _from)
+        self.assertEqual('user@example.com', _from)
         self.assertEqual('admin@test.conclave.events', _to)
         self.assertIn("List: test\n\nhello world", _body)
 

@@ -16,7 +16,7 @@ If you're thinking of using this framework, here are questions to ask as you con
 * Does it have full customizability to handle my unique requirements?
 * Does it have the performance that I need?
 * Does using it reduce complexity of the workflow for me and my team?
-* Do the tech-stack components match skills that my team has?
+* Do the tech-stack components (python, react, kubernetes) match skills that my team has?
 * Is there an active user community for sharing knowledge?
 
 ## Project Inception
@@ -34,6 +34,7 @@ Each portion of the framework may be simple and straightforward to use, from the
 * Setting up CI/CD pipelines has always been tedious and frustrating
 * Kubernetes, already vast and complex, is going through rapid evolution and several breaking-changes releases each year
 * Role-based access control is almost always left as an exercise for the developer by previous frameworks
+* Single-signon is tedious to get working in any new application
 * Test development and maintenance continues to drain half, sometimes even more, of the engineering hours required to build a high-quality online service
 * Persistent-data storage for databases, pictures and videos for 12-factor applications has never been standardized and Kubernetes still has no cross-vendor answer to the problem
 * Service-registration with tools like etcd and zookeeper has a steep learning curve, but it's an essential ingredient of most online services

@@ -165,7 +165,7 @@ def upgrade():
     sa.Column('id', sa.String(length=16), nullable=False),
     sa.Column('uid', sa.String(length=16), nullable=False),
     sa.Column('item', sa.String(length=16), nullable=False),
-    sa.Column('value', sa.String(length=32), nullable=True),
+    sa.Column('value', sa.String(length=96), nullable=True),
     sa.Column('location_id', sa.String(length=16), nullable=True),
     sa.Column('tz_id', sa.INTEGER(), nullable=True),
     sa.Column('privacy', sa.String(length=8), server_default='public', nullable=False),

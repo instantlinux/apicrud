@@ -11,8 +11,9 @@ The essential components of a modern full-stack application include a back-end A
 Out of the box, here are some of the capabilities included in the example application:
 
 * User-account setup, following standard security practices with password lockout and reset via email
+* Single-signon via external OAuth2 / OpenID providers (google, twitter, many others)
 * Encryption-at-rest for credentials
-* Microservice discovery
+* Microservice discovery (feature-flagging via announced endpoints)
 * GeoIP location lookup and map display
 * Customizable per-account grant limits (such as list size, number of contacts)
 * Application and usage-billing metrics, along with a prometheus viewer
@@ -29,7 +30,7 @@ Out of the box, here are some of the capabilities included in the example applic
 
 ## About the Name
 
-APIcrud is based on the [OpenAPI 3.0](https://en.wikipedia.org/wiki/OpenAPI_Specification) standard for RESTful web services. While newer APIs have been developed, such as gRPC (Google) and GraphQL (Facebook), REST remains by far the most widely supported and easiest to learn interface for getting your software deployed.
+APIcrud is based on the [OpenAPI 3.0](https://en.wikipedia.org/wiki/OpenAPI_Specification) standard for RESTful web services. While newer APIs have been developed, such as gRPC (Google) and GraphQL (Facebook), REST remains by far the most widely supported and easiest to learn interface for getting your software deployed. Most capabilities for any application can be defined as resources that are Created, Read, Updated or Deleted.
 
 ## Technology Stack
 

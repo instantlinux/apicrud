@@ -141,18 +141,14 @@ class Messaging(object):
         session.starttls(context=self.ssl_context)
         if (hasattr(self.settings.get, 'smtp_credential_id') and
                 self.settings.get.smtp_credential_id):
-            logging.warning(dict(step=1,
-                                 host=self.settings.get.smtp_smarthost))
             try:
                 cred = self.db_session.query(self.models.Credential).filter_by(
                     id=self.settings.get.smtp_credential_id).one()
                 session.login(cred.key, cred.secret)
-                logging.warning(dict(step=2))
             except Exception as ex:
                 logging.error(dict(action='send_contact', message=str(ex)))
                 # self.db_session.remove()
                 raise APIcrudSendError('Credential problem: %s' % str(ex))
-            logging.warning(dict(step=3))
         return session
 
     def _get_settings(self, model, account_id=None):

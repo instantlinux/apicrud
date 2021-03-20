@@ -95,7 +95,6 @@ def initialize_db(db_url=None, engine=None, redis_conn=None):
     Returns:
       bool: True if successful
     """
-
     config = ServiceConfig().config
     models = ServiceConfig().models
     _init_db(db_url=db_url, geo_support=config.DB_GEO_SUPPORT,
