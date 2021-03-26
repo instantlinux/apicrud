@@ -28,6 +28,7 @@ initialize.app(application)
 babel = Babel(application.app)
 
 
+@application.app.before_first_request
 def setup_db(db_url=None, redis_conn=None):
     """Database and service registry setup
 

@@ -56,7 +56,7 @@ $(K8S_YAML):
 	@SERVICE_NAME=$(APPNAME) SERVICE_IP=$(SERVICE_IP) \
 	 envsubst < $@.yaml | kubectl --kubeconfig=$(KUBECONFIG) apply -f -
 
-deploy_k8s: example/k8s/rmq example/k8s/redis
+deploy_k8s: example/k8s/volumes example/k8s/rmq example/k8s/redis
 
 deploy_local: envsubst mariadb_adhoc redis_adhoc rmq_adhoc example/k8s/dev secrets
 ifeq ($(TAG),)

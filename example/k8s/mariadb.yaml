@@ -53,7 +53,8 @@ spec:
           subPath: setup.sql
       volumes:
       - name: database
-        hostPath: { path: /var/tmp/$SERVICE_NAME-db }
+        persistentVolumeClaim:
+          claimName: $SERVICE_NAME-db
       - name: initdb
         configMap:
           name: $SERVICE_NAME-initdb

@@ -9,6 +9,7 @@ Clone this repo to your local environment. To start the example application in a
 * Install docker ([desktop for Mac](https://docs.docker.com/docker-for-mac/) or [Linux/Ubuntu](https://docs.docker.com/engine/install/ubuntu/)) and enable kubernetes; if you're on a Mac install [homebrew](https://brew.sh); Linux _kubeadm_ setup is beyond scope of this README
 * To run the full example demo in your local kubernetes:
   * Make secrets available: `ln -s example/secrets/.gnupg ~` if you don't already use gpg, or `make sops-import-gpg` if gpg is already installed
+    * (If you've run through this once before and wiped your kubernetes configuration, run `make clean secrets`)
   * Invoke `TAG=latest make deploy_local` and wait for services to come up:
 ```
     $ kubectl get pods
@@ -27,6 +28,16 @@ Clone this repo to your local environment. To start the example application in a
     example-rmq        ClusterIP      10.101.2.20      <none>   4369/TCP,5671/TCP,5672/TCP  14d
     example-ui         ClusterIP      None             <none>   80/TCP                      8d
     example-worker-messaging ClusterIP 10.98.233.206   <none>   5555/TCP                    13d
+```
+    Note -- if you get a message like `IP is not in the valid range`, kubernetes will tell you the valid range; you can override with env variables in ~/.bash_profile:
+```
+cat <<EOT >~/.bash_profile
+    export API_IP=172.20.2.2
+    export DB_HOST=172.20.2.30 
+    export RABBITMQ_IP=172.20.2.20 
+    export REDIS_IP=172.20.2.10  
+EOT
+source ~/.bash_profile
 ```
   * Browse http://localhost:32180 as `admin` with password `p@ssw0rd`
 * Or, to run only database/cache images for developing on your laptop:
@@ -66,7 +77,7 @@ DB_NAME | `example_local` | Name of the database
 DOMAIN | | Domain for service URLs
 EXAMPLE_API_PORT | `8080` | TCP port for API service
 KUBECONFIG | | Config credentials filename for k8s
-RABBITMQ_IP | `10.101.2.20` | IP address to use for rabbitMQ under k8s
+RABBITMQ_IP | `10.101.2.20` | IP address to use for rabbitMQ under k8s  
 REDIS_IP | `10.101.2.10` | IP address for redis under k8s
 UI_DEV_PORT | `32180` | TCP port for UI (local dev k8s)
 
