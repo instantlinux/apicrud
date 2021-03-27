@@ -1,0 +1,60 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: $SERVICE_NAME-db
+  labels:
+    app.kubernetes.io/name: $SERVICE_NAME-db
+spec:
+  accessModes: [ ReadWriteOnce ]
+  capacity:
+    storage: 50M
+  hostPath:
+    path: /var/tmp/$SERVICE_NAME-db
+  storageClassName: local
+  volumeMode: Filesystem
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: $SERVICE_NAME-db
+spec:
+  accessModes: [ ReadWriteOnce ]
+  resources:
+    requests:
+      storage: 50M
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: $SERVICE_NAME-db
+  storageClassName: local
+  volumeMode: Filesystem
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: $SERVICE_NAME-redis
+  labels:
+    app.kubernetes.io/name: $SERVICE_NAME-redis
+spec:
+  accessModes: [ ReadWriteOnce ]
+  capacity:
+    storage: 50M
+  hostPath:
+    path: /var/tmp/$SERVICE_NAME-redis
+  storageClassName: local
+  volumeMode: Filesystem
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: $SERVICE_NAME-redis
+spec:
+  accessModes: [ ReadWriteOnce ]
+  resources:
+    requests:
+      storage: 50M
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: $SERVICE_NAME-redis
+  storageClassName: local
+  volumeMode: Filesystem
