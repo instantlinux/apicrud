@@ -215,7 +215,7 @@ class SessionAuth(object):
                     self.models.Contact.type == 'email',
                     self.models.Contact.status == 'active',
                     self.models.Account.status == 'active').one()
-                foo
+                username = account.name
             except NoResultFound:
                 return self._handle_unknown_user(method, user)
         logging.info(dict(usermeta=user, **logmsg))
