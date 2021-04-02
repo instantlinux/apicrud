@@ -9,6 +9,7 @@ from datetime import datetime
 from flask import g
 from html.parser import HTMLParser
 import random
+import re
 import string
 
 
@@ -49,7 +50,10 @@ def utcnow():
 
 def identity_normalize(identity):
     """Normalize an email address for use as an identity: downcase
-    and in certain cases remove characters
+    and in certain cases remove characters. This is required to secure
+    against a type of attack involving password-resets: an example
+    of the vulnerability is described here:
+     https://jameshfisher.com/2018/04/07/the-dots-do-matter-how-to-scam-a-gmail-user/
 
     Args:
       identity (str): a raw email address
@@ -57,10 +61,13 @@ def identity_normalize(identity):
     """
     if not identity:
         return
-    if '@gmail.com' in identity:
-        identity = '%s@gmail.com' % identity.split(
-            '@')[0].replace('.', '').split('+')[0]
-    return identity.lower()
+    if re.match('.*@gmail.com$', identity, re.I):
+        identity = '%s@gmail.com' % identity.split('@')[0].replace('.', '')
+    try:
+        user, domain = identity.split('@')
+        return ('%s@%s' % (user.split('+')[0], domain)).lower()
+    except ValueError:
+        return identity.lower()
 
 
 def strip_tags(html):

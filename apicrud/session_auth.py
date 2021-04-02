@@ -98,14 +98,10 @@ class SessionAuth(object):
                     '%s%s/%s/%s' % (self.config.PUBLIC_URL,
                                     self.config.BASE_URL,
                                     'auth_callback', method))
-                """
-                callback_uri='%s/%s/%s' % (self.config.BASE_URL,
-                                           'auth_callback', method))
-                """
-                # TODO this cache is only needed for non-http dev
-                state = parse_qs(urlparse(retval.location).query).get(
-                    'state')[0]
-                Ocache().set('session_foo_state', state, expires=120)
+                if self.config.AUTH_SKIP_CORS:
+                    state = parse_qs(urlparse(retval.location).query).get(
+                        'state')[0]
+                    Ocache().set('session_foo_state', state, expires=120)
                 if retval.status_code == 302:
                     return dict(location=retval.location), 200
             except RuntimeError as ex:
@@ -141,7 +137,7 @@ class SessionAuth(object):
             return dict(username=username, message='not valid'), 403
         except OperationalError as ex:
             logging.error('action=login message=%s' % str(ex))
-            return dict(message=_(u'DB operational error, try again')), 403
+            return dict(message=_(u'DB operational error, try again')), 500
         if (account.invalid_attempts >= self.login_attempts_max and
             account.last_invalid_attempt + timedelta(
                 seconds=self.login_lockout_interval) > datetime.utcnow()):
@@ -179,14 +175,18 @@ class SessionAuth(object):
             msg = _(u'login client missing')
             logging.error(dict(message=msg, **logmsg))
             return dict(message=msg), 405
-        # TODO: put this under dev conditional
-        flask_session['_%s_authlib_state_' % method] = Ocache().get(
-            'session_foo_state')
+        if self.config.AUTH_SKIP_CORS:
+            flask_session['_%s_authlib_state_' % method] = Ocache().get(
+                'session_foo_state')
         try:
-            token = client.authorize_access_token()
+            token = client.authorize_access_token(
+                redirect_uri='%s%s/%s/%s' % (self.config.PUBLIC_URL,
+                                             self.config.BASE_URL,
+                                             'auth_callback', method))
         except Exception as ex:
             msg = _(u'openid client failure')
-            logging.warning(dict(message=msg, error=str(ex), **logmsg))
+            logging.warning(dict(message=msg, error=str(ex),
+                                 suggest='for dev: AUTH_SKIP_CORS', **logmsg))
             return dict(message=msg), 405
         if 'id_token' in token:
             user = client.parse_id_token(token)
@@ -197,14 +197,27 @@ class SessionAuth(object):
             logging.warning(dict(message='identity missing', **logmsg))
             return dict(message=_(u'access denied')), 403
         try:
-            # TODO: match secondary contacts
             account = g.db.query(self.models.Account).join(
                 self.models.Person).filter(
                     self.models.Person.identity == identity,
                     self.models.Account.status == 'active').one()
             username = account.name
         except NoResultFound:
-            return self._handle_unknown_user(method, user)
+            account = None
+        except Exception as ex:
+            logging.error('action=login message=%s' % str(ex))
+            return dict(message=_(u'DB operational error, try again')), 500
+        if not account:
+            try:
+                account = g.db.query(self.models.Account).join(
+                    self.models.Person).join(self.models.Contact).filter(
+                    self.models.Contact.info == identity,
+                    self.models.Contact.type == 'email',
+                    self.models.Contact.status == 'active',
+                    self.models.Account.status == 'active').one()
+                foo
+            except NoResultFound:
+                return self._handle_unknown_user(method, user)
         logging.info(dict(usermeta=user, **logmsg))
         return self._login_accepted(username, account, method)
 
@@ -426,8 +439,9 @@ class SessionAuth(object):
                 ret.append(method)
         return dict(
             items=ret, count=len(ret),
-            login_internal_policy=internal_policy,
-            login_external_policy=self.config.LOGIN_EXTERNAL_POLICY), 200
+            policies=dict(
+                login_internal=internal_policy,
+                login_external=self.config.LOGIN_EXTERNAL_POLICY)), 200
 
     def register(self, identity, username, name, template='confirm_new',
                  picture=None):

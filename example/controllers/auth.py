@@ -4,6 +4,7 @@ created 6-apr-2019 by richb@instantlinux.net
 """
 
 from flask import g, request
+from flask_babel import _
 import logging
 
 from apicrud import SessionAuth, singletons
@@ -44,7 +45,7 @@ class AuthController(object):
         if creds:
             g.session.delete(creds.username, creds.password)
             logging.info('action=logout id=%s' % creds.username)
-        return dict(message='logged out'), 200
+        return dict(message=_(u'logged out')), 200
 
     @staticmethod
     def auth_callback(method, code, state):

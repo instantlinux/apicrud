@@ -45,6 +45,7 @@ setuptools.setup(
     include_package_data=True,
     install_requires=[
         'alembic>=1.4.3',
+        'Authlib>=0.15.3,<1.0.0',
         'babel>=2.8.0',
         'connexion>=2.7.0',
         'connexion[swagger-ui]',

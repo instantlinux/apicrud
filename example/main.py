@@ -18,7 +18,6 @@ import controllers
 from messaging import send_contact
 import models
 
-setup_db_only_once = {}
 application = connexion.FlaskApp(__name__)
 initialize.app(application, controllers, models, os.path.dirname(
     os.path.abspath(__file__)))
@@ -26,7 +25,6 @@ config = ServiceConfig().config
 babel = Babel(application.app)
 
 
-@application.app.before_first_request
 def setup_db(db_url=None, redis_conn=None):
     """Database and service registry setup
 
@@ -35,17 +33,13 @@ def setup_db(db_url=None, redis_conn=None):
       redis_conn (obj): connection to redis
     """
     db_url = db_url or config.DB_URL
-    if not setup_db_only_once and database.initialize_db(
-            db_url=db_url, redis_conn=redis_conn):
+    if database.initialize_db(db_url=db_url, redis_conn=redis_conn):
         Metrics(redis_conn=redis_conn, func_send=send_contact.delay).store(
             'api_start_timestamp', value=int(datetime.now().timestamp()))
-        setup_db_only_once['initialized'] = True
 
 
 @application.app.before_request
 def before_request():
-    """Request-setup function - get sessions to database and auth
-    """
     database.before_request()
 
 
@@ -53,12 +47,14 @@ def before_request():
 def add_header(response):
     """All responses get a cache-control header"""
     response.cache_control.max_age = config.HTTP_RESPONSE_CACHE_MAX_AGE
-    try:
-        if request.url_rule.rule.split('/')[3] == 'auth':
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-    except (AttributeError, IndexError):
-        pass
+    if config.AUTH_SKIP_CORS:
+        try:
+            if request.url_rule.rule.split('/')[3] == 'auth':
+                response.headers['Access-Control-Allow-Origin'] = '*'
+                response.headers['Access-Control-Allow-Headers'] = (
+                    'Content-Type')
+        except (AttributeError, IndexError):
+            pass
     Metrics().store(
         'api_request_seconds_total', value=datetime.utcnow().timestamp() -
         g.request_start_time.timestamp())
@@ -85,4 +81,5 @@ def get_locale():
 
 if __name__ in ('__main__', 'uwsgi_file_main'):
     setup_db(db_url=config.DB_URL)
+if __name__ == '__main__':
     application.run(port=config.APP_PORT)

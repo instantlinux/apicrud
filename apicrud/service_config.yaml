@@ -135,6 +135,10 @@ components:
           default: '/#/login/ext'
           description: Landing page upon external login
           type: string
+        auth_skip_cors:
+          default: false
+          description: For debugging OAuth2
+          type: boolean
         babel_default_locale:
           default: en
           description: Locale default

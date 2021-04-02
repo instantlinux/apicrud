@@ -1,5 +1,5 @@
 Account:
-  description: A account
+  description: An account
   example:
     name: fsmith
     status: active
@@ -27,7 +27,7 @@ Account:
       description: A user's login name
       maxLength: 32
       minLength: 4
-      pattern: ^[a-z0-9_.-]+$
+      pattern: ^[a-z0-9@_.-]+$
       type: string
     password_must_change:
       default: false
@@ -91,7 +91,7 @@ Registration:
       type: string
       minLength: 4
       maxLength: 32
-      pattern: ^[a-z0-9@_.-]+$
+      pattern: ^[a-z0-9_.-]+$
     forgot_password:
       description: Send a password-reset token
       type: boolean
