@@ -75,6 +75,9 @@ policies:
       resource: "{resource}:{{uid}}"
       # TODO maybe get rid of d
       actions: cdru
+    - principal: mfarequired:{{uid}}
+      actions: ru
+      resource: "{resource}:{{uid}}"
   contact:
     - principal: admin
       resource: "{resource}:*"

@@ -18,6 +18,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from .access import AccessControl
 from .account_settings import AccountSettings
 from .const import Constants
+from .database import db_abort
 from .grants import Grants
 from .service_config import ServiceConfig
 from . import geocode, singletons, utils
@@ -154,8 +155,7 @@ class BasicCRUD(object):
             logging.warning(dict(message=message, error=str(ex), **logmsg))
             return dict(message=message, data=str(body)), 405
         except Exception as ex:
-            logging.warning(dict(message=str(ex), **logmsg))
-            return dict(message=str(ex), data=str(body)), 405
+            return db_abort(str(ex), rollback=True, **logmsg)
         return dict(id=id, **ret_info), 201
 
     @staticmethod
@@ -235,6 +235,8 @@ class BasicCRUD(object):
             except ValueError:
                 body['expires'] = datetime.strptime(
                     body['expires'], '%Y-%m-%dT%H:%M:%SZ')
+        if 'totp' in body and not body.pop('totp'):
+            body['totp_secret'] = None
         if hasattr(self.model, '__rest_related__'):
             for related in self.model.__rest_related__:
                 if related in body:
@@ -260,8 +262,7 @@ class BasicCRUD(object):
             logging.warning(dict(message=message, error=str(ex), **logmsg))
             return dict(message=message, data=str(ex)), 405
         except Exception as ex:
-            logging.warning(dict(message=str(ex), **logmsg))
-            return dict(message='exception %s' % str(ex)), 405
+            return db_abort(str(ex), rollback=True, **logmsg)
 
         updated = {key: body[key] for key, val in body.items()
                    if key in current and current[key] != val and
@@ -309,14 +310,12 @@ class BasicCRUD(object):
                     logging.info(dict(id=id, status='disabled', **logmsg))
                     query.update(dict(status='disabled'))
             except Exception as ex:
-                logging.warning(dict(message=str(ex), **logmsg))
-                return dict(message='exception %s' % str(ex)), 405
+                return db_abort(str(ex), **logmsg)
             count += 1
         try:
             g.db.commit()
         except Exception as ex:
-            logging.warning(dict(message=str(ex), **logmsg))
-            return dict(message='exception %s' % str(ex)), 405
+            return db_abort(str(ex), rollback=True, **logmsg)
         logging.info(dict(count=count, ids=ids, **logmsg))
         return NoContent, 404 if errors else 204
 
@@ -342,6 +341,11 @@ class BasicCRUD(object):
         acc = AccessControl(model=self.model)
         logmsg = dict(action='find', ident=acc.identity,
                       resource=self.resource)
+        # TODO this conditional is a band-aid to give status 403 instead of
+        # 200 with empty item list for anonymous / restricted users
+        if self.resource != 'account' and not acc.with_permission(
+               'r', new_uid=acc.uid):
+            return dict(message=_(u'access denied')), 403
         conditions = {item: value for item, value in kwargs.items()
                       if item in ('status')}
         if 'cursor_next' in kwargs:
@@ -412,8 +416,7 @@ class BasicCRUD(object):
         try:
             results = query.slice(offset, offset + limit + 1).all()
         except Exception as ex:
-            logging.error(dict(message=str(ex), **logmsg))
-            return dict(message='Backend problem--probable bug'), 405
+            return db_abort(str(ex), **logmsg)
         retval = dict(items=[], count=query.count())
         count = 0
         for result in results[:limit]:

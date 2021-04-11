@@ -12,6 +12,7 @@ import yaml
 
 import test_base
 from apicrud import ServiceConfig
+import models
 
 
 class TestServiceConfig(test_base.TestBase):
@@ -36,7 +37,7 @@ class TestServiceConfig(test_base.TestBase):
                           os.path.join(path, 'i18n')),
                       db_seed_file=os.path.join(path, 'db_seed.yaml'),
                       db_migrations=os.path.join(path, 'alembic'),
-                      rbac_file=app_config['rbac_file'])
+                      models=models, rbac_file=app_config['rbac_file'])
         app_config.update(updates)
         app_config['log_level'] = logging.WARNING
 
@@ -84,7 +85,7 @@ class TestServiceConfig(test_base.TestBase):
                       db_migrations=os.path.join(path, 'alembic'),
                       babel_translation_directories=(
                           'i18n;%s' % os.path.join(path, 'i18n')),
-                      rbac_file=app_config['rbac_file'])
+                      models=models, rbac_file=app_config['rbac_file'])
 
     def test_set_one_value(self):
         new_value = 'testservice'

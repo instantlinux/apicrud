@@ -16,7 +16,7 @@ from sqlalchemy.exc import IntegrityError
 import tempfile
 import unittest
 
-from apicrud import database, ServiceConfig, SessionManager
+from apicrud import database, ServiceConfig, SessionAuth, SessionManager
 from main import application, setup_db
 from models import Account, Category, Contact, Person
 
@@ -40,7 +40,9 @@ class TestBase(unittest.TestCase):
             redis_conn = global_fixture['redis']
             unittest.mock.patch(
                 'apicrud.service_registry.ServiceRegistry.update').start()
+            # TODO consider connection singletons in initialize()
             setup_db(db_url=db_url, redis_conn=redis_conn)
+            SessionAuth(redis_conn=redis_conn)
         yield global_fixture
         try:
             if os.environ.get('DBCLEAN', None) != '0':
@@ -132,7 +134,7 @@ class TestBase(unittest.TestCase):
         db_session.remove()
 
     def authorize(self, username=None, password=None, apikey=None,
-                  new_session=False):
+                  new_session=False, otp=None):
         if not username and not apikey:
             username = self.username
             password = self.password
@@ -143,9 +145,9 @@ class TestBase(unittest.TestCase):
             if response.status_code == 200:
                 self.apikey = apikey
             return response.status_code
-        if username not in self.credentials or new_session:
+        if username not in self.credentials or new_session or otp:
             response = self.call_endpoint('/auth', 'post', data=dict(
-                username=username, password=password))
+                username=username, password=password, otp=otp))
             if response.status_code != 201:
                 return response.status_code
             tok = jwt.decode(response.get_json()['jwt_token'],

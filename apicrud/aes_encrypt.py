@@ -56,3 +56,49 @@ class AESEncrypt(object):
     @staticmethod
     def _unpad(s):
         return s[:-ord(s[len(s) - 1:])]
+
+
+class AESEncryptBin(object):
+    """AES encryption for binaries
+
+    Provides easier-to-use AES CBC encrypt/decrypt operations for byte
+    objects
+
+    Args:
+      secret (str): passphrase (suggest at least 16 characters)
+    """
+    def __init__(self, secret):
+        self.private_key = hashlib.sha256(secret.encode('utf-8')).digest()
+
+    def encrypt(self, raw):
+        """encrypt a byte object
+
+        Args:
+          raw (bytes): object to be encrypted
+        Returns:
+          bytes: encrypted object
+        """
+        iv = get_random_bytes(AES.block_size)
+        cipher = AES.new(self.private_key, AES.MODE_CBC, iv)
+        return iv + cipher.encrypt(self._pad(raw))
+
+    def decrypt(self, enc):
+        """decrypt an object
+
+        Args:
+          enc (bytes): encrypted object
+        Returns:
+          bytes: decrypted bytes
+        """
+        iv = enc[:16]
+        cipher = AES.new(self.private_key, AES.MODE_CBC, iv)
+        return self._unpad(cipher.decrypt(enc[16:]))
+
+    @staticmethod
+    def _pad(s):
+        addmore = BLOCK_SIZE - len(s) % BLOCK_SIZE
+        return s + bytes([addmore]) * addmore
+
+    @staticmethod
+    def _unpad(s):
+        return s[:-s[-1]]

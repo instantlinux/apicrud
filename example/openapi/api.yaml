@@ -18,6 +18,8 @@ components:
       $ref: 'account.schema.yaml#/AccountPassword'
     Auth:
       $ref: 'account.schema.yaml#/Auth'
+    AuthTOTP:
+      $ref: 'account.schema.yaml#/AuthTOTP'
     Registration:
       $ref: 'account.schema.yaml#/Registration'
     APIkey:
@@ -83,6 +85,8 @@ paths:
     $ref: 'account.path.yaml#/auth_methods'
   /auth_params:
     $ref: 'account.path.yaml#/auth_params'
+  /auth_totp:
+    $ref: 'account.path.yaml#/auth_totp'
   /logout:
     $ref: 'account.path.yaml#/logout'
   /apikey:

@@ -10,6 +10,7 @@ import alembic.script
 from alembic.runtime.environment import EnvironmentContext
 from datetime import datetime
 from flask import _app_ctx_stack, abort, g, request
+from flask_babel import _
 import logging
 import os.path
 from sqlalchemy import create_engine
@@ -111,6 +112,22 @@ def initialize_db(db_url=None, engine=None, redis_conn=None):
         # just wait for schema update
         schema_update(db_engine, models)
     return True
+
+
+def db_abort(error, rollback=False, **kwargs):
+    """Helper for logging exceptions
+    Args:
+      error (str): exception string for log
+      rollback (bool): whether to roll back
+      kwargs: any other values to log
+
+    Returns:
+      tuple: dict with generic message, status 500
+    """
+    msg = _(u'DB operational error')
+    logging.error(dict(message=msg, error=error, **kwargs))
+    g.db.rollback()
+    return dict(message=msg), 500
 
 
 def alembic_migrate(models, version, script_location, migrate=False,

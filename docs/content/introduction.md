@@ -8,7 +8,7 @@ The essential components of a modern full-stack application include a back-end A
 
 ## Features
 
-Out of the box, here are some of the capabilities included in the example application:
+Out of the box, here are some of the capabilities included in the example application. All "batteries are included" (and tested on GitLab with each version update), with no plugin version-hell mismatches to worry about later.
 
 * User-account setup, following standard security practices with password lockout and reset via email
 * Single-signon via external OAuth2 / OpenID providers (google, twitter, many others)
@@ -19,6 +19,7 @@ Out of the box, here are some of the capabilities included in the example applic
 * Application and usage-billing metrics, along with a prometheus viewer
 * User-profile and settings screens
 * Authentication by password or API key
+* MFA with Google Authenticator
 * Extensible internationalization support
 * Photo and file uploads, with a mobile-friendly photo album
 * Configurable role-based access control for all resource types, with per-object privacy settings

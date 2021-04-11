@@ -2,6 +2,7 @@
 Authlib = "*"
 geocoder = "*"
 icalendar = "*"
+pyotp = "*"
 SQLAlchemy = "==1.3.23"
 
 # alpine provides pre-built wheels for these

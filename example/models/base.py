@@ -31,5 +31,8 @@ class AsDictMixin(object):
         if hasattr(self, '__rest_related__'):
             for key in self.__rest_related__:
                 retval[key] = [rec.id for rec in getattr(self, key)]
+        if hasattr(self, '__rest_hybrid__'):
+            for key in self.__rest_hybrid__:
+                retval[key] = getattr(self, key)
         retval.pop('_sa_instance_state', None)
         return retval

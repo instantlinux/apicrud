@@ -179,7 +179,7 @@ class TestAPIkeys(test_base.TestBase):
         expected = dict(
             is_admin=False, name=account['username'], owner=account['name'],
             password_must_change=False, rbac='dru', status='active',
-            settings_id=self.settings_id)
+            totp=False, settings_id=self.settings_id)
         password = dict(new_password='0d9bcd-2', verify_password='0d9bcd-2')
 
         response = self.call_endpoint('/account', 'post', data=account)

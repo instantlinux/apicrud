@@ -14,6 +14,7 @@ class Constants:
     DEFAULT_AWS_REGION = 'us-east-2'
     LIB_MOD_SPATIALITE = ['/usr/lib/x86_64-linux-gnu/mod_spatialite.so',
                           '/usr/lib/mod_spatialite.so.7']
+    MFA_BACKUP_CODELEN = 8
     MIME_IMAGE_TYPES = ("gif", "heic", "jpeg", "png", "svg")
     MIME_VIDEO_TYPES = ("mp4", "mpeg")
     PER_PAGE_DEFAULT = 100

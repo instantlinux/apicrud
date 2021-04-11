@@ -345,13 +345,38 @@ components:
             invite; onrequest means user submits for approval; open means
             new accounts are active right away
           enum: [ closed, onrequest, open ]
+        login_mfa_apikey:
+          default: false
+          description: Support MFA after apikey validation
+          type: boolean
+        login_mfa_backup_codes:
+          default: 6
+          description: Number of backup codes to generate
+          type: integer
+          minimum: 0
+          maximum: 12
+        login_mfa_cookie_limit:
+          default: 43200
+          description: >
+            How long the MFA-bypass cookie should last before requiring
+            reauthorization; 0 to disable MFA cookies (auth each time a
+            session expires)
+          type: integer
+        login_mfa_external:
+          default: false
+          description: Support MFA after OAuth2 validation
+          type: boolean
+        login_mfa_required:
+          default: false
+          description: Require all users to set up MFA
+          type: boolean
         login_session_limit:
           default: 7200
           description: Maximum duration of a regular user session
           type: integer
         magic_validity_hours_min:
           default: 504
-          description: Validity of a magic-token (for invitations)
+          description: Validity of a magic-token
           type: integer
         magic_validity_from_event:
           default: 168

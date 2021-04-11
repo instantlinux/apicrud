@@ -50,7 +50,8 @@ class AccessControl(object):
 
     - admin
     - user
-    - pending
+    - pending (new-account confirmation)
+    - pendingtotp
     - person
     - <resource>-<id>-<privacy>
 

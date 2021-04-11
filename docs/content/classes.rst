@@ -13,6 +13,7 @@ Python Classes
      AccountSettings
      AESEncrypt
      BasicCRUD
+     auth
      const
      database
      exceptions

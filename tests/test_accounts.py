@@ -27,7 +27,7 @@ class TestAccounts(test_base.TestBase):
         expected = dict(
             password_must_change=False, is_admin=False, last_login=None,
             name=record['username'], rbac='dru', owner=record['name'],
-            settings_id=self.settings_id, status='active')
+            totp=False, settings_id=self.settings_id, status='active')
 
         response = self.call_endpoint('/account', 'post', data=record)
         self.assertEqual(response.status_code, 201)

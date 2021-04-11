@@ -8,6 +8,7 @@ from flask_babel import _
 import logging
 
 from apicrud import SessionAuth, singletons
+from apicrud.auth import AuthTOTP, OAuth2
 from messaging import send_contact
 import models
 
@@ -33,7 +34,7 @@ class AuthController(object):
         """
         return SessionAuth(roles_from=models.List).account_login(
             body.get('username'), body.get('password'),
-            method=body.get('method', 'local'))
+            method=body.get('method', 'local'), otp=body.get('otp'))
 
     def logout():
         """Logout
@@ -49,14 +50,24 @@ class AuthController(object):
 
     @staticmethod
     def auth_callback(method, code, state):
-        return SessionAuth(func_send=send_contact.delay,
-                           roles_from=models.List).oauth_callback(
-                               method, code=code, state=state)
+        return OAuth2(
+            func_send=send_contact.delay, roles_from=models.List).callback(
+                method, code=code, state=state)
 
     @staticmethod
     def auth_params():
-        """Get authorizaion info"""
+        """Get authorization info"""
         return SessionAuth().auth_params()
+
+    @staticmethod
+    def totp_generate():
+        """Generate a new TOTP token"""
+        return AuthTOTP().generate()
+
+    @staticmethod
+    def totp_register(body):
+        """Register TOTP for user"""
+        return AuthTOTP().register(body)
 
     @staticmethod
     def find():

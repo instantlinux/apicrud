@@ -356,6 +356,41 @@ auth_params:
     - auth
     x-codegen-request-body-name: conditions
     x-openapi-router-controller: controllers.auth
+auth_totp:
+  post:
+    summary: TOTP register
+    operationId: AuthController.totp_register
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AuthTOTP'
+      required: true
+    responses:
+      403:
+        content: {}
+        description: Invalid input
+    security:
+    - apikey: [full]
+    - basic: []
+    tags:
+    - auth
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.auth
+  get:
+    summary: Generate new TOTP token
+    operationId: AuthController.totp_generate
+    responses:
+      200:
+        content: {}
+        description: new TOTP token
+    security:
+    - apikey: [full, readonly]
+    - basic: []
+    tags:
+    - auth
+    x-codegen-request-body-name: conditions
+    x-openapi-router-controller: controllers.auth
 logout:
   get:
     summary: Log out

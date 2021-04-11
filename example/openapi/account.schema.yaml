@@ -32,6 +32,10 @@ Account:
     password_must_change:
       default: false
       type: boolean
+    totp:
+      description: User's totp is active
+      default: false
+      type: boolean
     status:
       $ref: '#/components/schemas/base/properties/status'
     uid:
@@ -130,4 +134,27 @@ Auth:
       type: string
       maxLength: 16
       default: local
+    otp:
+      description: One-time password for MFA
+      type: string
+      minLength: 6
+      maxLength: 8
+      pattern: ^([0-9]{6}|[0-9a-z]{8})$
+      nullable: true
+  type: object
+AuthTOTP:
+  description: TOTP registration
+  example:
+    nonce: xyzabc0099
+    otp_first: 123456
+  properties:
+    nonce:
+      type: string
+      maxLength: 32
+    otp_first:
+      description: One-time password
+      type: string
+      minLength: 6
+      maxLength: 6
+      pattern: ^[0-9]+$
   type: object
