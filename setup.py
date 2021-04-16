@@ -41,7 +41,7 @@ setuptools.setup(
     scripts=[],
     package_data=dict(apicrud=['*.yaml', 'i18n/*/LC_MESSAGES/*.mo',
                                'templates/*.j2']),
-    packages=('apicrud', 'apicrud.media', 'apicrud.messaging'),
+    packages=('apicrud', 'apicrud.auth', 'apicrud.media', 'apicrud.messaging'),
     include_package_data=True,
     install_requires=[
         'alembic>=1.4.3',
@@ -59,6 +59,7 @@ setuptools.setup(
         'passlib>=1.7.4',
         'pycryptodomex>=3.9.9',
         'PyMySQL>=1.0.2',
+        'pyotp>=2.6.0',
         'pytz>=2021.1',
         'redis>=3.5.3',
         'requests>=2.23.0',

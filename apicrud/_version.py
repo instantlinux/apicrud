@@ -1,3 +1,3 @@
-__version__ = '0.0.60'
+__version__ = '0.0.61'
 vcs_ref = 'unset'
 build_date = 'unset'

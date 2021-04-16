@@ -8,8 +8,8 @@ license: lgpl-2.1
 # coding: utf-8
 
 # from geoalchemy2 import Geometry
-from sqlalchemy import BOOLEAN, Column, Enum, ForeignKey, INTEGER, String, \
-     TEXT, TIMESTAMP, Unicode, UniqueConstraint, Binary
+from sqlalchemy import Binary, BOOLEAN, Column, Enum, ForeignKey, INTEGER, \
+     String, TEXT, TIMESTAMP, Unicode, UniqueConstraint
 from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, backref
