@@ -154,13 +154,15 @@ class LocalUser(SessionAuth):
                 return dict(username=account.name, message=msg), 405
         account.password = sha256_crypt.hash(new_password)
         account.password_must_change = False
+        account.invalid_attempts = 0
         g.db.commit()
         logging.info(dict(message=_(u'changed'), **logmsg))
         return dict(id=account.id, uid=uid, username=account.name), 200
 
     def forgot_password(self, identity, username, template='password_reset'):
         """Trigger Confirmation.request; specify either the username
-        or email address
+        or email address. For security, administrators are not allowed
+        to use this feature.
 
         Args:
           identity (str): account's primary identity, usually an email

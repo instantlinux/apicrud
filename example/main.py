@@ -79,7 +79,7 @@ def get_locale():
     return request.accept_languages.best_match(config.LANGUAGES)
 
 
-if __name__ in ('__main__', 'example.main'):
+if __name__ in ('__main__', 'uwsgi_file_main', 'example.main'):
     setup_db(db_url=config.DB_URL)
 if __name__ == '__main__':
     application.run(port=config.APP_PORT)

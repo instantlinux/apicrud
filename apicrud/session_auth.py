@@ -89,8 +89,7 @@ class SessionAuth(object):
                 return ret
             return self._login_accepted(username, ret[2], 'local')
         elif method in self.config.AUTH_PARAMS.keys():
-            return oauth2_func.login(username, password, method,
-                                     cache=Ocache())
+            return oauth2_func.login(self.oauth, method, cache=Ocache())
         else:
             msg = _(u'unsupported login method')
             logging.error(dict(message=msg, **logmsg))

@@ -149,7 +149,8 @@ class ServiceRegistry(object):
             for resource in info['endpoints']:
                 if resource not in url_map:
                     url_map[resource] = info['public_url'] + base_url
-                elif url_map[resource] != info['public_url'] + base_url:
+                elif resource != 'metric' and url_map[resource] != info[
+                        'public_url'] + base_url:
                     logging.warning(dict(
                         action='registry.find', resource=resource,
                         message='misconfigured cluster serves two URLs',
