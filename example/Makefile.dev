@@ -10,10 +10,11 @@
 
 run_local: dev_requirements envsubst redis_adhoc mariadb_adhoc \
 	   example/openapi.yaml
-	@echo Serving http://$(FQDN):$(APP_PORT) as $(PUBLIC_URL)
+	@echo Serving http://localhost:$(APP_PORT) as PUBLIC_URL
 	. $(VDIR)/bin/activate && APP_ENV=$(APP_ENV) \
 	  AMQ_HOST=$(RABBITMQ_IP) REDIS_HOST=$(REDIS_IP) \
-	  PUBLIC_URL=http://$(FQDN):$(APP_PORT) \
+	  PUBLIC_URL=http://localhost:$(APP_PORT) \
+	  LOGIN_MFA_COOKIE_NAME=totp \
 	  FLASK_ENV=development PYTHONPATH=example python3 -m example.main
 
 messaging_worker: rmq_adhoc

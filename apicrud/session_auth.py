@@ -2,14 +2,12 @@
 
 created 26-mar-2020 by richb@instantlinux.net
 """
-from datetime import datetime, timedelta
 from flask import g, redirect, request
 from flask_babel import _
 import jwt
 import logging
 import os
 import redis
-from sqlalchemy.orm.exc import NoResultFound
 
 from .access import AccessControl
 from .account_settings import AccountSettings
@@ -21,7 +19,6 @@ from .service_config import ServiceConfig
 from .service_registry import ServiceRegistry
 from .utils import gen_id, utcnow
 
-APIKEYS = {}
 OC = {}
 REDIS = None
 
@@ -72,14 +69,15 @@ class SessionAuth(object):
 
         logmsg = dict(action='login', username=username, method=method)
         acc = AccessControl()
-        if acc.auth and 'pendingtotp' in acc.auth:
+        if acc.auth and ('pendingtotp' in acc.auth or (otp and acc.apikey_id)):
             # TODO make this pendingtotp finite-state logic more robust
             if otp:
                 ret = totp_func.login(username, otp,
                                       redis_conn=self.redis_conn)
                 if ret[1] != 200:
                     return ret
-                return self._login_accepted(username, ret[2], method)
+                return self._login_accepted(username, ret[3], method,
+                                            headers=ret[2])
             else:
                 logging.info(dict(error='otp token omitted', **logmsg))
                 return dict(message=_(u'access denied')), 403
@@ -95,19 +93,24 @@ class SessionAuth(object):
             logging.error(dict(message=msg, **logmsg))
             return dict(message=msg), 500
 
-    def _login_accepted(self, username, account, method):
+    def _login_accepted(self, username, account, method, headers=None):
         """Login accepted from provider: create a session
 
         Args:
           username (str): the account's unique username
           account (obj): account object in database
           method (str): method, e.g. local or google
+          headers (dict): additional headers, such as Set-Cookie
         """
-        account.last_login = datetime.utcnow()
+        account.last_login = utcnow()
         account.invalid_attempts = 0
-        g.db.commit()
+        try:
+            g.db.commit()
+        except Exception as ex:
+            return db_abort(str(ex), action='_login_accepted')
+
         # connexion doesn't support cookie auth. probably just as well,
-        #  this forced me to implement a better JWT design with nonce token
+        #  this forced me to implement a JWT design with nonce token
         # https://github.com/zalando/connexion/issues/791
         #  TODO come up with a standard approach, this is still janky
         #  and does not do signature validation (let alone PKI)
@@ -116,21 +119,22 @@ class SessionAuth(object):
         # https://paragonie.com/blog/2017/03/jwt-json-web-tokens-is-bad-
         #  standard-that-everyone-should-avoid
         acc = AccessControl()
-        action = 'login'
+        logmsg = dict(action='login', username=username, uid=account.uid,
+                      method=method, account_id=account.id)
         duration = (self.login_admin_limit if account.is_admin
                     else self.login_session_limit)
         if (account.password_must_change and method == 'local'):
             roles = ['person', 'pwchange']
             duration = 300
-        elif not account.totp_secret and self.config.LOGIN_MFA_REQUIRED and (
+        elif not account.totp and self.config.LOGIN_MFA_REQUIRED and (
                 method == 'local' or self.config.LOGIN_MFA_EXTERNAL):
             roles = ['mfarequired']
             duration = 300
-        elif account.totp_secret and (
+        elif not self.totp_bypass(account.uid) and account.totp and (
                 method == 'local' or self.config.LOGIN_MFA_EXTERNAL) and not (
                     acc.auth and 'pendingtotp' in acc.auth):
             roles = ['pendingtotp']
-            action = 'totp_challenge'
+            logmsg['action'] = 'totp_challenge'
             duration = 120
         # TODO parameterize model name contact
         elif (g.db.query(self.models.Contact).filter(
@@ -142,8 +146,9 @@ class SessionAuth(object):
                 roles += self.get_roles(account.uid, self.roles_from)
         else:
             roles = []
-        logging.info('action=%s username=%s method=%s account_id=%s' %
-                     (action, username, method, account.id))
+        if acc.apikey_id:
+            logmsg['apikey'] = acc.apikey_id
+        logging.info(logmsg)
         ses = g.session.create(account.uid, roles, acc=account.id,
                                identity=account.owner.identity, ttl=duration)
         if ses:
@@ -157,13 +162,28 @@ class SessionAuth(object):
             if 'pendingtotp' not in roles:
                 Metrics().store('logins_success_total')
             if method == 'local':
-                return retval, 201
+                return retval, 201, headers
             else:
                 return redirect('%s%s?token=%s' % (
                     account.settings.url,
                     self.config.AUTH_LANDING_PAGE, retval['jwt_token']))
         else:
             return db_abort(_(u'login session trouble'), action='login')
+
+    def totp_bypass(self, uid):
+        """Check for bypass cookie
+
+        Args:
+          uid (str): User ID
+        Returns:
+          bool: valid bypass found
+        """
+        if request.cookies and (self.config.LOGIN_MFA_COOKIE_NAME
+                                in request.cookies):
+            if g.session.get(
+                    uid, request.cookies[self.config.LOGIN_MFA_COOKIE_NAME]):
+                return True
+        return False
 
     def account_add(self, username, uid):
         """Add an account with the given username
@@ -189,61 +209,6 @@ class SessionAuth(object):
         except Exception as ex:
             return db_abort(str(ex), rollback=True, **logmsg)
         return dict(id=account.id, uid=uid), 201
-
-    def api_access(self, apikey, totp_cookie=None):
-        """Access using API key
-
-        Args:
-          apikey (str): the API key
-          totp_cookie (str): a TOTP bypass cookie
-        Returns:
-          dict: uid, scopes (None if not authorized)
-        """
-        global APIKEYS
-        acc = AccessControl()
-        key_id, secret = apikey.split('.')
-        if key_id not in APIKEYS or utcnow() > APIKEYS[key_id]['expires']:
-            # Note - local caching in APIKEYS global var reduces database
-            # queries on Accounts table
-            uid, scopes = acc.apikey_verify(key_id, secret)
-            if not uid:
-                return None
-            try:
-                account = g.db.query(self.models.Account).filter_by(
-                    uid=uid, status='active').one()
-            except NoResultFound:
-                logging.info(dict(action='api_key', uid=uid,
-                                  message='account not active'))
-                return None
-            except Exception as ex:
-                logging.error(dict(action='api_key', message=str(ex)))
-                return None
-            APIKEYS[key_id] = dict(
-                account_id=account.id,
-                expires=utcnow() + timedelta(seconds=self.config.REDIS_TTL),
-                identity=account.owner.identity,
-                roles=['admin', 'user'] if account.is_admin else ['user'],
-                scopes=[item.name for item in scopes], uid=uid)
-            if self.roles_from:
-                APIKEYS[key_id]['roles'] += self.get_roles(uid,
-                                                           self.roles_from)
-        item = APIKEYS[key_id]
-        uid = item['uid']
-        logging.debug(dict(action='api_key', uid=uid, scopes=item['scopes']))
-        duration = (self.login_admin_limit if 'admin' in item['roles']
-                    else self.login_session_limit)
-        token = acc.apikey_hash(secret)[:8]
-        ses = None
-        try:
-            # Look for existing session in redis cache
-            ses = g.session.get(
-                uid, token, arg='auth', key_id=key_id).split(':')
-        except AttributeError:
-            ses = g.session.create(uid, item['roles'], acc=item['account_id'],
-                                   identity=item['identity'],
-                                   ttl=duration, key_id=key_id, nonce=token)
-        if ses:
-            return dict(uid=uid, scopes=item['scopes'])
 
     def auth_params(self):
         """Get authorization info"""
@@ -349,72 +314,3 @@ class Ocache(object):
 
     def get(self, key):
         return self.cache.get(key)
-
-
-# Support openapi securitySchemes: basic_auth and api_key endpoints
-def basic(username, password, required_scopes=None):
-    """This is a modified basic-auth validation function. The auth login
-    controller method generates a random 8-byte token, stores it in
-    the session_manager object as token_auth, and sends it to javascript
-    authProvider. The dataProvider must send it back to us as
-    basic-auth (base64-encoded).
-
-    Vulnerable to session-hijacking if auth packets aren't encrypted
-    end to end, but "good enough" until OAuth2 effort is completed.
-
-    Implemented because of https://github.com/zalando/connexion/issues/791
-
-    Args:
-      username (str): Session UID
-      password (str): Session token
-      required_scopes (list): not used
-    Returns:
-      dict: uid with the username passed in
-    """
-
-    session = g.session.get(username, password)
-    token_auth = 'ok'
-    if session is None or 'jti' not in session:
-        token_auth = 'missing'
-    elif session['jti'] != password or session['sub'] != username:
-        token_auth = 'invalid'
-    elif 'exp' in session and datetime.utcnow().strftime(
-            '%s') > session['exp']:
-        token_auth = 'expired'
-
-    if token_auth != 'ok':
-        logging.info('action=logout username=%s token_auth=%s' % (
-            username, token_auth))
-        if session:
-            try:
-                g.session.delete(username, password)
-            except redis.exceptions.ConnectionError as ex:
-                logging.error(dict(action='logout', message=str(ex)))
-        return None
-    return dict(uid=username)
-
-
-def api_key(apikey, required_scopes=None):
-    """ API key authentication
-
-    Args:
-      apikey (str): the key
-      required_scopes (list): permissions requested
-
-    Returns:
-      dict: uid if successful (None otherwise)
-    """
-    models = ServiceConfig().models
-    if len(apikey) > 96 or '.' not in apikey:
-        return None
-    # TODO - parameterize roles_from properly
-    retval = SessionAuth(roles_from=models.List).api_access(apikey)
-    if not retval:
-        return retval
-    if required_scopes and (set(required_scopes) & set(retval['scopes']) !=
-                            set(required_scopes)):
-        logging.info(dict(action='api_key', prefix=apikey.split('.')[0],
-                          scopes=retval['scopes'], message='denied'))
-        return None
-    Metrics().store('api_key_auth_total')
-    return retval

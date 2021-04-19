@@ -61,12 +61,12 @@ components:
     basic:
       type: http
       scheme: basic
-      x-basicInfoFunc: apicrud.session_auth.basic
+      x-basicInfoFunc: apicrud.auth.local_user.basic
     apikey:
       in: header
       name: X-API-KEY
       type: apiKey
-      x-apikeyInfoFunc: apicrud.session_auth.api_key
+      x-apikeyInfoFunc: apicrud.auth.apikey.auth
 
 paths:
   /account:

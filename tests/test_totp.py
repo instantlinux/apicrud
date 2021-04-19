@@ -127,8 +127,18 @@ class TestAuthTOTP(test_base.TestBase):
         response = self.call_endpoint('/credential?filter={"uid":"%s"}' % uid,
                                       'get')
         self.assertEqual(response.status_code, 200)
+        self.assertIn('__Secure-totp', self.flask.cookie_jar._cookies[
+            'localhost.local']['/api/v1/auth'].keys())
 
-        # Repeat but use backup code
+        # Reauth, without OTP -- using bypass cookie
+        self.authorize(username=account['username'],
+                       password=password['new_password'], new_session=True)
+        response = self.call_endpoint('/credential?filter={"uid":"%s"}' % uid,
+                                      'get')
+        self.assertEqual(response.status_code, 200)
+
+        # Clear cookie and auth with backup code
+        self.flask.cookie_jar._cookies.clear()
         self.authorize(username=account['username'],
                        password=password['new_password'], new_session=True)
         response = self.call_endpoint('/credential?filter={"uid":"%s"}' % uid,
@@ -140,6 +150,7 @@ class TestAuthTOTP(test_base.TestBase):
         self.assertEqual(response.status_code, 200)
 
         # Repeat with bad backup code
+        self.flask.cookie_jar._cookies.clear()
         self.authorize(username=account['username'],
                        password=password['new_password'], new_session=True)
         response = self.call_endpoint('/credential?filter={"uid":"%s"}' % uid,
@@ -173,6 +184,16 @@ class TestAuthTOTP(test_base.TestBase):
         # Try to register a token using invalid nonce
         response = self.call_endpoint('/auth_totp', 'post', dict(
             nonce='invalid', otp_first='654321'))
+        self.assertEqual(response.status_code, 403, 'register unexpected')
+
+        # Try to register using invalid otp
+        response = self.call_endpoint('/auth_totp', 'get')
+        result = response.get_json()
+        self.assertEqual(response.status_code, 200)
+        nonce = result['jti']
+        otp = pyotp.TOTP(result['totp']).now()
+        response = self.call_endpoint('/auth_totp', 'post', dict(
+            nonce=nonce, otp_first=str(int(otp) ^ 0xffff)))
         self.assertEqual(response.status_code, 403, 'register unexpected')
 
         # Try to generate a token for an account already registered

@@ -58,7 +58,7 @@ def login(username, password):
     if account.password == '':
         logging.error("username=%s, message='no password'" % username)
         return dict(username=username, message=_(u'no password')), 403
-    elif not sha256_crypt.verify(password, account.password):
+    elif not password or not sha256_crypt.verify(password, account.password):
         account.invalid_attempts += 1
         account.last_invalid_attempt = datetime.utcnow()
         Metrics().store('logins_fail_total')

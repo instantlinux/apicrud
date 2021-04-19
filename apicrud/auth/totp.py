@@ -9,6 +9,7 @@ from hashlib import md5
 import pyotp
 import random
 import string
+from urllib.parse import urlparse
 
 from .. import AccessControl, AESEncryptBin, SessionAuth, database
 from ..const import Constants
@@ -30,9 +31,7 @@ class AuthTOTP(SessionAuth):
             account = g.db.query(self.models.Account).filter_by(
                 id=acc.account_id, status='active').one()
         except Exception as ex:
-            msg = _(u'DB operational error')
-            logging.error(dict(message=msg, error=str(ex), **logmsg))
-            return dict(message=msg), 500
+            return database.db_abort(dict(str(ex), **logmsg))
         if account.totp_secret:
             logging.info(dict(message='attempt to regenerate before revoke',
                               **logmsg))
@@ -45,6 +44,7 @@ class AuthTOTP(SessionAuth):
 
     def register(self, body):
         acc = AccessControl()
+        config = self.config
         logmsg = dict(action='totp_register', identity=acc.identity)
         totp_secret = g.session.get(acc.uid, body.get('nonce'), arg='totp')
         if not totp_secret:
@@ -56,9 +56,7 @@ class AuthTOTP(SessionAuth):
             account = g.db.query(self.models.Account).filter_by(
                 id=acc.account_id, status='active').one()
         except Exception as ex:
-            msg = _(u'DB operational error')
-            logging.error(dict(message=msg, error=str(ex), **logmsg))
-            return dict(message=msg), 500
+            return database.db_abort(dict(str(ex), **logmsg))
         if account.totp_secret:
             logging.info(dict(message='attempt to register before revoke',
                               **logmsg))
@@ -69,7 +67,7 @@ class AuthTOTP(SessionAuth):
                                  **logmsg))
             return dict(message=msg), 403
         backup_codes, hashed_backup_codes = [], []
-        for i in range(self.config.LOGIN_MFA_BACKUP_CODES):
+        for i in range(config.LOGIN_MFA_BACKUP_CODES):
             chars = string.digits + string.ascii_lowercase
             code = ''.join(random.choice(chars) for x in range(
                 Constants.MFA_BACKUP_CODELEN))
@@ -77,12 +75,19 @@ class AuthTOTP(SessionAuth):
             hashed_backup_codes.append(md5(code.encode()).digest())
         account.totp_secret = totp_secret
         account.backup_codes = AESEncryptBin(
-            self.config.DB_AES_SECRET).encrypt(b''.join(hashed_backup_codes))
+            config.DB_AES_SECRET).encrypt(b''.join(hashed_backup_codes))
         g.db.add(account)
         try:
             g.db.commit()
         except Exception as ex:
             return database.db_abort(str(ex), rollback=True, **logmsg)
         logging.info(dict(message=_(u'registered'), **logmsg))
-        # TODO - send a cookie with config.LOGIN_MFA_COOKIE_LIMIT expiration
-        return dict(message=_(u'registered'), backup_codes=backup_codes), 200
+        # Cancel any previous bypass cookie
+        headers = {
+            'Set-Cookie': '%s=; Domain=%s; Path=%s/auth; '
+            'expires=Sat, Jan 01 2000 00:00:00 UTC; '
+            'HttpOnly; SameSite=Strict; Secure' % (
+                config.LOGIN_MFA_COOKIE_NAME,
+                urlparse(config.PUBLIC_URL).hostname, config.BASE_URL)}
+        return dict(message=_(u'registered'),
+                    backup_codes=backup_codes), 200, headers

@@ -22,6 +22,7 @@ class Constants:
     REGEX_EMAIL = r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}'
     REGEX_PHONE = r'[0-9()+ -]{5,20}'
     SERVICE_CONFIG_FILE = 'service_config.yaml'
+    TOTP_COOKIE = '__Secure-totp'
 
 
 class i18nValues:

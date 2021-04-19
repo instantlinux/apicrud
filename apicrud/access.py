@@ -71,6 +71,7 @@ class AccessControl(object):
             self.resource = model.__name__.lower() if model else None
             self.auth = None
             header_auth = ServiceConfig().config.HEADER_AUTH_APIKEY
+            self.apikey_id = None
             if header_auth in request.headers:
                 # TODO: add support for HMAC request signing in place
                 # of this plain-text X-Api-Key header method
@@ -80,6 +81,7 @@ class AccessControl(object):
                 if item:
                     self.auth = item.get('auth').split(':')
                     self.uid = uid = item.get('sub')
+                    self.apikey_id = prefix
             elif request.authorization:
                 uid = self.uid = request.authorization.username
                 secret = request.authorization.password

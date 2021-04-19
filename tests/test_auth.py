@@ -37,3 +37,10 @@ class TestAuth(test_base.TestBase):
         cache.set('test1', 'abc')
         self.assertEqual(cache.get('test1'), 'abc')
         self.assertIsNone(cache.get('invalid'))
+
+    def test_bad_auth_method(self):
+        response = self.call_endpoint('/auth', 'post', data=dict(
+            username='test1', password='Abcdef!01', method='invalid'))
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.get_json(), dict(
+            message=u'unsupported login method'))
