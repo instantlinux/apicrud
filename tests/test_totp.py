@@ -193,7 +193,7 @@ class TestAuthTOTP(test_base.TestBase):
         nonce = result['jti']
         otp = pyotp.TOTP(result['totp']).now()
         response = self.call_endpoint('/auth_totp', 'post', dict(
-            nonce=nonce, otp_first=str(int(otp) ^ 0xffff)))
+            nonce=nonce, otp_first=str(int(otp) ^ 0xffff).zfill(6)))
         self.assertEqual(response.status_code, 403, 'register unexpected')
 
         # Try to generate a token for an account already registered
