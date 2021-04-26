@@ -466,6 +466,7 @@ components:
         redis_ttl:
           default: 1200
           description: Time-to-live for expiring entries added to redis
+          maximum: 43200
           type: integer
         registry_interval:
           default: 30

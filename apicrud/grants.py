@@ -3,16 +3,14 @@
 created 27-may-2019 by richb@instantlinux.net
 """
 
+from cachetools import TTLCache
 from flask import g
-from datetime import timedelta
 import json
 import logging
 
 from .access import AccessControl
 from .service_config import ServiceConfig
 from . import utils
-
-GRANTS = {}
 
 
 class Grants(object):
@@ -28,6 +26,8 @@ class Grants(object):
       db_session (obj): existing db session
       ttl (int): how long to cache a grant in memory
     """
+    _singleton = None
+    _cache = None
 
     def __init__(self, db_session=None, ttl=None):
         self.models = ServiceConfig().models
@@ -39,14 +39,18 @@ class Grants(object):
                 if 'Working outside of application context' not in str(ex):
                     raise
         config = ServiceConfig().config
-        self.ttl = ttl or config.REDIS_TTL
-        if 'defaults' not in GRANTS:
-            GRANTS['defaults'] = config.DEFAULT_GRANTS
+        if 'defaults' not in self._cache:
+            self._cache['defaults'] = config.DEFAULT_GRANTS
+
+    def __new__(cls, db_session=None, ttl=None):
+        if cls._singleton is None:
+            cls._singleton = super(Grants, cls).__new__(cls)
+            cls._cache = TTLCache(10000,
+                                  ttl or ServiceConfig().config.REDIS_TTL)
+        return cls._singleton
 
     def get(self, name, uid=None):
         """Get the cached value of a named grant, if it hasn't expired
-        Note that if any grant assigned to a uid expires before
-        others, the earliest expiration applies to all the uid's grants
 
         Args:
           name (str): name of a grant, as defined in service config
@@ -56,24 +60,20 @@ class Grants(object):
         """
         if not uid:
             uid = AccessControl().uid
-        if uid not in GRANTS or utils.utcnow() > GRANTS[uid]['expires']:
+        if uid not in self._cache:
             records = self.session.query(self.models.Grant).filter_by(
                 uid=uid, status='active').all()
-            grants = dict(expires=utils.utcnow() + timedelta(seconds=self.ttl))
+            grants = {}
             for rec in records:
-                if rec.expires:
-                    if rec.expires > utils.utcnow():
-                        grants['expires'] = min(rec.expires, grants['expires'])
-                    else:
-                        continue
-                grants[rec.name] = rec.value
-            GRANTS[uid] = grants
-        if name in GRANTS[uid] and utils.utcnow() < GRANTS[uid]['expires']:
-            ret = GRANTS[uid].get(name)
+                if not rec.expires or rec.expires > utils.utcnow():
+                    grants[rec.name] = rec.value
+            self._cache[uid] = grants
+        if name in self._cache[uid]:
+            ret = self._cache[uid].get(name)
         else:
-            if name not in GRANTS['defaults']:
+            if name not in self._cache['defaults']:
                 logging.error('Grant name=%s undefined in config.yaml' % name)
-            ret = GRANTS['defaults'].get(name)
+            ret = self._cache['defaults'].get(name)
         try:
             return int(ret, 0)
         except (TypeError, ValueError):
@@ -113,7 +113,7 @@ class Grants(object):
         uid = filter.get('uid') or acc.uid
         rbac = ''.join(sorted(list(acc.rbac_permissions(owner_uid=uid))))
         result = []
-        for key, val in GRANTS['defaults'].items():
+        for key, val in self._cache['defaults'].items():
             if name and key != name:
                 continue
             for row in crud_results[0]['items']:
@@ -132,7 +132,7 @@ class Grants(object):
         Args:
           uid (str): user ID
         """
-        GRANTS.pop(uid, None)
+        self._cache.pop(uid, None)
 
     def load_defaults(self, defaults):
         """Load default values from a dict of keyword: value pairs
@@ -140,4 +140,4 @@ class Grants(object):
         Args:
           defaults (dict): new defaults
         """
-        GRANTS['defaults'] = defaults
+        self._cache['defaults'] = defaults

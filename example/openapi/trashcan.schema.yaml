@@ -1,0 +1,19 @@
+Trashcan:
+  description: A deleted resource item
+  properties:
+    resource:
+      maxLength: 32
+      type: string
+    id:
+      $ref: '#/components/schemas/base/properties/id'
+    owner:
+      $ref: '#/components/schemas/Person/properties/name'
+      readOnly: true
+    status:
+      $ref: '#/components/schemas/base/properties/status'
+    uid:
+      $ref: '#/components/schemas/base/properties/id'
+  title: a deleted resource
+  type: object
+  xml:
+    name: Trashcan

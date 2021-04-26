@@ -1,0 +1,151 @@
+---
+# Seed records for test fixture
+_constants:
+  account_id: x-TpP43xS9
+  adm_account_id: x-6hj1BXEH
+  adm_cat_id: x-1xDjMu6M
+  adm_contact_2: x-P703gZkJ
+  adm_contact_id: x-6b1AUgmt
+  adm_person_name: Test Admin
+  admin_email: admin@test.conclave.events
+  admin_name: testadmin
+  admin_pw: opens3crEt
+  admin_uid: u-tMY1b862
+  cat_id: x-Jiqag482
+  contact_id: x-E97yKy73
+  default_storage_id: x-RwgSVd5G
+  global_admin_id: x-23450001
+  location_id: x-67673434
+  password: t0ps3crEt
+  scope_id: x-6e373273
+  settings_id: x-75023275
+  test_email: testuser@test.conclave.events
+  test_person_name: Conclave Tester
+  test_uid: u-B0miQweE
+  theme_id: x-05a720bf
+  username: testr
+category:
+- id: x-3423ceaf
+  name: default
+  uid: x-23450001
+- id: x-Jiqag482
+  name: default
+  uid: u-B0miQweE
+- id: x-1xDjMu6M
+  name: default
+  uid: u-tMY1b862
+person:
+- id: x-23450001
+  name: Example User
+  identity: user@example.com
+  privacy: public
+  status: active
+- id: u-B0miQweE
+  name: Conclave Tester
+  identity: testuser@test.conclave.events
+  privacy: public
+  status: active
+- id: u-tMY1b862
+  name: Test Admin
+  identity: admin@test.conclave.events
+  privacy: public
+  status: active
+contact:
+- id: x-4566a239
+  uid: x-23450001
+  type: email
+  info: user@example.com
+  muted: True
+  privacy: public
+  status: active
+- id: x-E97yKy73
+  info: testuser@test.conclave.events
+  muted: False
+  privacy: public
+  type: email
+  uid: u-B0miQweE
+  status: active
+- id: x-6b1AUgmt
+  info: admin@test.conclave.events
+  muted: False
+  privacy: member
+  type: email
+  uid: u-tMY1b862
+  status: active
+- id: x-P703gZkJ
+  info: hidden-adm@test.conclave.events
+  muted: False
+  privacy: member
+  type: email
+  uid: u-tMY1b862
+  status: active
+account:
+- id: x-54320001
+  name: admin
+  is_admin: True
+  uid: x-23450001
+  settings_id: x-75023275
+  password_must_change: False
+  password: $5$rounds=535000$YPzbABo4IekfjkMO$mWiN711ak8D16YNyc/x.K8FBfQBp1J3q8yrokRheSy7
+  status: active
+- id: x-TpP43xS9
+  name: testr
+  is_admin: False
+  uid: u-B0miQweE
+  settings_id: x-75023275
+  password_must_change: False
+  password: $5$rounds=535000$HGVkMUlpoWPlgbsN$BqsTgmTmiUXaSLoaiQgEY5IWxNLrA3Y1D2qlzm57hz/
+  status: active
+- id: x-6hj1BXEH
+  name: testadmin
+  is_admin: True
+  uid: u-tMY1b862
+  settings_id: x-75023275
+  password_must_change: False
+  password: $5$rounds=535000$e/tKrK5./UWjY8t7$Q.Lak2.1dzkB4tf0aHVSyRbClPKgkzZJZNPeS0e9e31
+  status: active
+scope:
+- id: x-6e373273
+  name: full
+  settings_id: x-75023275
+- id: x-8eb04eec
+  name: readonly
+  settings_id: x-75023275
+settings:
+- id: x-75023275
+  administrator_id: x-23450001
+  name: global
+  country: US
+  lang: en_US
+  smtp_smarthost: smtp.gmail.com
+  tz_id: 598
+  url: "http://localhost:3000"
+  window_title: Example apicrud Application
+  default_cat_id: x-3423ceaf
+location:
+- id: x-67673434
+  address: 800 Dolores St.
+  city: San Francisco
+  state: CA
+  country: US
+  geolat: 37.756503
+  geolong: -122.425671
+  neighborhood: Mission District
+  category_id: x-3423ceaf
+  uid: x-23450001
+  status: active
+credential:
+- id: x-M2fe7E07
+  key: AKIAP0XS5P8E4XXX1234
+  name: s3test
+  vendor: aws
+  secret: allyourbasearebelongtous
+  settings_id: x-75023275
+  uid: u-B0miQweE
+storage:
+- id: x-RwgSVd5G
+  bucket: apicrud-test
+  cdn_uri: "https://apicrud-test.s3.amazonaws.com"
+  credentials_id: x-M2fe7E07
+  name: apicrud-test
+  uid: u-B0miQweE

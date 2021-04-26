@@ -63,6 +63,7 @@ policies:
   credential: *base_policy
   location: *base_policy
   profile: *base_policy
+  trashcan: *base_policy
   tz: *base_policy
   account:
     - principal: "*"
