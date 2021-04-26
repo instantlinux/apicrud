@@ -10,8 +10,7 @@ import threading
 
 from .aes_encrypt import AESEncrypt
 from .service_config import ServiceConfig
-from .session_manager import SessionManager
-from . import utils
+from . import state, utils
 
 refresh_thread = None
 service_data = {}
@@ -30,24 +29,21 @@ class ServiceRegistry(object):
     Args:
       aes_secret (str): an AES secret [default: config.REDIS_AES_SECRET]
       public_url (str): URL to serve [default: config.PUBLIC_URL]
-      redis_conn (obj): connection to redis
       reload_params (bool): force param reload, for unit-testing
       ttl (int): how long to cache instance's registration
     """
 
-    def __init__(self, aes_secret=None, redis_conn=None, public_url=None,
+    def __init__(self, aes_secret=None, public_url=None,
                  reload_params=False, ttl=None):
         global params, refresh_thread
         self.config = config = ServiceConfig().config
         self.public_url = public_url or config.PUBLIC_URL
-        if not redis_conn:
-            redis_conn = SessionManager().connection
+        self.redis_conn = state.redis_conn
         if not params or reload_params:
             params = dict(
                 aes=AESEncrypt(aes_secret or config.REDIS_AES_SECRET),
                 interval=config.REGISTRY_INTERVAL,
                 ttl=ttl or config.REGISTRY_TTL)
-        params['connection'] = redis_conn
         if not refresh_thread:
             refresh_thread = threading.Thread()
 
@@ -109,7 +105,7 @@ class ServiceRegistry(object):
     def _save_entry():
         key = 'reg:%s:%s' % (service_data['name'], service_data['id'])
         try:
-            params['connection'].set(key, params['aes'].encrypt(json.dumps(
+            state.redis_conn.set(key, params['aes'].encrypt(json.dumps(
                 service_data['info'])), ex=params['ttl'], nx=False)
         except Exception as ex:
             logging.error('action=registry.update message=%s' % str(ex))
@@ -128,10 +124,10 @@ class ServiceRegistry(object):
         key = 'reg:%s:*' % service_name if service_name else 'reg:*'
         retval = []
         url_map = {}
-        for instance in params['connection'].scan_iter(match=key):
+        for instance in self.redis_conn.scan_iter(match=key):
             try:
                 info = json.loads(params['aes'].decrypt(
-                    params['connection'].get(instance)))
+                    self.redis_conn.get(instance)))
                 info['name'], info['id'] = instance.decode().split(':')[1:]
                 retval.append(info)
             except (TypeError, json.JSONDecodeError, UnicodeDecodeError):

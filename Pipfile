@@ -1,5 +1,6 @@
 [packages]
 Authlib = "*"
+cachetools = "*"
 geocoder = "*"
 icalendar = "*"
 pyotp = "*"

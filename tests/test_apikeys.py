@@ -101,8 +101,7 @@ class TestAPIkeys(test_base.TestBase):
         self.assertEqual(ret, 401)
 
     @pytest.mark.slow
-    @mock.patch('messaging.send_contact.delay')
-    def test_add_too_many_apikeys(self, mock_messaging):
+    def test_add_too_many_apikeys(self):
         max_apikeys = self.config.DEFAULT_GRANTS.get('apikeys')
         account = dict(
             name='Francis Scott Key', username='fskey',
@@ -112,7 +111,7 @@ class TestAPIkeys(test_base.TestBase):
         response = self.call_endpoint('/account', 'post', data=account)
         self.assertEqual(response.status_code, 201)
         uid = response.get_json()['uid']
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
         response = self.call_endpoint(
             '/account_password/%s' % uid, 'put', data=password)
@@ -172,8 +171,7 @@ class TestAPIkeys(test_base.TestBase):
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.get_json(), dict(message='access denied'))
 
-    @mock.patch('messaging.send_contact.delay')
-    def test_apikey_create_and_invoke(self, mock_messaging):
+    def test_apikey_create_and_invoke(self):
         account = dict(name='Script Kiddie', username='skid',
                        identity='skid@conclave.events')
         expected = dict(
@@ -188,7 +186,7 @@ class TestAPIkeys(test_base.TestBase):
         uid = response.get_json()['uid']
         record = dict(name='Test2', uid=uid, scopes=[self.scope_id])
 
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
         response = self.call_endpoint(
             '/account_password/%s' % uid, 'put', data=password)
@@ -227,8 +225,7 @@ class TestAPIkeys(test_base.TestBase):
 
     @pytest.mark.slow
     @mock.patch('logging.info')
-    @mock.patch('messaging.send_contact.delay')
-    def test_expired_apikey(self, mock_messaging, mock_logging):
+    def test_expired_apikey(self, mock_logging):
         account = dict(name='Uncompliant Dev', username='dev1',
                        identity='dev1@conclave.events')
         password = dict(new_password='455#8b76', verify_password='455#8b76')
@@ -241,7 +238,7 @@ class TestAPIkeys(test_base.TestBase):
             expires=(datetime.utcnow() - timedelta(hours=1)).strftime(
                 '%Y-%m-%dT%H:%M:%SZ'))
 
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
         response = self.call_endpoint(
             '/account_password/%s' % uid, 'put', data=password)

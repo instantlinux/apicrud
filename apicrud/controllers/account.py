@@ -7,10 +7,8 @@ from flask import g
 from flask_babel import _
 from sqlalchemy.orm.exc import NoResultFound
 
-from apicrud import BasicCRUD, SessionAuth, singletons
+from apicrud import BasicCRUD, SessionAuth, state
 from apicrud.auth import LocalUser
-
-from messaging import send_contact
 
 
 class AccountController(BasicCRUD):
@@ -34,7 +32,7 @@ class AccountController(BasicCRUD):
         Returns:
           tuple: dict with account_id/uid/username, http response
         """
-        return LocalUser(func_send=send_contact.delay).change_password(
+        return LocalUser().change_password(
             uid, body.get('new_password'), body.get('reset_token'),
             old_password=body.get('old_password'),
             verify_password=body.get('verify_password'))
@@ -47,7 +45,7 @@ class AccountController(BasicCRUD):
         Args:
           uid (str): User ID
         """
-        self = singletons.controller.get('account')
+        self = state.controllers.get('account')
         try:
             account = g.db.query(self.model).filter_by(
                 uid=uid, status='active').one()
@@ -71,9 +69,9 @@ class AccountController(BasicCRUD):
           tuple: id of account created, and http status
         """
         if body.get('forgot_password'):
-            return LocalUser(func_send=send_contact.delay).forgot_password(
+            return LocalUser().forgot_password(
                     body.get('identity'), body.get('username'))
-        retval = LocalUser(func_send=send_contact.delay).register(
+        retval = LocalUser().register(
             body.get('identity'), body.get('username'), body.get('name'))
         if retval[1] > 201:
             return retval

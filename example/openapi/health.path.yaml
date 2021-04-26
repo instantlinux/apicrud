@@ -22,4 +22,4 @@ health:
         description: Service unhealthy
     tags:
     - health
-    x-openapi-router-controller: controllers.health
+    x-openapi-router-controller: apicrud.controllers.health

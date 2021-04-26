@@ -6,8 +6,6 @@ created 31-mar-2019 by richb@instantlinux.net
 from apicrud import BasicCRUD
 from apicrud.messaging.confirmation import Confirmation
 
-from messaging import send_contact
-
 
 class ContactController(BasicCRUD):
     def __init__(self):
@@ -22,8 +20,7 @@ class ContactController(BasicCRUD):
         """
         retval = super(ContactController, ContactController).create(body)
         if retval[1] == 201:
-            result = Confirmation().request(
-                retval[0]['id'], func_send=send_contact.delay)
+            result = Confirmation().request(retval[0]['id'])
             retval[0].update(result[0])
         return retval
 
@@ -38,7 +35,7 @@ class ContactController(BasicCRUD):
         retval = super(ContactController, ContactController).update_contact(
             id, body)
         if retval[1] == 200:
-            result = Confirmation().request(id, func_send=send_contact.delay)
+            result = Confirmation().request(id)
             retval[0].update(result[0])
         return retval
 
@@ -49,7 +46,7 @@ class ContactController(BasicCRUD):
         Args:
           id (str): id of contact model
         """
-        return Confirmation().request(id, func_send=send_contact.delay)
+        return Confirmation().request(id)
 
     @staticmethod
     def confirm(token):

@@ -54,6 +54,8 @@ components:
       $ref: 'settings.schema.yaml#/Settings'
     TZ:
       $ref: 'tz.schema.yaml#/TZ'
+    Trashcan:
+      $ref: 'trashcan.schema.yaml#/Trashcan'
     ApiResponse:
       $ref: 'apiresponse.schema.yaml#/ApiResponse'
 
@@ -169,6 +171,12 @@ paths:
     $ref: 'settings.path.yaml#/settings-id'
   /settings/{ids}:
     $ref: 'settings.path.yaml#/settings-ids'
+  /trashcan:
+    $ref: 'trashcan.path.yaml#/trashcan'
+  /trashcan/{id}:
+    $ref: 'trashcan.path.yaml#/trashcan-id'
+  /trashcan/{ids}:
+    $ref: 'trashcan.path.yaml#/trashcan-ids'
   /tz:
     $ref: 'tz.path.yaml#/tz'
   /tz/{id}:

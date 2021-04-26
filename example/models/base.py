@@ -10,10 +10,12 @@ from sqlalchemy.ext.declarative import declarative_base
 from apicrud import ServiceConfig
 
 Base = declarative_base()
+# TODO set this value after initialize.app not at import time
 aes_secret = ServiceConfig().config.DB_AES_SECRET
 
 
 class AsDictMixin(object):
+
     def as_dict(self):
         """Returns a serializable dict from an instance of the model
 

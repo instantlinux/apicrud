@@ -1,0 +1,176 @@
+trashcan:
+  get:
+    summary: Find deleted items by conditions
+    description: Find deleted items based on conditions
+    operationId: TrashcanController.find
+    parameters:
+    - description: Resource ID
+      in: query
+      name: id
+      schema:
+        $ref: '#/components/schemas/base/properties/id'
+    - description: Resource name
+      in: query
+      name: resource
+      schema:
+        type: string
+        minLength: 2
+        maxLength: 24
+        pattern: ^[a-z_-]$
+    - description: Status
+      in: query
+      name: status
+      schema:
+        $ref: '#/components/schemas/base/properties/status'
+    - description: Maximum records to fetch
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 10000
+    - description: Record offset for pagination
+      in: query
+      name: offset
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 2147483647
+    - description: Sort-by field
+      in: query
+      name: sort
+      schema:
+        type: string
+        maxLength: 20
+    - description: Sort-order field
+      in: query
+      name: order
+      schema:
+        enum:
+        - asc
+        - desc
+        type: string
+    - description: Filter field
+      in: query
+      name: filter
+      schema:
+        type: string
+        maxLength: 2048
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Trashcan'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid conditions supplied
+      404:
+        content: {}
+        description: not found
+    security:
+    - apikey: [full, readonly]
+    - basic: []
+    tags:
+    - trashcan
+    x-openapi-router-controller: controllers.trashcan
+trashcan-id:
+  get:
+    description: Returns a single deleted resource
+    operationId: TrashcanController.get
+    parameters:
+    - description: ID of resource
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    responses:
+      200:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Trashcan'
+        description: successful operation
+      400:
+        content: {}
+        description: Invalid ID supplied
+      404:
+        content: {}
+        description: Trashcan not found
+    security:
+    - apikey: []
+    - basic: []
+    summary: Find trashcan by ID
+    tags:
+    - trashcan
+    x-openapi-router-controller: controllers.trashcan
+  put:
+    operationId: TrashcanController.update
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Trashcan'
+      description: Update (undelete) a trashed item
+      required: true
+    parameters:
+    - description: Resource id to modify
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        minLength: 10
+        maxLength: 10
+    - description: Resource name
+      in: query
+      name: resource
+      schema:
+        type: string
+        minLength: 2
+        maxLength: 24
+        pattern: ^[a-z_-]$
+    responses:
+      404:
+        content: {}
+        description: Resource not found
+      405:
+        content: {}
+        description: Validation exception
+    security:
+    - apikey: [full]
+    - basic: []
+    summary: Update an existing trashed item
+    tags:
+    - trashcan
+    x-codegen-request-body-name: body
+    x-openapi-router-controller: controllers.trashcan
+trashcan-ids:
+  delete:
+    operationId: TrashcanController.delete
+    parameters:
+    - description: Resource ids to delete
+      in: path
+      name: ids
+      required: true
+      schema:
+        items:
+          type: string
+          minLength: 10
+          maxLength: 10
+        type: array
+    responses:
+      400:
+        content: {}
+        description: Invalid id value
+    security:
+    - apikey: ['full']
+    - basic: []
+    summary: Deletes one or more trashcans
+    tags:
+    - trashcan
+    x-openapi-router-controller: controllers.trashcan

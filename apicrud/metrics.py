@@ -9,8 +9,8 @@ from flask_babel import _
 import json
 import logging
 import os
-import redis
 
+from . import state
 from .access import AccessControl
 from .const import Constants
 from .grants import Grants
@@ -19,8 +19,6 @@ from .service_registry import ServiceRegistry
 
 INTERVALS = dict(hour=3600, day=3600 * 24, week=3600 * 24 * 7,
                  month=3600 * 24 * 31, indefinite=None)
-saved_func_send = None
-saved_redis = None
 
 
 class Metrics(object):
@@ -53,24 +51,15 @@ class Metrics(object):
 
     Attributes:
       uid (str): ID of a user, for usage tracking
-      redis_conn (obj): existing redis connection
       db_session (obj): existing db connection
       func_send (obj): function name for sending message via celery
     """
-    def __init__(self, uid=None, redis_conn=None, db_session=None,
-                 func_send=None):
-        global saved_func_send, saved_redis
-
-        self.config = ServiceConfig().config
+    def __init__(self, uid=None, db_session=None, func_send=None):
+        self.config = config = ServiceConfig().config
+        self.connection = state.redis_conn
         self.db_session = db_session
-        self.func_send = func_send or saved_func_send
-        saved_func_send = self.func_send
-        self.connection = (
-            redis_conn or saved_redis or redis.Redis(
-                host=self.config.REDIS_HOST,
-                port=self.config.REDIS_PORT, db=0))
-        saved_redis = self.connection
-        self.metrics = self.config.METRICS
+        self.func_send = state.func_send = func_send or state.func_send
+        self.metrics = config.METRICS
         self.uid = uid
 
     def store(self, name, labels=[], value=None):
@@ -92,8 +81,7 @@ class Metrics(object):
         metric = self.metrics[name]
         if not labels:
             if metric['scope'] == 'instance':
-                labels = ['instance=%s' % ServiceRegistry(
-                    redis_conn=self.connection).get()['id']]
+                labels = ['instance=%s' % ServiceRegistry().get()['id']]
             else:
                 labels = ['uid=%s' % self.uid] if self.uid else []
         labels.sort()

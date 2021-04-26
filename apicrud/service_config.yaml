@@ -164,6 +164,10 @@ components:
           default: /api/v1
           description: The API base URL
           type: string
+        cache_size:
+          default: 16384
+          description: Size, in items, of in-memory local caches
+          type: integer
         carrier_gateways:
           default:
             att: txt.att.net
@@ -466,6 +470,7 @@ components:
         redis_ttl:
           default: 1200
           description: Time-to-live for expiring entries added to redis
+          maximum: 43200
           type: integer
         registry_interval:
           default: 30

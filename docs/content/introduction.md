@@ -26,6 +26,7 @@ Out of the box, here are some of the capabilities included in the example applic
 * Storage and content-delivery support for AWS
 * Messaging via email and SMS
 * Per-user request-rate limiting
+* Trashcan with undelete for most CRUD resources
 * Courtesy warning notice as usage approaches a monthly limit
 * Scalability and fault-tolerance for all services
 

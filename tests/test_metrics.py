@@ -6,7 +6,6 @@ created 23-feb-2021 by richb@instantlinux.net
 """
 import os
 import tempfile
-from unittest import mock
 import yaml
 
 import test_base
@@ -174,12 +173,11 @@ class TestMetrics(test_base.TestBase):
         ServiceConfig(file=configfile, reset=True, models=models)
 
         self.authorize(new_session=True)
-        mock_messaging = mock.Mock()
         for count in range(limit):
             self.assertTrue(
                 Metrics(uid=self.test_uid, db_session=db_session,
-                        func_send=mock_messaging).store(grant))
-        mock_messaging.assert_called_once_with(
+                        func_send=self.mock_messaging).store(grant))
+        self.mock_messaging.assert_called_once_with(
             to_uid=self.test_uid, template='usage_notify',
             period='day', percent=metric[grant]['notify'], resource=grant)
         response = self.call_endpoint(

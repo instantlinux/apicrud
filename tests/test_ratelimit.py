@@ -20,8 +20,7 @@ class TestRateLimit(test_base.TestBase):
         self.authorize(username=self.admin_name, password=self.admin_pw)
 
     @pytest.mark.slow
-    @mock.patch('messaging.send_contact.delay')
-    def test_set_max_verify(self, mock_messaging):
+    def test_set_max_verify(self):
         account = dict(name='Robert Morris', username='rmorris',
                        identity='rmorris@conclave.events')
         password = dict(new_password='x73eZrW9', verify_password='x73eZrW9')
@@ -36,7 +35,7 @@ class TestRateLimit(test_base.TestBase):
         acc = response.get_json()['id']
         uid = response.get_json()['uid']
 
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
         response = self.call_endpoint(
             '/account_password/%s' % uid, 'put', data=password)
