@@ -12,11 +12,10 @@ import tempfile
 import unittest
 import yaml
 
-from apicrud import initialize, ServiceConfig, SessionAuth
+from apicrud import initialize, ServiceConfig, state
 from apicrud.test.base import TestBaseMixin
 import controllers
 from main import application
-from messaging import send_contact
 import models
 
 global_fixture = {}
@@ -39,20 +38,17 @@ class TestBase(TestBaseMixin, unittest.TestCase):
                 'apicrud.service_registry.ServiceRegistry.update').start()
             db_seed_file = os.path.join(os.path.dirname(
                 __file__), 'data', 'db_fixture.yaml')
-            # TODO consider connection singletons in initialize()
             initialize.app(
                 application, controllers, models,
                 os.path.join(os.path.dirname(
                     os.path.abspath(__file__)), '..', 'example'),
                 db_seed_file=db_seed_file,
                 db_url=db_url,
-                func_send=send_contact.delay,
                 redis_conn=redis_conn)
             global_fixture['config'] = ServiceConfig().config
             with open(db_seed_file, 'rt', encoding='utf8') as f:
                 records = yaml.safe_load(f)
             global_fixture['constants'] = records.get('_constants')
-            SessionAuth(redis_conn=redis_conn)
         yield global_fixture
         try:
             if os.environ.get('DBCLEAN', None) != '0':
@@ -64,9 +60,15 @@ class TestBase(TestBaseMixin, unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
+        """Setup for each test. Instance vars are configured for the
+        flask and redis emulators, a mock_messaging object for the
+        messaging celery worker, and all the constants found in the
+        data/db_fixtures.yaml file.
+        """
         self.app = global_fixture['app']
         self.config = global_fixture['config']
         self.flask = global_fixture['flask']
+        self.mock_messaging = state.func_send = unittest.mock.Mock()
         self.redis = global_fixture['redis']
         self.maxDiff = None
         self.base_url = self.config.BASE_URL

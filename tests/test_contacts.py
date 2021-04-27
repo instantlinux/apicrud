@@ -17,8 +17,7 @@ class TestContacts(test_base.TestBase):
         self.authorize()
         self.adm_default_identity = 'user@example.com'
 
-    @mock.patch('messaging.send_contact.delay')
-    def test_add_and_fetch_contact(self, mock_messaging):
+    def test_add_and_fetch_contact(self):
         record = dict(
             carrier=None, label='home', type='email', privacy='invitee',
             info='addme@conclave.events', uid=self.test_uid)
@@ -28,7 +27,7 @@ class TestContacts(test_base.TestBase):
         response = self.call_endpoint('/contact', 'post', data=record)
         self.assertEqual(response.status_code, 201)
         id = response.get_json()['id']
-        mock_messaging.assert_has_calls([
+        self.mock_messaging.assert_has_calls([
             mock.call(to=id, template='contact_add', token=mock.ANY,
                       type='email')])
         response = self.call_endpoint('/contact/%s' % id, 'get')
@@ -37,8 +36,7 @@ class TestContacts(test_base.TestBase):
         expected['id'] = id
         self.assertEqual(result, expected)
 
-    @mock.patch('messaging.send_contact.delay')
-    def test_update_contact(self, mock_messaging):
+    def test_update_contact(self):
         record = dict(
             label='work', type='email', info='testr@conclave.events',
             uid=self.test_uid, muted=False, privacy='member')
@@ -61,12 +59,11 @@ class TestContacts(test_base.TestBase):
         del(result['modified'])
         expected.update(dict(id=id, **updated))
         self.assertEqual(result, expected)
-        mock_messaging.assert_has_calls([
+        self.mock_messaging.assert_has_calls([
             mock.call(to=id, template='contact_add', token=mock.ANY,
                       type='email')])
 
-    @mock.patch('messaging.send_contact.delay')
-    def test_confirm_contact(self, mock_messaging):
+    def test_confirm_contact(self):
         record = dict(
             carrier=None, label='home', type='email', privacy='invitee',
             info='confirmme@conclave.events', uid=self.test_uid)
@@ -81,7 +78,7 @@ class TestContacts(test_base.TestBase):
         self.assertEqual(response.status_code, 201)
         id = response.get_json()['id']
         token = response.get_json()['token']
-        mock_messaging.assert_has_calls([
+        self.mock_messaging.assert_has_calls([
             mock.call(to=id, template='contact_add', token=mock.ANY,
                       type='email')])
         response = self.call_endpoint('/contact/%s' % id, 'get')
@@ -112,8 +109,7 @@ class TestContacts(test_base.TestBase):
         self.assertEqual(result, expected)
 
     @pytest.mark.slow
-    @mock.patch('messaging.send_contact.delay')
-    def test_add_too_many_contacts(self, mock_messaging):
+    def test_add_too_many_contacts(self):
         max_contacts = self.config.DEFAULT_GRANTS.get('contacts')
         account = dict(
             name='Robin Smith', username='rsmith',
@@ -125,7 +121,7 @@ class TestContacts(test_base.TestBase):
         response = self.call_endpoint('/account', 'post', data=account)
         self.assertEqual(response.status_code, 201)
         uid = response.get_json()['uid']
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
         response = self.call_endpoint(
             '/account_password/%s' % uid, 'put', data=password)
@@ -142,16 +138,12 @@ class TestContacts(test_base.TestBase):
             id='%s:contacts' % uid, name='contacts', value='8', uid=uid,
             rbac='r', status='active')])
 
-        # TODO clarify why this reset_mock mock?
-        mock_messaging.reset_mock()
         calls = []
         for i in range(max_contacts - 1):
             response = self.call_endpoint('/contact', 'post', data=dict(
                 info='email%d@conclave.events' % i, uid=uid, **contact))
             self.assertEqual(response.status_code, 201, 'post message=%s' %
                              response.get_json().get('message'))
-            # TODO why is this call happening?
-            calls.append(mock.call.__bool__())
             calls.append(
                 mock.call(
                     to=response.get_json().get('id'),
@@ -163,7 +155,7 @@ class TestContacts(test_base.TestBase):
                          response.get_json().get('message'))
         self.assertEqual(response.get_json(), dict(
             message=u'user limit exceeded', allowed=max_contacts))
-        mock_messaging.assert_has_calls(calls)
+        self.mock_messaging.assert_has_calls(calls)
 
     def test_get_contact_restricted(self):
         """Attempt to fetch private contact from an unprivileged user
@@ -189,8 +181,7 @@ class TestContacts(test_base.TestBase):
         self.assertEqual(response.status_code, 403, 'unexpected message=%s' %
                          response.get_json().get('message'))
 
-    @mock.patch('messaging.send_contact.delay')
-    def test_update_contact_conflict_existing(self, mock_messaging):
+    def test_update_contact_conflict_existing(self):
         record = dict(
             label='work', type='email', info='conflict@conclave.events',
             uid=self.test_uid, muted=False, privacy='member')
@@ -228,8 +219,8 @@ class TestContacts(test_base.TestBase):
         self.assertEqual(response.get_json().get('message'),
                          'invalid email address')
 
-    @mock.patch('messaging.send_contact.delay')
-    def test_update_bad_email(self, mock_messaging):
+    # probably bad
+    def test_update_bad_email(self):
         record = dict(
             label='work', type='email', info='testr2@conclave.events',
             uid=self.test_uid, privacy='member')
@@ -239,7 +230,7 @@ class TestContacts(test_base.TestBase):
         response = self.call_endpoint('/contact', 'post', data=record)
         self.assertEqual(response.status_code, 201)
         id = response.get_json()['id']
-        mock_messaging.assert_has_calls([
+        self.mock_messaging.assert_has_calls([
             mock.call(to=id, template='contact_add', token=mock.ANY,
                       type='email')])
         response = self.call_endpoint('/contact/%s' % id, 'put', data=updated)

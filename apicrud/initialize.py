@@ -9,38 +9,41 @@ from flask import abort, g, jsonify, request
 from flask_cors import CORS
 import logging
 import os
+import redis
 
-from . import database, AccessControl, Metrics, RateLimit, \
-    ServiceConfig, ServiceRegistry
+from . import database, AccessControl, AccountSettings, Metrics, RateLimit, \
+    ServiceConfig, ServiceRegistry, state
 from .const import Constants
 from .session_manager import SessionManager
-
-oauth = {}
-params = {}
 
 
 def app(application, controllers, models, path, redis_conn=None,
         db_url=None, db_seed_file=None, func_send=None):
-    """Initialize the Flask app defined by openapi.yaml
+    """Initialize the Flask app defined by openapi.yaml: first four
+    params must be passed from main; optional params here support
+    unit-test framework.
 
     Args:
       application (obj): a connexion object
       controllers (obj): all controllers
       models (obj): all models
       path (str): location of configuration .yaml / i18n files
-      init_func (function): any other function to call
       db_seed_file (filename): database records in yaml format
+      db_url (str): URL of database
       func_send (obj): application's function to send messages
+      redis_conn (obj): connection to redis
 
     Returns:
       obj: Flask app
     """
-    global oauth, params
-
+    kwargs = {}
+    if db_seed_file:
+        kwargs['db_seed_file'] = db_seed_file
     config = ServiceConfig(
         babel_translation_directories='i18n;%s' % os.path.join(path, 'i18n'),
-        db_seed_file=db_seed_file, file=os.path.join(path, 'config.yaml'),
-        models=models, reset=True).config
+        file=os.path.join(path, 'config.yaml'),
+        models=models, reset=True, **kwargs).config
+    db_url = db_url or config.DB_URL
     logging.basicConfig(level=config.LOG_LEVEL,
                         format='%(asctime)s %(levelname)s %(message)s',
                         datefmt='%m-%d %H:%M:%S')
@@ -57,20 +60,24 @@ def app(application, controllers, models, path, redis_conn=None,
     CORS(application.app,
          resources={r"/api/*": {'origins': config.CORS_ORIGINS}},
          supports_credentials=True)
-    params = dict(func_send=func_send, models=models, redis_conn=redis_conn)
-    ServiceRegistry(redis_conn=redis_conn).register(controllers.resources())
+    state.config = config
+    state.func_send = func_send
+    state.models = models
+    state.oauth['init'] = OAuth(application.app)
+    state.redis_conn = redis_conn or redis.Redis(
+        host=config.REDIS_HOST, port=config.REDIS_PORT, db=0)
+    ServiceRegistry().register(controllers.resources())
     if database.initialize_db(db_url=db_url, redis_conn=redis_conn):
-        Metrics(redis_conn=redis_conn, func_send=func_send).store(
+        Metrics().store(
             'api_start_timestamp', value=int(datetime.now().timestamp()))
     AccessControl().load_rbac(config.RBAC_FILE)
-    oauth['init'] = OAuth(application.app)
     for provider in config.AUTH_PARAMS.keys():
         client_id = os.environ.get('%s_CLIENT_ID' % provider.upper())
         client_secret = os.environ.get('%s_CLIENT_SECRET' % provider.upper())
         if client_id:
-            oauth['init'].register(name=provider, client_id=client_id,
-                                   client_secret=client_secret,
-                                   **config.AUTH_PARAMS[provider])
+            state.oauth['init'].register(name=provider, client_id=client_id,
+                                         client_secret=client_secret,
+                                         **config.AUTH_PARAMS[provider])
             logging.info(dict(action='initialize', provider=provider))
 
     logging.info(dict(action='initialize_app', port=config.APP_PORT))
@@ -78,8 +85,7 @@ def app(application, controllers, models, path, redis_conn=None,
 
 
 def before_request():
-    """flask session setup - database and metrics
-    """
+    """flask session setup - database and metrics"""
     g.db = database.get_session()
     g.session = SessionManager()
     g.request_start_time = datetime.utcnow()
@@ -95,7 +101,7 @@ def before_request():
 
 
 def after_request(response):
-    """All responses get a cache-control header"""
+    """flask headers and metrics - all responses get a cache-control header"""
     config = ServiceConfig().config
     response.cache_control.max_age = config.HTTP_RESPONSE_CACHE_MAX_AGE
     if config.AUTH_SKIP_CORS:
@@ -110,6 +116,18 @@ def after_request(response):
         'api_request_seconds_total', value=datetime.utcnow().timestamp() -
         g.request_start_time.timestamp())
     return response
+
+
+def get_locale():
+    """flask locale"""
+    acc = AccessControl()
+    if acc.auth and acc.uid:
+        locale = AccountSettings(acc.account_id,
+                                 uid=acc.uid, db_session=g.db).locale
+        if locale:
+            return locale
+    return request.accept_languages.best_match(
+        ServiceConfig().config.LANGUAGES)
 
 
 def render_status_4xx(error):

@@ -20,7 +20,8 @@ app = celery.Celery()
 app.config_from_object(celeryconfig)
 path = os.path.dirname(os.path.abspath(__file__))
 config = ServiceConfig(
-    reset=True, models=models, file=os.path.join(path, 'config.yaml'),
+    babel_translation_directories='i18n;%s' % os.path.join(path, 'i18n'),
+    file=os.path.join(path, 'config.yaml'), models=models, reset=True,
     template_folders=[os.path.join(path, 'templates')]).config
 
 

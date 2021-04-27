@@ -33,9 +33,8 @@ class TestMessaging(test_base.TestBase):
         self.assertEqual('admin@test.conclave.events', _to)
         self.assertIn("List: test\n\nhello world", _body)
 
-    @mock.patch('messaging.send_contact.delay')
     @mock.patch('smtplib.SMTP', autospec=True)
-    def test_send_sms(self, mock_smtp, mock_messaging):
+    def test_send_sms(self, mock_smtp):
         self.authorize()
         record = dict(uid=self.test_uid, type='sms', info='6178765309',
                       carrier='att', label='mobile', privacy='public')

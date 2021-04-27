@@ -7,20 +7,18 @@ from flask_babel import _
 import jwt
 import logging
 import os
-import redis
 
+from . import state
 from .access import AccessControl
 from .account_settings import AccountSettings
 from .const import Constants
 from .database import db_abort
-from .initialize import oauth
 from .metrics import Metrics
 from .service_config import ServiceConfig
 from .service_registry import ServiceRegistry
 from .utils import gen_id, utcnow
 
 OC = {}
-REDIS = None
 
 
 class SessionAuth(object):
@@ -29,26 +27,19 @@ class SessionAuth(object):
     Functions for login, password and role authorization
 
     Args:
-      func_send(function): name of function for sending message
       roles_from (obj): model for which to look up authorizations
     """
 
-    def __init__(self, func_send=None, roles_from=None, redis_conn=None):
-        global REDIS
-
+    def __init__(self, roles_from=None):
         config = self.config = ServiceConfig().config
         self.models = ServiceConfig().models
         self.jwt_secret = config.JWT_SECRET
         self.login_session_limit = config.LOGIN_SESSION_LIMIT
         self.login_admin_limit = config.LOGIN_ADMIN_LIMIT
-        self.func_send = func_send
-        self.oauth = oauth['init']
+        self.func_send = state.func_send
+        self.oauth = state.oauth['init']
         self.roles_from = roles_from
-        self.redis_conn = (
-            redis_conn or REDIS or redis.Redis(
-                host=config.REDIS_HOST,
-                port=config.REDIS_PORT, db=0))
-        REDIS = self.redis_conn
+        self.redis_conn = state.redis_conn
 
     def account_login(self, username, password, method='local', otp=None):
         """Log in using local or OAuth2 credentials

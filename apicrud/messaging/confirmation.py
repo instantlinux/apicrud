@@ -13,6 +13,7 @@ import random
 from sqlalchemy.orm.exc import NoResultFound
 import string
 
+from .. import state
 from ..service_config import ServiceConfig
 
 
@@ -28,12 +29,13 @@ class Confirmation:
 
     def __init__(self):
         config = ServiceConfig().config
+        self.func_send = state.func_send
         self.models = ServiceConfig().models
         self.token_salt = config.TOKEN_SALT
         self.token_secret = config.TOKEN_SECRET
         self.token_timeout = config.TOKEN_TIMEOUT
 
-    def request(self, id, ttl=None, template='contact_add', func_send=None):
+    def request(self, id, ttl=None, template='contact_add'):
         """Generate a confirmation token valid for a given period,
         and send it to the contact identified by id
 
@@ -41,7 +43,6 @@ class Confirmation:
           id (str): record ID in contacts table of database
           ttl (int): how many seconds before token expires
           template (str): jinja2 template name contact-add message
-          func_send (function): name of function for sending message
 
         Returns:
           tuple:
@@ -65,9 +66,10 @@ class Confirmation:
         g.session.create(contact.id, [], param=token, nonce=nonce, ttl=ttl)
         logging.info('action=confirmation_request id=%s info=%s' %
                      (id, contact.info))
-        if func_send:
+        if self.func_send:
             # TODO: stop token value from leaking into celery logs
-            func_send(to=id, template=template, token=token, type=contact.type)
+            self.func_send(
+                to=id, template=template, token=token, type=contact.type)
         return dict(token=token, id=id, uid=contact.uid), 200
 
     def confirm(self, token, clear_session=False):

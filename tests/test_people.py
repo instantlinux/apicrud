@@ -95,8 +95,7 @@ class TestPeople(test_base.TestBase):
         result = response.get_json()
         self.assertEqual(response.status_code, 404)
 
-    @mock.patch('messaging.send_contact.delay')
-    def test_update_primary_contact(self, mock_messaging):
+    def test_update_primary_contact(self):
         record = dict(name='Witness Protected',
                       identity='oldaccount@conclave.events')
         updated = dict(info='newaccount@conclave.events', type='email')
@@ -127,7 +126,7 @@ class TestPeople(test_base.TestBase):
         del(result['created'])
         del(result['modified'])
         self.assertEqual(result, dict(id=cid, uid=uid, **expected))
-        mock_messaging.assert_has_calls([
+        self.mock_messaging.assert_has_calls([
             mock.call(to=cid, template='contact_add', token=mock.ANY,
                       type='email')])
 
@@ -138,8 +137,7 @@ class TestPeople(test_base.TestBase):
         result = response.get_json()
         self.assertEqual(result['identity'], updated['info'])
 
-    @mock.patch('messaging.send_contact.delay')
-    def test_person_update_disallowed_upon_confirm(self, mock_messaging):
+    def test_person_update_disallowed_upon_confirm(self):
         """One person refers another, by invoking POST to /person with
         a name and email address. Update/delete is allowed by either
         person until the referred person confirms or RSVPs to an event.
@@ -158,7 +156,7 @@ class TestPeople(test_base.TestBase):
         response = self.call_endpoint('/contact/confirmation_get/%s' %
                                       cid, 'get')
         self.assertEqual(response.status_code, 200)
-        mock_messaging.assert_has_calls([
+        self.mock_messaging.assert_has_calls([
             mock.call(to=cid, template='contact_add', token=mock.ANY,
                       type='email')])
         token = response.get_json()['token']

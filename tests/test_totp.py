@@ -7,7 +7,6 @@ created 6-apr-2021 by richb@instantlinux.net
 
 import pyotp
 import pytest
-from unittest import mock
 
 import test_base
 
@@ -16,8 +15,7 @@ from models import Account
 
 
 class TestAuthTOTP(test_base.TestBase):
-    @mock.patch('messaging.send_contact.delay')
-    def test_totp_generate_reg(self, mock_messaging):
+    def test_totp_generate_reg(self):
         """Generate and register a token"""
 
         account = dict(name='IT Admin', username='theboss',
@@ -33,7 +31,7 @@ class TestAuthTOTP(test_base.TestBase):
         acc = response.get_json()['id']
         uid = response.get_json()['uid']
 
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
         response = self.call_endpoint(
             '/account_password/%s' % uid, 'put', data=password)
@@ -81,8 +79,7 @@ class TestAuthTOTP(test_base.TestBase):
                          response.get_json().get('message'))
 
     @pytest.mark.slow
-    @mock.patch('messaging.send_contact.delay')
-    def test_totp_login_with_backup(self, mock_messaging):
+    def test_totp_login_with_backup(self):
         """Register a token, verify otp login and backup code login"""
 
         account = dict(name='IT Flunkie', username='underpaid',
@@ -93,7 +90,7 @@ class TestAuthTOTP(test_base.TestBase):
         self.assertEqual(response.status_code, 201)
         uid = response.get_json()['uid']
 
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
         response = self.call_endpoint(
             '/account_password/%s' % uid, 'put', data=password)
@@ -161,8 +158,7 @@ class TestAuthTOTP(test_base.TestBase):
                                       'get')
         self.assertEqual(response.status_code, 403)
 
-    @mock.patch('messaging.send_contact.delay')
-    def test_totp_failures(self, mock_messaging):
+    def test_totp_failures(self):
         account = dict(name='Rodney Danger', username='danger23',
                        identity='danger23@example.com')
         password = dict(new_password='a0M5bNdvx', verify_password='a0M5bNdvx')
@@ -172,7 +168,7 @@ class TestAuthTOTP(test_base.TestBase):
         acc = response.get_json()['id']
         uid = response.get_json()['uid']
 
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
         response = self.call_endpoint(
             '/account_password/%s' % uid, 'put', data=password)

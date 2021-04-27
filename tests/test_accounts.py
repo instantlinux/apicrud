@@ -17,8 +17,7 @@ import test_base
 class TestAccounts(test_base.TestBase):
 
     @pytest.mark.slow
-    @mock.patch('messaging.send_contact.delay')
-    def test_add_and_fetch_account(self, mock_messaging):
+    def test_add_and_fetch_account(self):
         record = dict(
             name='Jessica Simpson',
             identity='mylittlepony@conclave.events', username='littlepony')
@@ -34,7 +33,7 @@ class TestAccounts(test_base.TestBase):
         id = response.get_json()['id']
         uid = response.get_json()['uid']
 
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
         response = self.call_endpoint(
             '/account_password/%s' % uid, 'put', data=password)
@@ -52,8 +51,7 @@ class TestAccounts(test_base.TestBase):
         expected['id'] = id
         self.assertEqual(result, expected)
 
-    @mock.patch('messaging.send_contact.delay')
-    def test_register_and_login(self, mock_messaging):
+    def test_register_and_login(self):
         record = dict(
             name='Black Hat', identity='blackhat@ddos.net', username='devil')
         password = dict(
@@ -72,10 +70,10 @@ class TestAccounts(test_base.TestBase):
         self.assertEqual(response.status_code, 401, 'get unexpected message=%s'
                          % response.get_json().get('message'))
 
-        mock_messaging.assert_has_calls([
+        self.mock_messaging.assert_has_calls([
             mock.call(to=mock.ANY, template='confirm_new', token=mock.ANY,
                       type='email')])
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
 
         # Set the password with put, and confirm it's present with get
@@ -107,8 +105,7 @@ class TestAccounts(test_base.TestBase):
         expected['id'] = uid
         self.assertEqual(result, expected)
 
-    @mock.patch('messaging.send_contact.delay')
-    def test_get_account_lang_es(self, mock_messaging):
+    def test_get_account_lang_es(self):
         expected = dict(id=self.adm_contact_2, message=u'acceso denegado')
 
         record = dict(
@@ -121,7 +118,7 @@ class TestAccounts(test_base.TestBase):
         self.assertEqual(response.status_code, 201)
         uid = response.get_json()['uid']
 
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
 
         # Set the password with put, and confirm it's present with get
@@ -147,8 +144,7 @@ class TestAccounts(test_base.TestBase):
         self.assertEqual(response.get_json(), expected)
         self.assertEqual(response.status_code, 403)
 
-    @mock.patch('messaging.send_contact.delay')
-    def test_register_existing_person(self, mock_messaging):
+    def test_register_existing_person(self):
         person = dict(name='Edgar Rodriguez', identity='edgar@conclave.events')
         username = 'eddie'
         password = dict(
@@ -163,10 +159,10 @@ class TestAccounts(test_base.TestBase):
         self.assertEqual(response.status_code, 201)
         uid = response.get_json()['uid']
 
-        mock_messaging.assert_has_calls([
+        self.mock_messaging.assert_has_calls([
             mock.call(to=mock.ANY, template='confirm_new', token=mock.ANY,
                       type='email')])
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
 
         # Set the password with put, and confirm it's present with get
@@ -181,8 +177,7 @@ class TestAccounts(test_base.TestBase):
         self.assertEqual(response.get_json(), dict(id=uid, username=username))
 
     @pytest.mark.slow
-    @mock.patch('messaging.send_contact.delay')
-    def test_change_password_reset(self, mock_messaging):
+    def test_change_password_reset(self):
         record = dict(
             name='Drunk Fool', identity='fool@aol.com', username='dfool')
         first_pw = 'cC5$#4Hg'
@@ -192,10 +187,10 @@ class TestAccounts(test_base.TestBase):
         response = self.call_endpoint('/account', 'post', data=record)
         self.assertEqual(response.status_code, 201)
         uid = response.get_json()['uid']
-        mock_messaging.assert_has_calls([
+        self.mock_messaging.assert_has_calls([
             mock.call(to=mock.ANY, template='confirm_new', token=mock.ANY,
                       type='email')])
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
 
         response = self.call_endpoint(
@@ -208,10 +203,10 @@ class TestAccounts(test_base.TestBase):
             forgot_password=True, username=record['username']))
         self.assertEqual(response.status_code, 200, 'post failed message=%s' %
                          response.get_json().get('message'))
-        mock_messaging.assert_has_calls([
+        self.mock_messaging.assert_has_calls([
             mock.call(to=mock.ANY, template='password_reset', token=mock.ANY,
                       type='email')])
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             reset_token = call.kwargs.get('token')
         response = self.call_endpoint(
             '/account_password/%s' % uid,
@@ -241,8 +236,7 @@ class TestAccounts(test_base.TestBase):
                          response.get_json().get('message'))
 
     @pytest.mark.slow
-    @mock.patch('messaging.send_contact.delay')
-    def test_change_password_using_old(self, mock_messaging):
+    def test_change_password_using_old(self):
         record = dict(
             name='Farah Faucet', identity='farah@baidu.com', username='farah')
         first_pw = 'h4UPgBgx0@O'
@@ -252,7 +246,7 @@ class TestAccounts(test_base.TestBase):
         response = self.call_endpoint('/account', 'post', data=record)
         self.assertEqual(response.status_code, 201)
         uid = response.get_json()['uid']
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
 
         response = self.call_endpoint(
@@ -290,9 +284,8 @@ class TestAccounts(test_base.TestBase):
                          response.get_json().get('message'))
 
     @pytest.mark.slow
-    @mock.patch('messaging.send_contact.delay')
     @mock.patch('time.sleep')
-    def test_account_lockout(self, mock_sleep, mock_messaging):
+    def test_account_lockout(self, mock_sleep):
         record = dict(
             name='Brute Force', identity='brute@ddos.net', username='brute')
         password = dict(new_password='WorkingPa3s&',
@@ -301,7 +294,7 @@ class TestAccounts(test_base.TestBase):
         response = self.call_endpoint('/account', 'post', data=record)
         self.assertEqual(response.status_code, 201)
         uid = response.get_json()['uid']
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
 
         response = self.call_endpoint(
@@ -322,8 +315,7 @@ class TestAccounts(test_base.TestBase):
         mock_sleep.assert_has_calls([mock.call(5)])
 
     @pytest.mark.slow
-    @mock.patch('messaging.send_contact.delay')
-    def test_account_disabled(self, mock_messaging):
+    def test_account_disabled(self):
         record = dict(
             name='Adam Tsui', identity='tsui@conclave.events', username='tsui')
         password = dict(new_password='%4orohOH', verify_password='%4orohOH')
@@ -332,7 +324,7 @@ class TestAccounts(test_base.TestBase):
         self.assertEqual(response.status_code, 201)
         id = response.get_json()['id']
         uid = response.get_json()['uid']
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
 
         response = self.call_endpoint(
@@ -354,8 +346,7 @@ class TestAccounts(test_base.TestBase):
         self.assertEqual(status, 403)
 
     @pytest.mark.slow
-    @mock.patch('messaging.send_contact.delay')
-    def test_account_reset_bad_token(self, mock_messaging):
+    def test_account_reset_bad_token(self):
         record = dict(
             name='Barry Bonds', identity='bonds@ddos.net', username='bonds')
         password = dict(new_password='MyPa3s&=', verify_password='MyPa3s&=')
@@ -372,8 +363,7 @@ class TestAccounts(test_base.TestBase):
         self.assertEqual(response.get_json(), dict(
             message='invalid token', username=record['username']))
 
-    @mock.patch('messaging.send_contact.delay')
-    def test_weak_or_mismatching_password(self, mock_messaging):
+    def test_weak_or_mismatching_password(self):
         record = dict(
             name='Clueless Luser', identity='luser@aol.com', username='luser')
         password = dict(
@@ -382,7 +372,7 @@ class TestAccounts(test_base.TestBase):
         response = self.call_endpoint('/account', 'post', data=record)
         self.assertEqual(response.status_code, 201)
         uid = response.get_json()['uid']
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
 
         response = self.call_endpoint(
@@ -396,7 +386,7 @@ class TestAccounts(test_base.TestBase):
             forgot_password=True, identity=record['identity']))
         self.assertEqual(response.status_code, 200, 'post failed message=%s' %
                          response.get_json().get('message'))
-        for call in mock_messaging.call_args_list:
+        for call in self.mock_messaging.call_args_list:
             password['reset_token'] = call.kwargs.get('token')
 
         password['new_password'] = 'Better@pw2'
@@ -406,8 +396,7 @@ class TestAccounts(test_base.TestBase):
         self.assertEqual(response.get_json(),
                          dict(message='passwords do not match'))
 
-    @mock.patch('messaging.send_contact.delay')
-    def test_duplicate_account(self, mock_messaging):
+    def test_duplicate_account(self):
         record = dict(
             name='Yin Yang', identity='twins@cnn.com', username='twins')
 

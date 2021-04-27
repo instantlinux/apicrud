@@ -4,13 +4,12 @@ Flask API main entrypoint
 
 created 31-mar-2019 by richb@instantlinux.net
 """
-
 import connexion
-from flask import g, request
+from flask import g
 from flask_babel import Babel
 import os
 
-from apicrud import AccessControl, AccountSettings, ServiceConfig, initialize
+from apicrud import ServiceConfig, initialize
 
 import controllers
 from messaging import send_contact
@@ -28,7 +27,7 @@ def before_request():
 
 @application.app.after_request
 def add_header(response):
-    initialize.after_request(response)
+    return initialize.after_request(response)
 
 
 @application.app.teardown_appcontext
@@ -40,13 +39,7 @@ def cleanup(resp_or_exc):
 
 @babel.localeselector
 def get_locale():
-    acc = AccessControl()
-    if acc.auth and acc.uid:
-        locale = AccountSettings(acc.account_id,
-                                 uid=acc.uid, db_session=g.db).locale
-        if locale:
-            return locale
-    return request.accept_languages.best_match(config.LANGUAGES)
+    return initialize.get_locale()
 
 
 if __name__ in ('__main__', 'uwsgi_file_main', 'example.main'):

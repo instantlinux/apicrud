@@ -20,12 +20,9 @@ from ..messaging.confirmation import Confirmation
 
 class LocalUser(SessionAuth):
     """Manage local user accounts
-
-    Args:
-      func_send(function): name of function for sending message
     """
-    def __init__(self, func_send=None):
-        super().__init__(func_send=func_send)
+    def __init__(self):
+        super().__init__()
 
     def register(self, identity, username, name, template='confirm_new',
                  picture=None):
@@ -111,8 +108,7 @@ class LocalUser(SessionAuth):
             except (DataError, IntegrityError):
                 # Dup entry from previous attempt or value too long
                 g.db.rollback()
-        return Confirmation().request(cid, template=template,
-                                      func_send=self.func_send)
+        return Confirmation().request(cid, template=template)
 
     def change_password(self, uid, new_password, reset_token,
                         old_password=None, verify_password=None):
@@ -192,8 +188,7 @@ class LocalUser(SessionAuth):
                 return dict(message=_(u'username or email not found')), 404
             return dict(message=_(u'username or email not found')), 404
         logging.info(logmsg)
-        return Confirmation().request(
-            id, template=template, func_send=self.func_send)
+        return Confirmation().request(id, template=template)
 
     @staticmethod
     def _password_weak(password):

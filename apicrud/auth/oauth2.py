@@ -8,6 +8,7 @@ import logging
 from sqlalchemy.orm.exc import NoResultFound
 import string
 
+from .. import state
 from ..database import db_abort
 from ..metrics import Metrics
 from ..session_auth import Ocache, SessionAuth
@@ -18,11 +19,11 @@ class OAuth2(SessionAuth):
     """OAuth2 for Session Authorization
 
     Args:
-      func_send(function): name of function for sending message
       roles_from (obj): model for which to look up authorizations
     """
-    def __init__(self, func_send=None, roles_from=None):
-        super().__init__(func_send=func_send, roles_from=roles_from)
+    def __init__(self, roles_from=None):
+        super().__init__(roles_from=roles_from)
+        self.func_send = state.func_send
 
     def callback(self, method, code=None, state=None):
         """Callback from 3rd-party OAuth2 provider auth
@@ -116,7 +117,7 @@ class OAuth2(SessionAuth):
             return dict(message=msg), 403
         elif self.config.LOGIN_EXTERNAL_POLICY == 'auto':
             # suppress the registration confirmation email
-            # TODO make this configurable
+            # TODO fix this and make this configurable
             self.func_send = None
             ret = self.register(identity, username, name, picture=picture)
             if ret[1] != 200:
