@@ -46,22 +46,10 @@ This example serves a simple message-board. The `source code <https://github.com
     │       └── xxx_schema2.py
     ├── controllers              # controller classes
     │   ├── __init__.py          # controller initialization
-    │   ├── account.py
-    │   ├── apikey.py
-    │   ├── auth.py
-    │   ├── category.py
-    │   ├── contact.py
-    │   ├── credential.py
-    │   ├── grant.py
-    │   ├── health.py
+    │   ├── ...
     │   ├── list.py
-    │   ├── location.py
     │   ├── message.py
-    │   ├── metric.py
-    │   ├── person.py
-    │   ├── profile.py
-    │   ├── scope.py
-    │   ├── settings.py
+    │   ├── ...
     │   └── tz.py
     ├── k8s                      # kubernetes resource specifications
     │   ├── api.yaml

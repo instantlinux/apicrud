@@ -21,7 +21,7 @@ from .const import Constants
 from .database import db_abort
 from .grants import Grants
 from .service_config import ServiceConfig
-from . import geocode, singletons, utils
+from . import geocode, state, utils
 
 
 class BasicCRUD(object):
@@ -42,14 +42,14 @@ class BasicCRUD(object):
     """
 
     def __init__(self, resource=None, model=None):
-        self.models = ServiceConfig().models
+        self.models = state.models
         self.resource = resource
-        if self.resource not in singletons.controller:
+        if self.resource not in state.controllers:
             if model:
                 self.model = model
             else:
                 self.model = getattr(self.models, resource.capitalize())
-            singletons.controller[self.resource] = self
+            state.controllers[self.resource] = self
 
     @staticmethod
     def create(body, id_prefix='x-', limit_related={}):
@@ -70,7 +70,7 @@ class BasicCRUD(object):
             response code (201 on success)
         """
 
-        self = singletons.controller[request.url_rule.rule.split('/')[3]]
+        self = state.controllers[request.url_rule.rule.split('/')[3]]
         # TODO reject extraneous keys beyond those in the openapi path spec
         if self.resource == 'contact':
             retval = self._create_contact(body)
@@ -173,7 +173,7 @@ class BasicCRUD(object):
             message, second element is response code (200 on success)
         """
 
-        self = singletons.controller[request.url_rule.rule.split('/')[3]]
+        self = state.controllers[request.url_rule.rule.split('/')[3]]
         acc = AccessControl(model=self.model)
         try:
             query = self.db_get(id)
@@ -226,7 +226,7 @@ class BasicCRUD(object):
         if 'id' in body and body['id'] != id:
             return dict(message='id is a read-only property',
                         title='Bad Request'), 405
-        self = singletons.controller[request.url_rule.rule.split('/')[3]]
+        self = state.controllers[request.url_rule.rule.split('/')[3]]
         body['modified'] = utils.utcnow()
         if body.get('expires'):
             try:
@@ -287,7 +287,7 @@ class BasicCRUD(object):
         """
 
         # TODO - update auth if model could affect any session's auth
-        self = singletons.controller[request.url_rule.rule.split('/')[3]]
+        self = state.controllers[request.url_rule.rule.split('/')[3]]
         logmsg = dict(action='delete', resource=self.resource,
                       account_id=AccessControl().account_id,
                       ident=AccessControl().identity)
@@ -337,7 +337,7 @@ class BasicCRUD(object):
           dict: items (list), count(int), cursor_next (str)
         """
 
-        self = singletons.controller[request.url_rule.rule.split('/')[3]]
+        self = state.controllers[request.url_rule.rule.split('/')[3]]
         acc = AccessControl(model=self.model)
         logmsg = dict(action='find', ident=acc.identity,
                       resource=self.resource)
@@ -500,7 +500,7 @@ class BasicCRUD(object):
         if 'id' in body and body['id'] != id:
             return dict(message='id is a read-only property',
                         title='Bad Request'), 405
-        self = singletons.controller[request.url_rule.rule.split('/')[3]]
+        self = state.controllers[request.url_rule.rule.split('/')[3]]
         body['modified'] = utils.utcnow()
         try:
             query = g.db.query(self.model).filter_by(id=id)

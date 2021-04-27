@@ -16,7 +16,6 @@ from messaging import send_contact
 import models
 
 application = connexion.FlaskApp(__name__)
-config = ServiceConfig().config
 babel = Babel(application.app)
 
 
@@ -46,4 +45,4 @@ if __name__ in ('__main__', 'uwsgi_file_main', 'example.main'):
     initialize.app(application, controllers, models, os.path.dirname(
         os.path.abspath(__file__)), func_send=send_contact.delay)
 if __name__ == '__main__':
-    application.run(port=config.APP_PORT)
+    application.run(port=ServiceConfig().config.APP_PORT)

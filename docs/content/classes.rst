@@ -15,6 +15,7 @@ Python Classes
      BasicCRUD
      auth
      const
+     controllers
      database
      exceptions
      geocode
@@ -30,4 +31,6 @@ Python Classes
      ServiceRegistry
      SessionAuth
      SessionManager
+     test
+     Trashcan
      utils

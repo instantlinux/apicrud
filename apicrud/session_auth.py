@@ -32,11 +32,11 @@ class SessionAuth(object):
 
     def __init__(self, roles_from=None):
         config = self.config = ServiceConfig().config
-        self.models = ServiceConfig().models
         self.jwt_secret = config.JWT_SECRET
         self.login_session_limit = config.LOGIN_SESSION_LIMIT
         self.login_admin_limit = config.LOGIN_ADMIN_LIMIT
         self.func_send = state.func_send
+        self.models = state.models
         self.oauth = state.oauth['init']
         self.roles_from = roles_from
         self.redis_conn = state.redis_conn

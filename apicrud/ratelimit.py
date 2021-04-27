@@ -10,26 +10,18 @@ import logging
 from redis.exceptions import ConnectionError
 import time
 
-from .service_config import ServiceConfig
-from .session_manager import SessionManager
+from . import state
 from .grants import Grants
-
-params = {}
+from .service_config import ServiceConfig
 
 
 class RateLimit(object):
     """Rate Limiting
     """
-    def __init__(self, redis_conn=None):
-        global params
-        if not redis_conn:
-            redis_conn = SessionManager().connection
+    def __init__(self):
         self.config = ServiceConfig().config
-        if not params:
-            params = dict(redis=redis_conn,
-                          interval=self.config.RATELIMIT_INTERVAL)
-        self.redis = params['redis']
-        self.interval = params['interval']
+        self.interval = self.config.RATELIMIT_INTERVAL
+        self.redis = state.redis_conn
 
     def call(self, service='*', uid=None):
         """Apply the granted rate limit for uid to a given service

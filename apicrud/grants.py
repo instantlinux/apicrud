@@ -45,8 +45,9 @@ class Grants(object):
     def __new__(cls, db_session=None, ttl=None):
         if cls._singleton is None:
             cls._singleton = super(Grants, cls).__new__(cls)
-            cls._cache = TTLCache(10000,
-                                  ttl or ServiceConfig().config.REDIS_TTL)
+            config = ServiceConfig().config
+            cls._cache = TTLCache(maxsize=config.CACHE_SIZE,
+                                  ttl=ttl or config.REDIS_TTL)
         return cls._singleton
 
     def get(self, name, uid=None):

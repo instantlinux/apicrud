@@ -7,7 +7,7 @@ from flask import g
 from flask_babel import _
 from sqlalchemy.orm.exc import NoResultFound
 
-from apicrud import BasicCRUD, SessionAuth, singletons
+from apicrud import BasicCRUD, SessionAuth, state
 from apicrud.auth import LocalUser
 
 
@@ -45,7 +45,7 @@ class AccountController(BasicCRUD):
         Args:
           uid (str): User ID
         """
-        self = singletons.controller.get('account')
+        self = state.controllers.get('account')
         try:
             account = g.db.query(self.model).filter_by(
                 uid=uid, status='active').one()

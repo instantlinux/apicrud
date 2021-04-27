@@ -6,14 +6,14 @@ created 22-apr-2021 by richb@instantlinux.net
 """
 from flask_babel import _
 
-from apicrud import BasicCRUD, singletons
+from apicrud import BasicCRUD, state
 
 
 class TrashcanController(BasicCRUD):
     def __init__(self):
         self.resource = 'trashcan'
-        if self.resource not in singletons.controller:
-            singletons.controller[self.resource] = self
+        if self.resource not in state.controllers:
+            state.controllers[self.resource] = self
 
     @staticmethod
     def find(**kwargs):

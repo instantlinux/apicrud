@@ -12,8 +12,8 @@ from .service_config import ServiceConfig
 
 
 class AccountSettings(object):
-    """Access class for account settings, with cache -
-    converts db record to object attributes
+    """Access class for account settings, with cache - converts db
+    record to object attributes
 
     Each account is associated with an entry in the Settings model; this
     class provides access to these key-value pairs as read-only
@@ -94,7 +94,9 @@ class AccountSettings(object):
     def __new__(cls,  account_id, db_session=None, uid=None):
         if cls._singleton is None:
             cls._singleton = super(AccountSettings, cls).__new__(cls)
-            cls._cache = TTLCache(10000, ServiceConfig().config.REDIS_TTL)
+            config = ServiceConfig().config
+            cls._cache = TTLCache(maxsize=config.CACHE_SIZE,
+                                  ttl=config.REDIS_TTL)
         return cls._singleton
 
     def uncache(self):

@@ -1,7 +1,7 @@
 from flask import g, request
 import logging
 
-from apicrud import AccessControl, BasicCRUD, singletons, utils
+from apicrud import AccessControl, BasicCRUD, state, utils
 
 from models import Contact
 
@@ -22,7 +22,7 @@ class PersonController(BasicCRUD):
             body, id_prefix='u-')
         if retval[1] != 201:
             return retval
-        self = singletons.controller[request.url_rule.rule.split('/')[3]]
+        self = state.controllers[request.url_rule.rule.split('/')[3]]
         record = Contact(id=utils.gen_id(), uid=retval[0]['id'],
                          type='email', info=body['identity'],
                          status='unconfirmed')

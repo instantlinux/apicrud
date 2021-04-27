@@ -107,8 +107,6 @@ def db_abort(error, rollback=False, **kwargs):
     msg = _(u'DB operational error')
     logging.error(dict(message=msg, error=error, **kwargs))
     g.db.rollback()
-    if os.environ.get('DB_DEBUG') == '1':
-        raise(AssertionError(msg))
     return dict(message=msg), 500
 
 

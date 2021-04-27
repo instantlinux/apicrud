@@ -7,7 +7,7 @@ from flask import g, request
 from flask_babel import _
 import logging
 
-from apicrud import SessionAuth, singletons
+from apicrud import SessionAuth, state
 from apicrud.auth import AuthTOTP, OAuth2
 from messaging import send_contact
 import models
@@ -17,8 +17,8 @@ class AuthController(object):
 
     def __init__(self):
         self.resource = 'auth'
-        if self.resource not in singletons.controller:
-            singletons.controller[self.resource] = self
+        if self.resource not in state.controllers:
+            state.controllers[self.resource] = self
 
     @staticmethod
     def login(body):
