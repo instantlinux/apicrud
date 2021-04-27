@@ -41,7 +41,8 @@ setuptools.setup(
     scripts=[],
     package_data=dict(apicrud=['*.yaml', 'i18n/*/LC_MESSAGES/*.mo',
                                'templates/*.j2']),
-    packages=('apicrud', 'apicrud.auth', 'apicrud.media', 'apicrud.messaging'),
+    packages=('apicrud', 'apicrud.auth', 'apicrud.controllers',
+              'apicrud.media', 'apicrud.messaging'),
     include_package_data=True,
     install_requires=[
         'alembic>=1.4.3',

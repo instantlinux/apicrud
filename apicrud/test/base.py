@@ -1,6 +1,6 @@
 """test.base
 
-Mixin of shared functions for the TextBase class
+Mixin of shared functions for the TestBase class
 
 created 10-oct-2019 by richb@instantlinux.net
 """
