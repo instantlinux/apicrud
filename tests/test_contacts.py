@@ -219,7 +219,6 @@ class TestContacts(test_base.TestBase):
         self.assertEqual(response.get_json().get('message'),
                          'invalid email address')
 
-    # probably bad
     def test_update_bad_email(self):
         record = dict(
             label='work', type='email', info='testr2@conclave.events',

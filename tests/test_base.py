@@ -10,15 +10,13 @@ import os
 import pytest
 import tempfile
 import unittest
-import yaml
 
-from apicrud import initialize, ServiceConfig, state
-from apicrud.test.base import TestBaseMixin
+from apicrud import initialize, state
+from apicrud.test.base import TestBaseMixin, test_globals
 import controllers
 from main import application
 import models
 
-global_fixture = {}
 unittest.util._MAX_LENGTH = 2000
 
 
@@ -26,53 +24,32 @@ class TestBase(TestBaseMixin, unittest.TestCase):
 
     @pytest.fixture(scope='session', autouse=True)
     def initial_setup(self):
-        if not global_fixture:
-            global_fixture['app'] = application.app
-            global_fixture['dbfile'] = tempfile.mkstemp(prefix='_db')[1]
+        if not test_globals:
+            test_globals['app'] = application.app
+            test_globals['dbfile'] = tempfile.mkstemp(prefix='_db')[1]
             db_url = os.environ.get(
-                'DB_URL', 'sqlite:///%s' % global_fixture['dbfile'])
-            global_fixture['flask'] = global_fixture['app'].test_client()
-            global_fixture['redis'] = redis_conn = fakeredis.FakeStrictRedis(
+                'DB_URL', 'sqlite:///%s' % test_globals['dbfile'])
+            path = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), '..', 'example')
+            db_seed_file = os.path.join(path, '..', 'tests', 'data',
+                                        'db_fixture.yaml')
+            test_globals['redis'] = redis_conn = fakeredis.FakeStrictRedis(
                 server=fakeredis.FakeServer())
-            unittest.mock.patch(
-                'apicrud.service_registry.ServiceRegistry.update').start()
-            db_seed_file = os.path.join(os.path.dirname(
-                __file__), 'data', 'db_fixture.yaml')
             initialize.app(
-                application, controllers, models,
-                os.path.join(os.path.dirname(
-                    os.path.abspath(__file__)), '..', 'example'),
-                db_seed_file=db_seed_file,
-                db_url=db_url,
+                application, controllers, models, path,
+                db_seed_file=db_seed_file, db_url=db_url,
                 redis_conn=redis_conn)
-            global_fixture['config'] = ServiceConfig().config
-            with open(db_seed_file, 'rt', encoding='utf8') as f:
-                records = yaml.safe_load(f)
-            global_fixture['constants'] = records.get('_constants')
-        yield global_fixture
+            self.baseSetup()
+        yield test_globals
         try:
             if os.environ.get('DBCLEAN', None) != '0':
-                os.remove(global_fixture['dbfile'])
+                os.remove(test_globals['dbfile'])
         except FileNotFoundError:
             # TODO this is getting called for each test class
             # (thought scope='session' would invoke only once)
             pass
 
     @classmethod
-    def setUpClass(self):
-        """Setup for each test. Instance vars are configured for the
-        flask and redis emulators, a mock_messaging object for the
-        messaging celery worker, and all the constants found in the
-        data/db_fixtures.yaml file.
-        """
-        self.app = global_fixture['app']
-        self.config = global_fixture['config']
-        self.flask = global_fixture['flask']
-        self.mock_messaging = state.func_send = unittest.mock.Mock()
-        self.redis = global_fixture['redis']
-        self.maxDiff = None
-        self.base_url = self.config.BASE_URL
-        self.credentials = {}
-        self.authuser = None
-        for item, val in global_fixture['constants'].items():
-            setattr(self, item, val)
+    def setUpClass(cls):
+        cls.mock_messaging = state.func_send = unittest.mock.Mock()
+        cls.classSetup(cls)

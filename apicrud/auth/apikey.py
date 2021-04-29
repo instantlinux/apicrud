@@ -9,7 +9,7 @@ from flask_babel import _
 import logging
 from sqlalchemy.orm.exc import NoResultFound
 
-from .. import AccessControl, SessionAuth, Metrics, ServiceConfig
+from .. import AccessControl, SessionAuth, Metrics
 from ..utils import utcnow
 
 APIKEYS = {}
@@ -51,9 +51,7 @@ class APIKey(SessionAuth):
                 roles=['admin', 'user'] if account.is_admin else ['user'],
                 scopes=[item.name for item in scopes],
                 totp=account.totp, uid=uid)
-            if self.roles_from:
-                APIKEYS[key_id]['roles'] += self.get_roles(uid,
-                                                           self.roles_from)
+            APIKEYS[key_id]['roles'] += self.get_roles(uid)
         item = APIKEYS[key_id]
         uid = item['uid']
         if self.config.LOGIN_MFA_APIKEY:
@@ -88,11 +86,9 @@ def auth(apikey, required_scopes=None):
     Returns:
       dict: uid if successful (None otherwise)
     """
-    models = ServiceConfig().models
     if len(apikey) > 96 or '.' not in apikey:
         return None
-    # TODO - parameterize roles_from properly
-    retval = APIKey(roles_from=models.List).access(apikey)
+    retval = APIKey().access(apikey)
     if not retval:
         return retval
     if required_scopes and (set(required_scopes) & set(retval['scopes']) !=

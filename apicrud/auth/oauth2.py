@@ -17,12 +17,9 @@ from ..utils import gen_id, identity_normalize
 
 class OAuth2(SessionAuth):
     """OAuth2 for Session Authorization
-
-    Args:
-      roles_from (obj): model for which to look up authorizations
     """
-    def __init__(self, roles_from=None):
-        super().__init__(roles_from=roles_from)
+    def __init__(self):
+        super().__init__()
         self.func_send = state.func_send
 
     def callback(self, method, code=None, state=None):

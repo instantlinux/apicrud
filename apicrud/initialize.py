@@ -18,32 +18,27 @@ from .session_manager import SessionManager
 
 
 def app(application, controllers, models, path, redis_conn=None,
-        db_url=None, db_seed_file=None, func_send=None):
+        func_send=None, **kwargs):
     """Initialize the Flask app defined by openapi.yaml: first four
     params must be passed from main; optional params here support
-    unit-test framework.
+    configuration and the unit-test framework.
 
     Args:
       application (obj): a connexion object
       controllers (obj): all controllers
       models (obj): all models
       path (str): location of configuration .yaml / i18n files
-      db_seed_file (filename): database records in yaml format
-      db_url (str): URL of database
       func_send (obj): application's function to send messages
       redis_conn (obj): connection to redis
+      kwargs (dict): additional settings for ServiceConfig
 
     Returns:
       obj: Flask app
     """
-    kwargs = {}
-    if db_seed_file:
-        kwargs['db_seed_file'] = db_seed_file
     config = ServiceConfig(
         babel_translation_directories='i18n;%s' % os.path.join(path, 'i18n'),
-        file=os.path.join(path, 'config.yaml'),
-        models=models, reset=True, **kwargs).config
-    db_url = db_url or config.DB_URL
+        file=os.path.join(path, 'config.yaml'), models=models,
+        reset=True, **kwargs).config
     logging.basicConfig(level=config.LOG_LEVEL,
                         format='%(asctime)s %(levelname)s %(message)s',
                         datefmt='%m-%d %H:%M:%S')
@@ -67,7 +62,7 @@ def app(application, controllers, models, path, redis_conn=None,
     state.redis_conn = redis_conn or redis.Redis(
         host=config.REDIS_HOST, port=config.REDIS_PORT, db=0)
     ServiceRegistry().register(controllers.resources())
-    if database.initialize_db(db_url=db_url, redis_conn=redis_conn):
+    if database.initialize_db(db_url=config.DB_URL, redis_conn=redis_conn):
         Metrics().store(
             'api_start_timestamp', value=int(datetime.now().timestamp()))
     AccessControl().load_rbac(config.RBAC_FILE)

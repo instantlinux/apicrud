@@ -53,6 +53,8 @@ class ServiceConfig(object):
         global config
 
         if reset or not config:
+            if config:
+                logging.info(dict(action='config.init', message='reset'))
             with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                    Constants.SERVICE_CONFIG_FILE), 'rt',
                       encoding='utf8') as f:

@@ -134,7 +134,8 @@ class SessionAuth(object):
                 ).one().status == 'active'):
             roles = ['admin', 'user'] if account.is_admin else ['user']
             if self.roles_from:
-                roles += self.get_roles(account.uid, self.roles_from)
+                roles += self.get_roles(account.uid,
+                                        member_model=self.roles_from)
         else:
             roles = []
         if acc.apikey_id:
@@ -233,25 +234,30 @@ class SessionAuth(object):
                 login_internal=internal_policy,
                 login_external=self.config.LOGIN_EXTERNAL_POLICY)), 200
 
-    def get_roles(self, uid, member_model, resource=None, id=None):
+    def get_roles(self, uid, member_model=None, resource=None, id=None):
         """Get roles that match uid / id for a resource
         Each is in the form <resource>-<id>-<privacy level>
 
         Args:
           uid (str): User ID
-          member_model (obj): the DB model that defines membership in resource
+          member_model (str): resource-name of DB model that defines
+            membership in resource
           resource (str): the resource that defines privacy (e.g. list)
           id (str): ID of the resource (omit if all are desired)
         Returns:
           list of str: authorized roles
         """
         acc = AccessControl()
-        if not resource:
-            resource = acc.primary_res
+        # TODO improve defaulting of member_model and resource from
+        #  rbac.yaml
+        resource = resource or acc.primary_resource
+        if not resource or not member_model:
+            return []
         column = '%s_id' % resource
         try:
-            query = g.db.query(member_model).filter_by(uid=uid,
-                                                       status='active')
+            query = g.db.query(getattr(
+                self.models, member_model.capitalize())).filter_by(
+                    uid=uid, status='active')
             if id:
                 query = query.filter_by(**{column: id})
         except Exception as ex:
@@ -268,25 +274,22 @@ class SessionAuth(object):
                     break
         return roles
 
-    def update_auth(self, member_model, id, resource=None, force=False):
+    def update_auth(self, id, member_model=None, resource=None, force=False):
         """Check current access, update if recently changed
 
         Args:
-          member_model (obj): model (e.g. Guest) which defines membership in
-            resource
           id (str): resource id of parent resource
           resource (str):
             parent resource for which membership should be checked
           force (bool): perform update regardless of logged-in permissions
         """
         acc = AccessControl()
-        if not resource:
-            resource = acc.primary_res
+        resource = resource or acc.primary_resource
         current = set(acc.auth)
         if force or ('%s-%s-%s' % (resource, id, Constants.AUTH_INVITEE)
                      not in current):
             # TODO handle privilege downgrade member/host->invitee
-            current |= set(self.get_roles(acc.uid, member_model,
+            current |= set(self.get_roles(acc.uid, member_model=member_model,
                                           resource=resource, id=id))
             creds = request.authorization
             g.session.update(creds.username, creds.password, 'auth',

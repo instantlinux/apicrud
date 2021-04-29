@@ -9,8 +9,6 @@ import logging
 
 from apicrud import SessionAuth, state
 from apicrud.auth import AuthTOTP, OAuth2
-from messaging import send_contact
-import models
 
 
 class AuthController(object):
@@ -32,7 +30,7 @@ class AuthController(object):
             ID of entry in settings database, and a sub-dictionary
             with mapping of endpoints registered to microservices
         """
-        return SessionAuth(roles_from=models.List).account_login(
+        return SessionAuth().account_login(
             body.get('username'), body.get('password'),
             method=body.get('method', 'local'), otp=body.get('otp'))
 
@@ -50,9 +48,7 @@ class AuthController(object):
 
     @staticmethod
     def auth_callback(method, code, state):
-        return OAuth2(
-            func_send=send_contact.delay, roles_from=models.List).callback(
-                method, code=code, state=state)
+        return OAuth2().callback(method, code=code, state=state)
 
     @staticmethod
     def auth_params():

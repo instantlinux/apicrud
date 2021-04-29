@@ -57,6 +57,16 @@ class AccessControl(object):
 
     These are defined in session_auth.py's account_login() method.
 
+    One resource can be used to define user's group memberships with a
+    rbac.yaml entry in this form:
+
+    private_resources:
+      - resource: list
+        attr: list_id
+
+    A user who is a member of list "wildlife-lovers" which has an id
+    x-12345678 would get an auth role "list-x-12345678-member".
+
     Args:
       policy_file (str): name of the yaml definitions file
       model (obj): a model to be validated for permissions
@@ -90,13 +100,13 @@ class AccessControl(object):
                         uid, secret, arg='auth').split(':')
                 except AttributeError:
                     pass
-            self.primary_res = self.private_res[0]['resource']
-            self.auth_ids = {self.primary_res: []}
+            self.primary_resource = self.private_res[0]['resource']
+            self.auth_ids = {self.primary_resource: []}
             if self.auth:
                 for role in self.auth:
-                    ev = self._parse_id(role, self.primary_res)
+                    ev = self._parse_id(role, self.primary_resource)
                     if ev:
-                        self.auth_ids[self.primary_res].append(ev)
+                        self.auth_ids[self.primary_resource].append(ev)
                 self.account_id = g.session.get(uid, secret, 'acc')
                 self.identity = g.session.get(uid, secret, 'identity')
             else:
@@ -124,7 +134,9 @@ class AccessControl(object):
                         resource=res).replace('*', '.*'),
                     actions=set(list(item['actions']))))
                 self.privacy_levels = rbac['privacy_levels']
-                self.private_res = rbac['private_resources']
+                self.private_res = rbac.get(
+                    'private_resources', [
+                        dict(resource='list', attr='list_id')])
                 LEVELS['levels'] = self.privacy_levels
                 POLICIES['policies'] = self.policies
                 PRIV_RES['private_res'] = self.private_res

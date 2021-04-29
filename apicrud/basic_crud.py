@@ -95,7 +95,7 @@ class BasicCRUD(object):
             body['uid'] = acc.uid
         uid = logmsg['uid'] = body.get('uid')
         if not acc.with_permission('c', new_uid=uid,
-                                   membership=acc.primary_res,
+                                   membership=acc.primary_resource,
                                    id=body.get('event_id')):
             logging.warning(dict(message='access denied', **logmsg))
             return dict(message=_(u'access denied')), 403
@@ -190,9 +190,9 @@ class BasicCRUD(object):
         if 'modified' in retval and not retval['modified']:
             del(retval['modified'])
         eid = None if hasattr(self.model, 'event_id') else (
-            acc.auth_ids[acc.primary_res] or [None])[0]
+            acc.auth_ids[acc.primary_resource] or [None])[0]
         retval['rbac'] = ''.join(sorted(list(
-            acc.rbac_permissions(query=query, membership=acc.primary_res,
+            acc.rbac_permissions(query=query, membership=acc.primary_resource,
                                  id=eid) - set('c'))))
         if 'geolat' in retval:
             access = 'r' if 'r' in retval['rbac'] else None
@@ -429,7 +429,7 @@ class BasicCRUD(object):
             # TODO - takes 30ms per record for rbac: optimize or redesign
             record['rbac'] = ''.join(sorted(list(
                 acc.rbac_permissions(owner_uid=record.get('uid'),
-                                     membership=acc.primary_res,
+                                     membership=acc.primary_resource,
                                      id=record.get('id'),
                                      privacy=record.get('privacy'))
                 - set('c'))))

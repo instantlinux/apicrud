@@ -25,14 +25,13 @@ import redis
 from sqlalchemy.orm.exc import NoResultFound
 import uuid
 
+from .. import state
 from ..access import AccessControl
 from ..const import Constants
 from ..grants import Grants
 from ..metrics import Metrics
 from ..service_config import ServiceConfig
 import apicrud.utils as utils
-
-saved_redis = None
 
 
 class StorageAPI(object):
@@ -47,14 +46,11 @@ class StorageAPI(object):
 
     def __init__(self, credential_ttl=None, redis_conn=None,
                  uid=None, db_session=None):
-        global saved_redis
-
         config = ServiceConfig().config
         self.models = ServiceConfig().models
         self.redis_conn = (
-            redis_conn or saved_redis or redis.Redis(
+            redis_conn or state.redis_conn or redis.Redis(
                 host=config.REDIS_HOST, port=config.REDIS_PORT, db=0))
-        saved_redis = self.redis_conn
         self.cache_ttl = config.REDIS_TTL
         self.credential_ttl = credential_ttl or 86400
         self.uid = uid or AccessControl().uid

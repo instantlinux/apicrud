@@ -8,11 +8,47 @@ import base64
 from flask import g
 import json
 import jwt
+import unittest
+import yaml
 
-from .. import database, SessionManager
+from .. import database, ServiceConfig, SessionManager
+
+test_globals = {}
 
 
 class TestBaseMixin(object):
+
+    def baseSetup(self):
+        """Preliminary initialization: test code should call this once
+        at initial pytest startup, after setting up a sqlite or other
+        database and invoking initialize.app(). This function starts the
+        flask test_client and makes global fixture vars available for
+        the setUp classes.
+        """
+        unittest.mock.patch(
+            'apicrud.service_registry.ServiceRegistry.update').start()
+        test_globals['config'] = config = ServiceConfig().config
+        test_globals['flask'] = test_globals['app'].test_client()
+        with open(config.DB_SEED_FILE, 'rt', encoding='utf8') as f:
+            records = yaml.safe_load(f)
+        test_globals['constants'] = records.get('_constants')
+
+    def classSetup(self):
+        """Setup for each test. Instance vars are configured for the
+        flask and redis emulators, a mock_messaging object for the
+        messaging celery worker, and all the constants found in the
+        data/db_fixtures.yaml file.
+        """
+        self.app = test_globals['app']
+        self.config = test_globals['config']
+        self.flask = test_globals['flask']
+        self.redis = test_globals['redis']
+        self.maxDiff = None
+        self.base_url = self.config.BASE_URL
+        self.credentials = {}
+        self.authuser = None
+        for item, val in test_globals['constants'].items():
+            setattr(self, item, val)
 
     def authorize(self, username=None, password=None, apikey=None,
                   new_session=False, otp=None):
