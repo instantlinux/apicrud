@@ -285,7 +285,7 @@ def upgrade():
               nullable=False),
     sa.Column('password_must_change', sa.BOOLEAN(), server_default=sa.text('0'), nullable=False),
     sa.Column('totp_secret', StringEncryptedType(sa.String(), length=64), nullable=True),
-    sa.Column('backup_codes', sa.Binary(length=192)),
+    sa.Column('backup_codes', sa.LargeBinary(length=256)),
     sa.Column('is_admin', sa.BOOLEAN(), server_default=sa.text('0'), nullable=False),
     sa.Column('settings_id', sa.String(length=16), nullable=False),
     sa.Column('last_login', sa.TIMESTAMP(), nullable=True),

@@ -47,7 +47,6 @@ class MediaProcessing(object):
 
     def __del__(self):
         self.api.del_file_meta(self.file_id, self.meta)
-        self.db_session.remove()
 
     def photo(self, meta):
         """metadata and scaling for still images
@@ -217,6 +216,7 @@ class MediaProcessing(object):
             width=meta["width"],
         )
         self.db_session.add(record)
+        self.db_session.commit()
 
         # add to album
         album = self.db_session.query(self.models.Album).filter_by(

@@ -8,8 +8,8 @@ license: lgpl-2.1
 # coding: utf-8
 
 # from geoalchemy2 import Geometry
-from sqlalchemy import Binary, BOOLEAN, Column, Enum, ForeignKey, INTEGER, \
-     String, TEXT, TIMESTAMP, Unicode, UniqueConstraint
+from sqlalchemy import BOOLEAN, Column, Enum, ForeignKey, INTEGER, \
+     LargeBinary, String, TEXT, TIMESTAMP, Unicode, UniqueConstraint
 from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, backref
@@ -39,7 +39,7 @@ class Account(AsDictMixin, Base):
                                   server_default="False")
     totp_secret = Column(StringEncryptedType(Unicode, aes_secret, AesEngine,
                                              'pkcs5', length=64))
-    backup_codes = Column(Binary)
+    backup_codes = Column(LargeBinary(256))
     is_admin = Column(BOOLEAN, nullable=False, server_default="False")
     settings_id = Column(ForeignKey(u'settings.id'), nullable=False)
     last_login = Column(TIMESTAMP)
