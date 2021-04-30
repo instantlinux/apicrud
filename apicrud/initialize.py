@@ -39,6 +39,7 @@ def app(application, controllers, models, path, redis_conn=None,
         babel_translation_directories='i18n;%s' % os.path.join(path, 'i18n'),
         file=os.path.join(path, 'config.yaml'), models=models,
         reset=True, **kwargs).config
+    print('init: loglevel=%s' % config.LOG_LEVEL)
     logging.basicConfig(level=config.LOG_LEVEL,
                         format='%(asctime)s %(levelname)s %(message)s',
                         datefmt='%m-%d %H:%M:%S')
