@@ -23,7 +23,7 @@ def login(username, otp, redis_conn=None):
     """Log in with TOTP; a prior login must have succeeded and
     set up a session with the account_id and pendingotp auth, or
     with an apikey. If otp matches, this passes a sqlalchemy account
-    record back for further processing by SessionAuth._login_accepted.
+    record back for further processing by SessionAuth.login_accepted.
 
     Args:
       username (str): username or identity

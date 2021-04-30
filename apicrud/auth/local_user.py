@@ -3,18 +3,17 @@
 created 26-mar-2020 by richb@instantlinux.net
 monolith broken out 6-apr-2021
 """
-from flask import g, request
+from flask import g
 from flask_babel import _
 import logging
 from passlib.hash import sha256_crypt
 import redis.exceptions
 from sqlalchemy import or_
-from sqlalchemy.exc import DataError, IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 import string
 
 from .. import SessionAuth
-from ..utils import gen_id, identity_normalize, utcnow
+from ..utils import identity_normalize, utcnow
 from ..messaging.confirmation import Confirmation
 
 
@@ -23,92 +22,6 @@ class LocalUser(SessionAuth):
     """
     def __init__(self):
         super().__init__()
-
-    def register(self, identity, username, name, template='confirm_new',
-                 picture=None):
-        """Register a new account: create related records in database
-        and send confirmation token to new user
-
-        TODO caller still has to invoke account-create function to
-        generate record in accounts table
-
-        Args:
-          identity (str): account's primary identity, usually an email
-          username (str): account's username
-          name (str): name
-          picture (url): URL of an avatar / photo
-          template (str): template for message (confirming new user)
-        Returns:
-          tuple: the Confirmation.request dict and http response
-        """
-        if not username or not identity or not name:
-            return dict(message=_(u'all fields required')), 400
-        identity = identity_normalize(identity)
-        logmsg = dict(action='register', identity=identity,
-                      username=username)
-        try:
-            g.db.query(self.models.Account).filter_by(name=username).one()
-            msg = _(u'that username is already registered')
-            logging.warning(dict(message=msg, **logmsg))
-            return dict(message=msg), 405
-        except NoResultFound:
-            pass
-        uid = None
-        try:
-            existing = g.db.query(self.models.Person).filter_by(
-                identity=identity).one()
-            uid = existing.id
-            g.db.query(self.models.Account).filter_by(uid=uid).one()
-            msg = _(u'that email is already registered, use forgot-password')
-            logging.warning(dict(message=msg, **logmsg))
-            return dict(message=msg), 405
-        except NoResultFound:
-            pass
-        if uid:
-            try:
-                cid = g.db.query(self.models.Contact).filter_by(
-                    info=identity, type='email').one().id
-            except Exception as ex:
-                msg = 'registration trouble, error=%s' % str(ex)
-                logging.error(dict(message=msg, **logmsg))
-                return dict(message=msg), 405
-        else:
-            person = self.models.Person(
-                id=gen_id(prefix='u-'), name=name, identity=identity,
-                status='active')
-            uid = person.id
-            cid = gen_id()
-            g.db.add(person)
-            g.db.add(self.models.Contact(id=cid, uid=uid, type='email',
-                                         info=identity))
-            g.db.commit()
-            logging.info(dict(message=_(u'person added'), uid=uid, **logmsg))
-        # If browser language does not match global default language, add
-        # a profile setting
-        lang = request.accept_languages.best_match(self.config.LANGUAGES)
-        try:
-            default_lang = g.db.query(self.models.Settings).filter_by(
-                name='global').one().lang
-        except Exception:
-            default_lang = 'en'
-        if lang and lang != default_lang:
-            try:
-                g.db.add(self.models.Profile(id=gen_id(), uid=uid, item='lang',
-                                             value=lang, status='active'))
-                g.db.commit()
-            except IntegrityError:
-                # Dup entry from previous attempt
-                g.db.rollback()
-        if picture:
-            try:
-                g.db.add(self.models.Profile(
-                    id=gen_id(), uid=uid, item='picture', value=picture,
-                    status='active'))
-                g.db.commit()
-            except (DataError, IntegrityError):
-                # Dup entry from previous attempt or value too long
-                g.db.rollback()
-        return Confirmation().request(cid, template=template)
 
     def change_password(self, uid, new_password, reset_token,
                         old_password=None, verify_password=None):

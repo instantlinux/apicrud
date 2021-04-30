@@ -19,7 +19,7 @@ from ..database import db_abort
 def login(username, password):
     """Login using credentials stored in local database.  If
     successful, this passes a sqlalchemy account record back for
-    further processing by SessionAuth._login_accepted.
+    further processing by SessionAuth.login_accepted.
 
     Args:
       username (str): the username or email identity

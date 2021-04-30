@@ -26,7 +26,7 @@ class OAuth2(SessionAuth):
         """Callback from 3rd-party OAuth2 provider auth
 
         Parse the response, look up the account based on email
-        address, and pass control to SessionAuth._login_accepted
+        address, and pass control to SessionAuth.login_accepted
 
         Args:
           method (str): provider name, such as google
@@ -85,7 +85,7 @@ class OAuth2(SessionAuth):
             except NoResultFound:
                 return self._handle_unknown_user(method, user)
         logging.info(dict(usermeta=user, **logmsg))
-        return self._login_accepted(username, account, method)
+        return self.login_accepted(username, account, method)
 
     def _handle_unknown_user(self, method, usermeta):
         """Handle unknown external user access based on configured
@@ -131,7 +131,7 @@ class OAuth2(SessionAuth):
                 return ret
             account = g.db.query(self.models.Account).filter_by(
                 id=ret[0]['id']).one()
-            return self._login_accepted(username, account, method)
+            return self.login_accepted(username, account, method)
         elif self.config.LOGIN_EXTERNAL_POLICY == 'open':
             ret = self.register(identity, username, name, picture=picture)
             if ret[1] != 200:
