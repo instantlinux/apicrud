@@ -11,7 +11,7 @@ from redis.exceptions import ConnectionError, DataError
 from unittest import mock
 
 import test_base
-from apicrud import database, RateLimit, ServiceConfig
+from apicrud import database, RateLimit
 
 
 class TestRateLimit(test_base.TestBase):
@@ -58,10 +58,9 @@ class TestRateLimit(test_base.TestBase):
         self.assertEqual(response.get_json(), expected)
 
         # Turn off rate-limiting and re-try
-        ServiceConfig().set('ratelimit_enable', False)
-        response = self.call_endpoint('/account/%s' % acc, 'get')
-        self.assertEqual(response.status_code, 200)
-        ServiceConfig().set('ratelimit_enable', True)
+        with self.config_overrides(ratelimit_enable=False):
+            response = self.call_endpoint('/account/%s' % acc, 'get')
+            self.assertEqual(response.status_code, 200)
 
     @mock.patch('logging.error')
     @mock.patch('redis.Redis.pipeline')

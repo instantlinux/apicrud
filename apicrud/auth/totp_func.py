@@ -2,14 +2,12 @@
 
 created 5-apr-2021 by richb@instantlinux.net
 """
-from datetime import datetime, timedelta
 from flask import g
 from flask_babel import _
 import logging
 from hashlib import md5
 import pyotp
 from sqlalchemy.orm.exc import NoResultFound
-import time
 from urllib.parse import urlparse
 
 from .. import AccessControl, AESEncryptBin, Metrics, ServiceConfig
@@ -51,14 +49,6 @@ def login(username, otp, redis_conn=None):
         logging.info(dict(message=u'account not found', **logmsg))
         return dict(message=_(u'access denied')), 403
     logmsg['identity'] = account.owner.identity
-    if (account.invalid_attempts >= config.LOGIN_ATTEMPTS_MAX and
-        account.last_invalid_attempt + timedelta(
-            seconds=config.LOGIN_LOCKOUT_INTERVAL) > datetime.utcnow()):
-        Metrics().store('logins_fail_total')
-        time.sleep(5)
-        msg = _(u'locked out')
-        logging.warning(dict(message=msg, **logmsg))
-        return dict(username=username, message=msg), 403
     if len(otp) == Constants.MFA_BACKUP_CODELEN:
         index, valid = 0, False
         codes = AESEncryptBin(config.DB_AES_SECRET).decrypt(
@@ -74,22 +64,15 @@ def login(username, otp, redis_conn=None):
             # skip to the next 128-bit hash
             index += 16
         if not valid:
-            account.invalid_attempts += 1
-            account.last_invalid_attempt = datetime.utcnow()
-            logging.info(dict(backup_code='invalid',
-                              attempt=account.invalid_attempts, **logmsg))
-            g.db.commit()
+            logging.info(dict(backup_code='invalid', **logmsg))
             return dict(message=_(u'access denied')), 403
     elif not account.totp:
         msg = _(u'access denied')
         logging.warning(dict(message=msg, error='missing totp', **logmsg))
         return dict(message=msg), 403
     elif not pyotp.TOTP(account.totp_secret).verify(otp, valid_window=TICKS):
-        account.invalid_attempts += 1
-        account.last_invalid_attempt = datetime.utcnow()
         Metrics().store('logins_fail_total')
-        logging.info(dict(otp='invalid', attempt=account.invalid_attempts,
-                          **logmsg))
+        logging.info(dict(otp='invalid', **logmsg))
         g.db.commit()
         return dict(message=_(u'access denied')), 403
     # Block replay of same otp for next minute by setting a redis key

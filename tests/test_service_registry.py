@@ -34,8 +34,8 @@ class TestServiceRegistry(test_base.TestBase):
         ServiceRegistry().register(
             endpoints, service_name='test', instance_id='1.1.1.1')
         mock_logging.assert_called_with(dict(
-            action='service.register', created=mock.ANY, endpoints=endpoints,
-            id='1.1.1.1', ipv4='1.1.1.1', name='test',
+            action='service.register', created=mock.ANY, duration=mock.ANY,
+            endpoints=endpoints, id='1.1.1.1', ipv4='1.1.1.1', name='test',
             port=self.config.APP_PORT, public_url=self.config.PUBLIC_URL,
             redis_ip=None))
 

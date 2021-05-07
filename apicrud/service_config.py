@@ -46,7 +46,7 @@ class ServiceConfig(object):
       **kwargs: key=value pair arguments to override values
 
     Raises:
-      AttributeError if invalid specification
+      AttributeError if unrecognized or invalid schema
     """
 
     def __init__(self, file=None, models=None, reset=False, **kwargs):
@@ -82,11 +82,13 @@ class ServiceConfig(object):
                             raise AttributeError('Invalid value for %s' % key)
                     else:
                         state[key] = os.environ[key.upper()]
+                    overrides.pop(key, None)
                 elif key in overrides:
-                    if key in ('metrics',):
-                        state[key].update(overrides[key])
+                    if schema['type'] == 'object':
+                        state[key] = schema['default']
+                        state[key].update(overrides.pop(key))
                     else:
-                        state[key] = overrides[key]
+                        state[key] = overrides.pop(key)
                 elif key in kwargs:
                     state[key] = kwargs[key]
                 elif 'default' in schema:
@@ -97,6 +99,10 @@ class ServiceConfig(object):
                     raise AttributeError('No value specified for %s' % key)
             jsonschema.validate(instance=state, schema=openapi['components'][
                 'schemas']['Config'])
+            if overrides:
+                raise AttributeError(
+                    'ServiceConfig: unrecognized entries %s' %
+                    ','.join(overrides))
             # Special cases
             state['secret_key'] = binascii.unhexlify(
                 state['flask_secret_key'])
@@ -175,20 +181,6 @@ class ServiceConfig(object):
             ret[key]['scope'] = item.get('scope', 'user')
             ret[key]['style'] = item.get('style', 'grant')
         return ret
-
-    def set(self, key, value):
-        """Set a single value
-
-        Args:
-            key (str) - attribute name
-            value - new value
-        """
-        global config
-
-        jsonschema.validate(instance={key: value}, schema=state['schema'])
-        state[key] = value
-        config = namedtuple('Struct', [key.upper() for key in
-                                       state.keys()])(*state.values())
 
     @staticmethod
     def get():

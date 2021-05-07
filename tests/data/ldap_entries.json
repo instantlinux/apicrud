@@ -1,0 +1,979 @@
+{
+    "entries": [
+        {
+            "attributes": {
+                "accountExpires": "9999-12-31 23:59:59.999999+00:00",
+                "cn": "Guest",
+                "codePage": 0,
+                "countryCode": 0,
+                "description": [
+                    "Built-in account for guest access to the computer/domain"
+                ],
+                "displayName": "Guest User",
+                "distinguishedName": "CN=Guest,CN=Users,DC=test,DC=example,DC=com",
+                "instanceType": 4,
+                "isCriticalSystemObject": true,
+                "memberOf": [
+                    "CN=Guests,CN=Builtin,DC=test,DC=example,DC=com"
+                ],
+                "name": "Guest",
+                "objectCategory": "CN=Person,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com",
+                "objectClass": [
+                    "top",
+                    "person",
+                    "organizationalPerson",
+                    "user"
+                ],
+                "objectGUID": "{5c44fc4d-8662-4339-a5bd-382c20c87ed9}",
+                "objectSid": "S-1-5-21-287568226-2759590993-3602437040-501",
+                "primaryGroupID": 514,
+                "pwdLastSet": "1601-01-01 00:00:00+00:00",
+                "sAMAccountName": "Guest",
+                "sAMAccountType": 805306368,
+                "uSNChanged": 12614,
+                "uSNCreated": 10308,
+                "userAccountControl": 66082,
+                "whenChanged": "2010-10-05 13:45:57+00:00",
+                "whenCreated": "2010-10-05 13:45:57+00:00"
+            },
+            "dn": "CN=Guest,CN=Users,DC=test,DC=example,DC=com",
+            "raw": {
+                "accountExpires": [
+                    "9223372036854775807"
+                ],
+                "cn": [
+                    "Guest"
+                ],
+                "codePage": [
+                    "0"
+                ],
+                "countryCode": [
+                    "0"
+                ],
+                "description": [
+                    "Built-in account for guest access to the computer/domain"
+                ],
+                "displayName": [
+                    "Guest User"
+                ],
+                "distinguishedName": [
+                    "CN=Guest,CN=Users,DC=test,DC=example,DC=com"
+                ],
+                "instanceType": [
+                    "4"
+                ],
+                "isCriticalSystemObject": [
+                    "TRUE"
+                ],
+                "memberOf": [
+                    "CN=Guests,CN=Builtin,DC=test,DC=example,DC=com"
+                ],
+                "name": [
+                    "Guest"
+                ],
+                "objectCategory": [
+                    "CN=Person,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com"
+                ],
+                "objectClass": [
+                    "top",
+                    "person",
+                    "organizationalPerson",
+                    "user"
+                ],
+                "objectGUID": [
+                    {
+                        "encoded": "TfxEXGKGOUOlvTgsIMh+2Q==",
+                        "encoding": "base64"
+                    }
+                ],
+                "objectSid": [
+                    {
+                        "encoded": "AQUAAAAAAAUVAAAAYvEjEVEEfKSw07jW9QEAAA==",
+                        "encoding": "base64"
+                    }
+                ],
+                "primaryGroupID": [
+                    "514"
+                ],
+                "pwdLastSet": [
+                    "0"
+                ],
+                "sAMAccountName": [
+                    "Guest"
+                ],
+                "sAMAccountType": [
+                    "805306368"
+                ],
+                "uSNChanged": [
+                    "12614"
+                ],
+                "uSNCreated": [
+                    "10308"
+                ],
+                "userAccountControl": [
+                    "66082"
+                ],
+                "whenChanged": [
+                    "20101005134557.0Z"
+                ],
+                "whenCreated": [
+                    "20101005134557.0Z"
+                ]
+            }
+        },
+        {
+            "attributes": {
+                "accountExpires": "9999-12-31 23:59:59.999999+00:00",
+                "cn": "LDAP User",
+                "codePage": 0,
+                "countryCode": 0,
+                "description": [
+                    "Test account for ldapuser access to the computer/domain"
+                ],
+                "displayName": "LDAP User",
+                "distinguishedName": "CN=LDAP User,CN=Users,DC=test,DC=example,DC=com",
+                "instanceType": 4,
+                "isCriticalSystemObject": true,
+                "mail": "ldapuser@example.com",
+                "memberOf": [
+                    "CN=Guests,CN=Builtin,DC=test,DC=example,DC=com"
+                ],
+                "name": "LDAP User",
+                "objectCategory": "CN=Person,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com",
+                "objectClass": [
+                    "top",
+                    "person",
+                    "organizationalPerson",
+                    "user"
+                ],
+                "objectGUID": "{5c44fc4d-8662-4339-a5bd-382c20c87eea}",
+                "objectSid": "S-1-5-21-287568226-2759590993-3602437040-502",
+                "primaryGroupID": 514,
+                "pwdLastSet": "1601-01-01 00:00:00+00:00",
+                "sAMAccountName": "ldapuser",
+                "sAMAccountType": 805306368,
+                "uSNChanged": 12614,
+                "uSNCreated": 10308,
+                "userAccountControl": 66082,
+                "whenChanged": "2021-05-16 13:45:57+00:00",
+                "whenCreated": "2021-05-16 13:45:57+00:00"
+            },
+            "dn": "CN=LDAP User,CN=Users,DC=test,DC=example,DC=com",
+            "raw": {
+                "accountExpires": "9223372036854775807",
+                "cn": "ldapuser",
+                "codePage": "0",
+                "countryCode": "0",
+                "description": "Test account for ldapuser access to the computer/domain",
+                "displayName": "LDAP User",
+                "distinguishedName": "CN=LDAP User,CN=Users,DC=test,DC=example,DC=com",
+                "instanceType": "4",
+                "isCriticalSystemObject": "TRUE",
+                "mail": "ldapuser@example.com",
+                "memberOf": "CN=Guests,CN=Builtin,DC=test,DC=example,DC=com",
+                "name": "ldapuser",
+                "objectCategory": "CN=Person,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com",
+                "objectClass": [
+                    "top",
+                    "person",
+                    "organizationalPerson",
+                    "user"
+                ],
+                "objectGUID": {
+                        "encoded": "TfxEXGKGOUOlvTgsIMh+2R==",
+                        "encoding": "base64"
+                    },
+                "objectSid": {
+                        "encoded": "AQUAAAAAAAUVAAAAYvEjEVEEfKSw07jW9QEABB==",
+                        "encoding": "base64"
+                    },
+                "primaryGroupID": "514",
+                "pwdLastSet": "0",
+                "sAMAccountName": "ldapuser",
+                "sAMAccountType": "805306368",
+                "uSNChanged": "12614",
+                "uSNCreated": "10308",
+                "userAccountControl": "66082",
+                "whenChanged": "20210516134557.0Z",
+                "whenCreated": "20210516134557.0Z"
+            }
+        },
+        {
+            "attributes": {
+                "cn": "DnsAdmins",
+                "description": [
+                    "DNS Administrators Group"
+                ],
+                "distinguishedName": "CN=DnsAdmins,CN=Users,DC=test,DC=example,DC=com",
+                "groupType": -2147483644,
+                "instanceType": 4,
+                "name": "DnsAdmins",
+                "objectCategory": "CN=Group,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com",
+                "objectClass": [
+                    "top",
+                    "group"
+                ],
+                "objectGUID": "{cacff9ca-3adb-435c-b113-779fa7784dc4}",
+                "objectSid": "S-1-5-21-287568226-2759590993-3602437040-1101",
+                "sAMAccountName": "DnsAdmins",
+                "sAMAccountType": 536870912,
+                "uSNChanged": 12645,
+                "uSNCreated": 10528,
+                "whenChanged": "2010-10-05 13:47:06+00:00",
+                "whenCreated": "2010-10-05 13:47:06+00:00"
+            },
+            "dn": "CN=DnsAdmins,CN=Users,DC=test,DC=example,DC=com",
+            "raw": {
+                "cn": [
+                    "DnsAdmins"
+                ],
+                "description": [
+                    "DNS Administrators Group"
+                ],
+                "distinguishedName": [
+                    "CN=DnsAdmins,CN=Users,DC=test,DC=example,DC=com"
+                ],
+                "groupType": [
+                    "-2147483644"
+                ],
+                "instanceType": [
+                    "4"
+                ],
+                "name": [
+                    "DnsAdmins"
+                ],
+                "objectCategory": [
+                    "CN=Group,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com"
+                ],
+                "objectClass": [
+                    "top",
+                    "group"
+                ],
+                "objectGUID": [
+                    {
+                        "encoded": "yvnPyts6XEOxE3efp3hNxA==",
+                        "encoding": "base64"
+                    }
+                ],
+                "objectSid": [
+                    {
+                        "encoded": "AQUAAAAAAAUVAAAAYvEjEVEEfKSw07jWTQQAAA==",
+                        "encoding": "base64"
+                    }
+                ],
+                "sAMAccountName": [
+                    "DnsAdmins"
+                ],
+                "sAMAccountType": [
+                    "536870912"
+                ],
+                "uSNChanged": [
+                    "12645"
+                ],
+                "uSNCreated": [
+                    "10528"
+                ],
+                "whenChanged": [
+                    "20101005134706.0Z"
+                ],
+                "whenCreated": [
+                    "20101005134706.0Z"
+                ]
+            }
+        },
+        {
+            "attributes": {
+                "cn": "Domain Computers",
+                "description": [
+                    "All workstations and servers joined to the domain"
+                ],
+                "distinguishedName": "CN=Domain Computers,CN=Users,DC=test,DC=example,DC=com",
+                "groupType": -2147483646,
+                "instanceType": 4,
+                "isCriticalSystemObject": true,
+                "name": "Domain Computers",
+                "objectCategory": "CN=Group,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com",
+                "objectClass": [
+                    "top",
+                    "group"
+                ],
+                "objectGUID": "{fb090fcc-1108-4aea-9de1-bce2b65edb2a}",
+                "objectSid": "S-1-5-21-287568226-2759590993-3602437040-515",
+                "sAMAccountName": "Domain Computers",
+                "sAMAccountType": 268435456,
+                "uSNChanged": 12626,
+                "uSNCreated": 10318,
+                "whenChanged": "2010-10-05 13:46:25+00:00",
+                "whenCreated": "2010-10-05 13:46:25+00:00"
+            },
+            "dn": "CN=Domain Computers,CN=Users,DC=test,DC=example,DC=com",
+            "raw": {
+                "cn": [
+                    "Domain Computers"
+                ],
+                "description": [
+                    "All workstations and servers joined to the domain"
+                ],
+                "distinguishedName": [
+                    "CN=Domain Computers,CN=Users,DC=test,DC=example,DC=com"
+                ],
+                "groupType": [
+                    "-2147483646"
+                ],
+                "instanceType": [
+                    "4"
+                ],
+                "isCriticalSystemObject": [
+                    "TRUE"
+                ],
+                "name": [
+                    "Domain Computers"
+                ],
+                "objectCategory": [
+                    "CN=Group,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com"
+                ],
+                "objectClass": [
+                    "top",
+                    "group"
+                ],
+                "objectGUID": [
+                    {
+                        "encoded": "zA8J+wgR6kqd4bzitl7bKg==",
+                        "encoding": "base64"
+                    }
+                ],
+                "objectSid": [
+                    {
+                        "encoded": "AQUAAAAAAAUVAAAAYvEjEVEEfKSw07jWAwIAAA==",
+                        "encoding": "base64"
+                    }
+                ],
+                "sAMAccountName": [
+                    "Domain Computers"
+                ],
+                "sAMAccountType": [
+                    "268435456"
+                ],
+                "uSNChanged": [
+                    "12626"
+                ],
+                "uSNCreated": [
+                    "10318"
+                ],
+                "whenChanged": [
+                    "20101005134625.0Z"
+                ],
+                "whenCreated": [
+                    "20101005134625.0Z"
+                ]
+            }
+        },
+        {
+            "attributes": {
+                "adminCount": 1,
+                "cn": "Domain Admins",
+                "description": [
+                    "Designated administrators of the domain"
+                ],
+                "distinguishedName": "CN=Domain Admins,CN=Users,DC=test,DC=example,DC=com",
+                "groupType": -2147483646,
+                "instanceType": 4,
+                "isCriticalSystemObject": true,
+                "member": [
+                    "CN=Administrator,CN=Users,DC=test,DC=example,DC=com",
+                    "CN=Rich Braun,CN=Users,DC=test,DC=example,DC=com"
+                ],
+                "memberOf": [
+                    "CN=Administrators,CN=Builtin,DC=test,DC=example,DC=com",
+                    "CN=Denied RODC Password Replication Group,CN=Users,DC=test,DC=example,DC=com"
+                ],
+                "name": "Domain Admins",
+                "objectCategory": "CN=Group,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com",
+                "objectClass": [
+                    "top",
+                    "group"
+                ],
+                "objectGUID": "{22bf271b-fa19-400a-870f-ab304d5e1d2d}",
+                "objectSid": "S-1-5-21-287568226-2759590993-3602437040-512",
+                "sAMAccountName": "Domain Admins",
+                "sAMAccountType": 268435456,
+                "uSNChanged": 12729,
+                "uSNCreated": 10347,
+                "whenChanged": "2010-11-26 17:34:05+00:00",
+                "whenCreated": "2010-10-05 13:46:25+00:00"
+            },
+            "dn": "CN=Domain Admins,CN=Users,DC=test,DC=example,DC=com",
+            "raw": {
+                "adminCount": [
+                    "1"
+                ],
+                "cn": [
+                    "Domain Admins"
+                ],
+                "description": [
+                    "Designated administrators of the domain"
+                ],
+                "distinguishedName": [
+                    "CN=Domain Admins,CN=Users,DC=test,DC=example,DC=com"
+                ],
+                "groupType": [
+                    "-2147483646"
+                ],
+                "instanceType": [
+                    "4"
+                ],
+                "isCriticalSystemObject": [
+                    "TRUE"
+                ],
+                "member": [
+                    "CN=Administrator,CN=Users,DC=test,DC=example,DC=com",
+                    "CN=Rich Braun,CN=Users,DC=test,DC=example,DC=com"
+                ],
+                "memberOf": [
+                    "CN=Administrators,CN=Builtin,DC=test,DC=example,DC=com",
+                    "CN=Denied RODC Password Replication Group,CN=Users,DC=test,DC=example,DC=com"
+                ],
+                "name": [
+                    "Domain Admins"
+                ],
+                "objectCategory": [
+                    "CN=Group,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com"
+                ],
+                "objectClass": [
+                    "top",
+                    "group"
+                ],
+                "objectGUID": [
+                    {
+                        "encoded": "Gye/Ihn6CkCHD6swTV4dLQ==",
+                        "encoding": "base64"
+                    }
+                ],
+                "objectSid": [
+                    {
+                        "encoded": "AQUAAAAAAAUVAAAAYvEjEVEEfKSw07jWAAIAAA==",
+                        "encoding": "base64"
+                    }
+                ],
+                "sAMAccountName": [
+                    "Domain Admins"
+                ],
+                "sAMAccountType": [
+                    "268435456"
+                ],
+                "uSNChanged": [
+                    "12729"
+                ],
+                "uSNCreated": [
+                    "10347"
+                ],
+                "whenChanged": [
+                    "20101126173405.0Z"
+                ],
+                "whenCreated": [
+                    "20101005134625.0Z"
+                ]
+            }
+        },
+        {
+            "attributes": {
+                "adminCount": 1,
+                "cn": "Domain Controllers",
+                "description": [
+                    "All domain controllers in the domain"
+                ],
+                "distinguishedName": "CN=Domain Controllers,CN=Users,DC=test,DC=example,DC=com",
+                "groupType": -2147483646,
+                "instanceType": 4,
+                "isCriticalSystemObject": true,
+                "memberOf": [
+                    "CN=Denied RODC Password Replication Group,CN=Users,DC=test,DC=example,DC=com"
+                ],
+                "name": "Domain Controllers",
+                "objectCategory": "CN=Group,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com",
+                "objectClass": [
+                    "top",
+                    "group"
+                ],
+                "objectGUID": "{624aa711-261e-4640-aa48-d8f1f79795cd}",
+                "objectSid": "S-1-5-21-287568226-2759590993-3602437040-516",
+                "sAMAccountName": "Domain Controllers",
+                "sAMAccountType": 268435456,
+                "uSNChanged": 12682,
+                "uSNCreated": 10343,
+                "whenChanged": "2010-11-26 17:34:05+00:00",
+                "whenCreated": "2010-10-05 13:46:25+00:00"
+            },
+            "dn": "CN=Domain Controllers,CN=Users,DC=test,DC=example,DC=com",
+            "raw": {
+                "adminCount": [
+                    "1"
+                ],
+                "cn": [
+                    "Domain Controllers"
+                ],
+                "description": [
+                    "All domain controllers in the domain"
+                ],
+                "distinguishedName": [
+                    "CN=Domain Controllers,CN=Users,DC=test,DC=example,DC=com"
+                ],
+                "groupType": [
+                    "-2147483646"
+                ],
+                "instanceType": [
+                    "4"
+                ],
+                "isCriticalSystemObject": [
+                    "TRUE"
+                ],
+                "memberOf": [
+                    "CN=Denied RODC Password Replication Group,CN=Users,DC=test,DC=example,DC=com"
+                ],
+                "name": [
+                    "Domain Controllers"
+                ],
+                "objectCategory": [
+                    "CN=Group,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com"
+                ],
+                "objectClass": [
+                    "top",
+                    "group"
+                ],
+                "objectGUID": [
+                    {
+                        "encoded": "EadKYh4mQEaqSNjx95eVzQ==",
+                        "encoding": "base64"
+                    }
+                ],
+                "objectSid": [
+                    {
+                        "encoded": "AQUAAAAAAAUVAAAAYvEjEVEEfKSw07jWBAIAAA==",
+                        "encoding": "base64"
+                    }
+                ],
+                "sAMAccountName": [
+                    "Domain Controllers"
+                ],
+                "sAMAccountType": [
+                    "268435456"
+                ],
+                "uSNChanged": [
+                    "12682"
+                ],
+                "uSNCreated": [
+                    "10343"
+                ],
+                "whenChanged": [
+                    "20101126173405.0Z"
+                ],
+                "whenCreated": [
+                    "20101005134625.0Z"
+                ]
+            }
+        },
+        {
+            "attributes": {
+                "cn": "Domain Users",
+                "description": [
+                    "All domain users"
+                ],
+                "distinguishedName": "CN=Domain Users,CN=Users,DC=test,DC=example,DC=com",
+                "groupType": -2147483646,
+                "instanceType": 4,
+                "isCriticalSystemObject": true,
+                "memberOf": [
+                    "CN=Users,CN=Builtin,DC=test,DC=example,DC=com"
+                ],
+                "name": "Domain Users",
+                "objectCategory": "CN=Group,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com",
+                "objectClass": [
+                    "top",
+                    "group"
+                ],
+                "objectGUID": "{f6a4b0ab-90ba-42be-8eb9-7c23e13b3686}",
+                "objectSid": "S-1-5-21-287568226-2759590993-3602437040-513",
+                "sAMAccountName": "Domain Users",
+                "sAMAccountType": 268435456,
+                "uSNChanged": 12628,
+                "uSNCreated": 10320,
+                "whenChanged": "2010-10-05 13:46:25+00:00",
+                "whenCreated": "2010-10-05 13:46:25+00:00"
+            },
+            "dn": "CN=Domain Users,CN=Users,DC=test,DC=example,DC=com",
+            "raw": {
+                "cn": [
+                    "Domain Users"
+                ],
+                "description": [
+                    "All domain users"
+                ],
+                "distinguishedName": [
+                    "CN=Domain Users,CN=Users,DC=test,DC=example,DC=com"
+                ],
+                "groupType": [
+                    "-2147483646"
+                ],
+                "instanceType": [
+                    "4"
+                ],
+                "isCriticalSystemObject": [
+                    "TRUE"
+                ],
+                "memberOf": [
+                    "CN=Users,CN=Builtin,DC=test,DC=example,DC=com"
+                ],
+                "name": [
+                    "Domain Users"
+                ],
+                "objectCategory": [
+                    "CN=Group,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com"
+                ],
+                "objectClass": [
+                    "top",
+                    "group"
+                ],
+                "objectGUID": [
+                    {
+                        "encoded": "q7Ck9rqQvkKOuXwj4Ts2hg==",
+                        "encoding": "base64"
+                    }
+                ],
+                "objectSid": [
+                    {
+                        "encoded": "AQUAAAAAAAUVAAAAYvEjEVEEfKSw07jWAQIAAA==",
+                        "encoding": "base64"
+                    }
+                ],
+                "sAMAccountName": [
+                    "Domain Users"
+                ],
+                "sAMAccountType": [
+                    "268435456"
+                ],
+                "uSNChanged": [
+                    "12628"
+                ],
+                "uSNCreated": [
+                    "10320"
+                ],
+                "whenChanged": [
+                    "20101005134625.0Z"
+                ],
+                "whenCreated": [
+                    "20101005134625.0Z"
+                ]
+            }
+        },
+        {
+            "attributes": {
+                "accountExpires": "9999-12-31 23:59:59.999999+00:00",
+                "adminCount": 1,
+                "cn": "Administrator",
+                "codePage": 0,
+                "countryCode": 0,
+                "description": [
+                    "Built-in account for administering the computer/domain"
+                ],
+                "distinguishedName": "CN=Administrator,CN=Users,DC=test,DC=example,DC=com",
+                "instanceType": 4,
+                "isCriticalSystemObject": true,
+                "lastLogon": "2021-05-05 02:22:15.784262+00:00",
+                "lastLogonTimestamp": "2021-04-30 04:47:57.917957+00:00",
+                "logonCount": 4,
+                "memberOf": [
+                    "CN=Administrators,CN=Builtin,DC=test,DC=example,DC=com",
+                    "CN=Domain Admins,CN=Users,DC=test,DC=example,DC=com",
+                    "CN=Schema Admins,CN=Users,DC=test,DC=example,DC=com",
+                    "CN=Enterprise Admins,CN=Users,DC=test,DC=example,DC=com",
+                    "CN=Group Policy Creator Owners,CN=Users,DC=test,DC=example,DC=com"
+                ],
+                "name": "Administrator",
+                "objectCategory": "CN=Person,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com",
+                "objectClass": [
+                    "top",
+                    "person",
+                    "organizationalPerson",
+                    "user"
+                ],
+                "objectGUID": "{48e0ce6a-166c-4ca7-988d-d62845895875}",
+                "objectSid": "S-1-5-21-287568226-2759590993-3602437040-500",
+                "primaryGroupID": 513,
+                "pwdLastSet": "2010-10-05 13:38:13.890625+00:00",
+                "sAMAccountName": "Administrator",
+                "sAMAccountType": 805306368,
+                "uSNChanged": 12702,
+                "uSNCreated": 10359,
+                "userAccountControl": 66048,
+                "whenChanged": "2021-04-30 04:47:57+00:00",
+                "whenCreated": "2010-10-05 13:45:57+00:00"
+            },
+            "dn": "CN=Administrator,CN=Users,DC=test,DC=example,DC=com",
+            "raw": {
+                "accountExpires": [
+                    "9223372036854775807"
+                ],
+                "adminCount": [
+                    "1"
+                ],
+                "cn": [
+                    "Administrator"
+                ],
+                "codePage": [
+                    "0"
+                ],
+                "countryCode": [
+                    "0"
+                ],
+                "description": [
+                    "Built-in account for administering the computer/domain"
+                ],
+                "distinguishedName": [
+                    "CN=Administrator,CN=Users,DC=test,DC=example,DC=com"
+                ],
+                "instanceType": [
+                    "4"
+                ],
+                "isCriticalSystemObject": [
+                    "TRUE"
+                ],
+                "lastLogon": [
+                    "132646549357842610"
+                ],
+                "lastLogonTimestamp": [
+                    "132642316779179570"
+                ],
+                "logonCount": [
+                    "4"
+                ],
+                "memberOf": [
+                    "CN=Administrators,CN=Builtin,DC=test,DC=example,DC=com",
+                    "CN=Domain Admins,CN=Users,DC=test,DC=example,DC=com",
+                    "CN=Schema Admins,CN=Users,DC=test,DC=example,DC=com",
+                    "CN=Enterprise Admins,CN=Users,DC=test,DC=example,DC=com",
+                    "CN=Group Policy Creator Owners,CN=Users,DC=test,DC=example,DC=com"
+                ],
+                "name": [
+                    "Administrator"
+                ],
+                "objectCategory": [
+                    "CN=Person,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com"
+                ],
+                "objectClass": [
+                    "top",
+                    "person",
+                    "organizationalPerson",
+                    "user"
+                ],
+                "objectGUID": [
+                    {
+                        "encoded": "as7gSGwWp0yYjdYoRYlYdQ==",
+                        "encoding": "base64"
+                    }
+                ],
+                "objectSid": [
+                    {
+                        "encoded": "AQUAAAAAAAUVAAAAYvEjEVEEfKSw07jW9AEAAA==",
+                        "encoding": "base64"
+                    }
+                ],
+                "primaryGroupID": [
+                    "513"
+                ],
+                "pwdLastSet": [
+                    "129307594938906250"
+                ],
+                "sAMAccountName": [
+                    "Administrator"
+                ],
+                "sAMAccountType": [
+                    "805306368"
+                ],
+                "uSNChanged": [
+                    "12702"
+                ],
+                "uSNCreated": [
+                    "10359"
+                ],
+                "userAccountControl": [
+                    "66048"
+                ],
+                "whenChanged": [
+                    "20210430044757.0Z"
+                ],
+                "whenCreated": [
+                    "20101005134557.0Z"
+                ]
+            }
+        },
+        {
+            "attributes": {
+                "cn": "Users",
+                "description": [
+                    "Default container for upgraded user accounts"
+                ],
+                "distinguishedName": "CN=Users,DC=test,DC=example,DC=com",
+                "instanceType": 4,
+                "isCriticalSystemObject": true,
+                "name": "Users",
+                "objectCategory": "CN=Container,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com",
+                "objectClass": [
+                    "top",
+                    "container"
+                ],
+                "objectGUID": "{5b0a07a5-2b1f-4731-9f5e-717fab89491b}",
+                "showInAdvancedViewOnly": false,
+                "systemFlags": -1946157056,
+                "uSNChanged": 12630,
+                "uSNCreated": 10307,
+                "whenChanged": "2010-10-05 13:45:56+00:00",
+                "whenCreated": "2010-10-05 13:45:56+00:00"
+            },
+            "dn": "CN=Users,DC=test,DC=example,DC=com",
+            "raw": {
+                "cn": [
+                    "Users"
+                ],
+                "description": [
+                    "Default container for upgraded user accounts"
+                ],
+                "distinguishedName": [
+                    "CN=Users,DC=test,DC=example,DC=com"
+                ],
+                "instanceType": [
+                    "4"
+                ],
+                "isCriticalSystemObject": [
+                    "TRUE"
+                ],
+                "name": [
+                    "Users"
+                ],
+                "objectCategory": [
+                    "CN=Container,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com"
+                ],
+                "objectClass": [
+                    "top",
+                    "container"
+                ],
+                "objectGUID": [
+                    {
+                        "encoded": "pQcKWx8rMUefXnF/q4lJGw==",
+                        "encoding": "base64"
+                    }
+                ],
+                "showInAdvancedViewOnly": [
+                    "FALSE"
+                ],
+                "systemFlags": [
+                    "-1946157056"
+                ],
+                "uSNChanged": [
+                    "12630"
+                ],
+                "uSNCreated": [
+                    "10307"
+                ],
+                "whenChanged": [
+                    "20101005134556.0Z"
+                ],
+                "whenCreated": [
+                    "20101005134556.0Z"
+                ]
+            }
+        },
+        {
+            "attributes": {
+                "cn": "Domain Guests",
+                "description": [
+                    "All domain guests"
+                ],
+                "distinguishedName": "CN=Domain Guests,CN=Users,DC=test,DC=example,DC=com",
+                "groupType": -2147483646,
+                "instanceType": 4,
+                "isCriticalSystemObject": true,
+                "memberOf": [
+                    "CN=Guests,CN=Builtin,DC=test,DC=example,DC=com"
+                ],
+                "name": "Domain Guests",
+                "objectCategory": "CN=Group,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com",
+                "objectClass": [
+                    "top",
+                    "group"
+                ],
+                "objectGUID": "{5c62d3b7-7808-422b-b3ca-de7cf3901a74}",
+                "objectSid": "S-1-5-21-287568226-2759590993-3602437040-514",
+                "sAMAccountName": "Domain Guests",
+                "sAMAccountType": 268435456,
+                "uSNChanged": 12629,
+                "uSNCreated": 10321,
+                "whenChanged": "2010-10-05 13:46:25+00:00",
+                "whenCreated": "2010-10-05 13:46:25+00:00"
+            },
+            "dn": "CN=Domain Guests,CN=Users,DC=test,DC=example,DC=com",
+            "raw": {
+                "cn": [
+                    "Domain Guests"
+                ],
+                "description": [
+                    "All domain guests"
+                ],
+                "distinguishedName": [
+                    "CN=Domain Guests,CN=Users,DC=test,DC=example,DC=com"
+                ],
+                "groupType": [
+                    "-2147483646"
+                ],
+                "instanceType": [
+                    "4"
+                ],
+                "isCriticalSystemObject": [
+                    "TRUE"
+                ],
+                "memberOf": [
+                    "CN=Guests,CN=Builtin,DC=test,DC=example,DC=com"
+                ],
+                "name": [
+                    "Domain Guests"
+                ],
+                "objectCategory": [
+                    "CN=Group,CN=Schema,CN=Configuration,DC=test,DC=example,DC=com"
+                ],
+                "objectClass": [
+                    "top",
+                    "group"
+                ],
+                "objectGUID": [
+                    {
+                        "encoded": "t9NiXAh4K0Kzyt5885AadA==",
+                        "encoding": "base64"
+                    }
+                ],
+                "objectSid": [
+                    {
+                        "encoded": "AQUAAAAAAAUVAAAAYvEjEVEEfKSw07jWAgIAAA==",
+                        "encoding": "base64"
+                    }
+                ],
+                "sAMAccountName": [
+                    "Domain Guests"
+                ],
+                "sAMAccountType": [
+                    "268435456"
+                ],
+                "uSNChanged": [
+                    "12629"
+                ],
+                "uSNCreated": [
+                    "10321"
+                ],
+                "whenChanged": [
+                    "20101005134625.0Z"
+                ],
+                "whenCreated": [
+                    "20101005134625.0Z"
+                ]
+            }
+        }
+    ]
+}

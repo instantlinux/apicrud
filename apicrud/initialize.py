@@ -2,7 +2,6 @@
 
 created 9-jan-2021 by richb@instantlinux.net
 """
-from authlib.integrations.flask_client import OAuth
 import connexion
 from datetime import datetime
 from flask import abort, g, jsonify, request
@@ -11,10 +10,15 @@ import logging
 import os
 import redis
 
+# from http.client import HTTPConnection
+
 from . import database, AccessControl, AccountSettings, Metrics, RateLimit, \
     ServiceConfig, ServiceRegistry, state
+from .auth.ldap_func import ldap_init
+from .auth.oauth2_func import oauth2_init
 from .const import Constants
 from .session_manager import SessionManager
+from .utils import utcnow
 
 
 def app(application, controllers, models, path, redis_conn=None,
@@ -35,11 +39,11 @@ def app(application, controllers, models, path, redis_conn=None,
     Returns:
       obj: Flask app
     """
+    start = utcnow().timestamp()
     config = ServiceConfig(
         babel_translation_directories='i18n;%s' % os.path.join(path, 'i18n'),
         file=os.path.join(path, 'config.yaml'), models=models,
         reset=True, **kwargs).config
-    print('init: loglevel=%s' % config.LOG_LEVEL)
     logging.basicConfig(level=config.LOG_LEVEL,
                         format='%(asctime)s %(levelname)s %(message)s',
                         datefmt='%m-%d %H:%M:%S')
@@ -59,7 +63,6 @@ def app(application, controllers, models, path, redis_conn=None,
     state.config = config
     state.func_send = func_send
     state.models = models
-    state.oauth['init'] = OAuth(application.app)
     state.redis_conn = redis_conn or redis.Redis(
         host=config.REDIS_HOST, port=config.REDIS_PORT, db=0)
     ServiceRegistry().register(controllers.resources())
@@ -67,16 +70,13 @@ def app(application, controllers, models, path, redis_conn=None,
         Metrics().store(
             'api_start_timestamp', value=int(datetime.now().timestamp()))
     AccessControl().load_rbac(config.RBAC_FILE)
-    for provider in config.AUTH_PARAMS.keys():
-        client_id = os.environ.get('%s_CLIENT_ID' % provider.upper())
-        client_secret = os.environ.get('%s_CLIENT_SECRET' % provider.upper())
-        if client_id:
-            state.oauth['init'].register(name=provider, client_id=client_id,
-                                         client_secret=client_secret,
-                                         **config.AUTH_PARAMS[provider])
-            logging.info(dict(action='initialize', provider=provider))
+    if 'ldap' in config.AUTH_METHODS:
+        ldap_init(ldap_serverpool=kwargs.get('ldap_serverpool'))
+    if config.AUTH_PARAMS:
+        oauth2_init(application.app)
 
-    logging.info(dict(action='initialize_app', port=config.APP_PORT))
+    logging.info(dict(action='initialize_app', port=config.APP_PORT,
+                      duration='%.3f' % (utcnow().timestamp() - start)))
     return application.app
 
 
@@ -84,7 +84,7 @@ def before_request():
     """flask session setup - database and metrics"""
     g.db = database.get_session()
     g.session = SessionManager()
-    g.request_start_time = datetime.utcnow()
+    g.request_start_time = utcnow()
     try:
         resource = request.url_rule.rule.split('/')[3]
     except Exception:
@@ -100,16 +100,8 @@ def after_request(response):
     """flask headers and metrics - all responses get a cache-control header"""
     config = ServiceConfig().config
     response.cache_control.max_age = config.HTTP_RESPONSE_CACHE_MAX_AGE
-    if config.AUTH_SKIP_CORS:
-        try:
-            if request.url_rule.rule.split('/')[3] == 'auth':
-                response.headers['Access-Control-Allow-Origin'] = '*'
-                response.headers['Access-Control-Allow-Headers'] = (
-                    'Content-Type')
-        except (AttributeError, IndexError):
-            pass
     Metrics().store(
-        'api_request_seconds_total', value=datetime.utcnow().timestamp() -
+        'api_request_seconds_total', value=utcnow().timestamp() -
         g.request_start_time.timestamp())
     return response
 

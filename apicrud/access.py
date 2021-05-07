@@ -15,12 +15,12 @@ from sqlalchemy import or_
 from sqlalchemy.orm.exc import NoResultFound
 import yaml
 
+from . import state
 from .service_config import ServiceConfig
 from .utils import gen_id, utcnow
 
 LEVELS = {}
 POLICIES = {}
-PRIV_RES = {}
 
 
 class AccessControl(object):
@@ -75,11 +75,11 @@ class AccessControl(object):
         if POLICIES and request:
             self.policies = POLICIES['policies']
             self.privacy_levels = LEVELS['levels']
-            self.private_res = PRIV_RES['private_res']
+            self.private_res = state.private_res
             self.model = model
             self.models = ServiceConfig().models
             self.resource = model.__name__.lower() if model else None
-            self.auth = None
+            self.auth = self.auth_method = None
             header_auth = ServiceConfig().config.HEADER_AUTH_APIKEY
             self.apikey_id = None
             if header_auth in request.headers:
@@ -108,6 +108,7 @@ class AccessControl(object):
                     if ev:
                         self.auth_ids[self.primary_resource].append(ev)
                 self.account_id = g.session.get(uid, secret, 'acc')
+                self.auth_method = g.session.get(uid, secret, 'method')
                 self.identity = g.session.get(uid, secret, 'identity')
             else:
                 # For anonymous-access paths that don't require security
@@ -139,7 +140,7 @@ class AccessControl(object):
                         dict(resource='list', attr='list_id')])
                 LEVELS['levels'] = self.privacy_levels
                 POLICIES['policies'] = self.policies
-                PRIV_RES['private_res'] = self.private_res
+                state.private_res = self.private_res
 
     def with_permission(self, access, query=None, new_uid=None,
                         membership=None, id=None):

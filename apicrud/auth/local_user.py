@@ -64,7 +64,6 @@ class LocalUser(SessionAuth):
                 return dict(username=account.name, message=msg), 405
         account.password = sha256_crypt.hash(new_password)
         account.password_must_change = False
-        account.invalid_attempts = 0
         g.db.commit()
         logging.info(dict(message=_(u'changed'), **logmsg))
         return dict(id=account.id, uid=uid, username=account.name), 200

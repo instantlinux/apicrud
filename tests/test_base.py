@@ -29,8 +29,8 @@ class TestBase(TestBaseMixin, unittest.TestCase):
             test_globals['dbfile'] = tempfile.mkstemp(prefix='_db')[1]
             db_url = os.environ.get(
                 'DB_URL', 'sqlite:///%s' % test_globals['dbfile'])
-            path = os.path.join(os.path.dirname(
-                os.path.abspath(__file__)), '..', 'example')
+            path = os.path.abspath(os.path.join(os.path.dirname(
+                __file__), '..', 'example'))
             db_seed_file = os.path.join(path, '..', 'tests', 'data',
                                         'db_fixture.yaml')
             test_globals['redis'] = redis_conn = fakeredis.FakeStrictRedis(

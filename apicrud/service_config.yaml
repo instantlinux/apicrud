@@ -131,14 +131,21 @@ components:
               request_token_url: 'https://api.twitter.com/oauth/request_token'
               userinfo_endpoint: account/verify_credentials.json?include_email=true&skip_status=true
               type: oauth2
+          type: object
         auth_landing_page:
           default: '/#/login/ext'
           description: Landing page upon external login
           type: string
-        auth_skip_cors:
-          default: false
-          description: For debugging OAuth2
-          type: boolean
+        auth_methods:
+          default: [ local ]
+          description: >
+            Ordered list of allowed auth methods: if a login fails for a
+            given username and the method is not specified by the requester,
+            the next method in this list will be attempted
+          items:
+            enum: [ ldap, local, oauth2, saml ]
+            type: string
+          type: array
         babel_default_locale:
           default: en
           description: Locale default
@@ -312,6 +319,35 @@ components:
             type: string
             minLength: 2
             maxLength: 12
+        ldap_bind_password:
+          default: must.be.set
+          description: Password for backend LDAP connection
+          format: password
+          type: string
+          minLength: 10
+          maxLength: 64
+        ldap_params:
+          default:
+            attr_identity: mail
+            attr_name: sAMAccountName
+            authentication: NTLM
+            bind_dn: null
+            domain: null
+            email_domain: null
+            pool_strategy: ROUND_ROBIN
+            pool_active: true
+            pool_exhaust: 60
+            port: null
+            scheme: ldaps
+            search_base: CN=Users,DC=example,DC=com
+            search_filter: (&(sAMAccountName={user}))
+            servers: []
+          description: >
+            Parameters for LDAP / Active Directory, see LDAPParams
+            schema and ldap3 module reference https://ldap3.readthedocs.io
+          type: object
+          # Would prefer this but nesting in connexion is problematic
+          # $ref: '#/components/schemas/LDAPParams'
         log_level:
           default: info
           description: The syslog level for container logs
@@ -325,10 +361,6 @@ components:
           default: 5
           description: How many password attempts are allowed for locking
           type: integer
-        login_local:
-          default: true
-          description: Enable local username/password auth
-          type: boolean
         login_lockout_interval:
           default: 600
           description: >
@@ -342,6 +374,7 @@ components:
             reject access; onrequest means submit for approval; open means
             go through standard account registration
           enum: [ auto, closed, onrequest, open ]
+          type: string
         login_internal_policy:
           default: open
           description: >
@@ -349,6 +382,7 @@ components:
             invite; onrequest means user submits for approval; open means
             new accounts are active right away
           enum: [ closed, onrequest, open ]
+          type: string
         login_mfa_apikey:
           default: false
           description: Support MFA after apikey validation
@@ -425,6 +459,7 @@ components:
             a percentage for triggering user notification, default [0] don't
             notify. If style is grant, the counter will decrement from current
             account's grant entitlement whenever the counter is initialized.
+          type: object
         openapi_file:
           default: openapi.yaml
           description: Name of the openapi resource definition file
@@ -520,6 +555,85 @@ components:
           description: >
             Validity period of an account registration or password-reset token
           type: integer
+
+    LDAPParams:
+      description: >
+        Parameters for LDAP / Active Directory, see definitions in
+        ldap3 module https://ldap3.readthedocs.io
+      properties:
+        attr_identity:
+          default: mail
+          description: >
+            Attribute containing email address; null if you
+            specify email_domain
+          nullable: true
+          type: string
+        attr_name:
+          default: sAMAccountName
+          description: Attribute containing account name
+          type: string
+        authentication:
+          default: NTLM
+          description: LDAP auth type
+          enum: [ ANONYMOUS, NTLM, SASL, SIMPLE ]
+          type: string
+        bind_dn:
+          default: null
+          description: Optional service account for LDAP queries
+          nullable: true
+          type: string
+        domain:
+          default: null
+          description: Domain (specific to Active Directory)
+          nullable: true
+          type: string
+        email_domain:
+          default: null
+          description: >
+            Email domain, if all user email addresses are in form
+            <attr_name>@<email_domain> and the mail attribute is
+            not populated in your LDAP/AD server
+          nullable: true
+          type: string
+        pool_strategy:
+          default: ROUND_ROBIN
+          description: How multiple LDAP servers will be queried
+          enum: [ FIRST, RANDOM, ROUND_ROBIN ]
+          type: string
+        pool_active:
+          default: true
+          description: Actively check LDAP pool members
+          # type: [ boolean, number ]
+        pool_exhaust:
+          default: 60
+          description: Time before retrying unreachable server
+          # type: [ boolean, number ]
+        port:
+          default: null
+          description: TCP port number
+          minimum: 1
+          maximum: 65535
+          nullable: true
+          type: number
+        scheme:
+          default: ldaps
+          description: Server connection scheme
+          enum: [ ldap, ldaps ]
+          type: string
+        search_base:
+          default: CN=Users,DC=example,DC=com
+          description: LDAP search base
+          type: string
+        search_filter:
+          default: (&(sAMAccountName={user}))
+          description: LDAP search filter
+          type: string
+        servers:
+          default: []
+          description: DNS names or IP addresses of servers
+          type: array
+      title: LDAP Parameters
+      type: object
 
   securitySchemes:
     basic:

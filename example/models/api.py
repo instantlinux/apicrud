@@ -25,8 +25,7 @@ class Account(AsDictMixin, Base):
     __table_args__ = (
         UniqueConstraint(u'id', u'uid', name='uniq_account_user'),
     )
-    __rest_exclude__ = ('backup_codes', 'password', 'totp_secret',
-                        'invalid_attempts', 'last_invalid_attempt')
+    __rest_exclude__ = ('backup_codes', 'password', 'totp_secret')
     __rest_hybrid__ = ('totp',)
 
     id = Column(String(16), primary_key=True, unique=True)
@@ -43,8 +42,6 @@ class Account(AsDictMixin, Base):
     is_admin = Column(BOOLEAN, nullable=False, server_default="False")
     settings_id = Column(ForeignKey(u'settings.id'), nullable=False)
     last_login = Column(TIMESTAMP)
-    invalid_attempts = Column(INTEGER, nullable=False, server_default="0")
-    last_invalid_attempt = Column(TIMESTAMP)
     created = Column(TIMESTAMP, nullable=False, server_default=func.now())
     modified = Column(TIMESTAMP)
     status = Column(Enum(u'active', u'disabled'), nullable=False)

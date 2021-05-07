@@ -11,14 +11,14 @@ The essential components of a modern full-stack application include a back-end A
 Out of the box, here are some of the capabilities included in the example application. All "batteries are included" (and tested on GitLab with each version update), with no plugin version-hell mismatches to worry about later.
 
 * User-account setup, following standard security practices with password lockout and reset via email
-* Single-signon via external OAuth2 / OpenID providers (google, twitter, many others)
+* Single-signon via external OAuth2 / OpenID / Active Directory providers (google, twitter, many others)
 * Encryption-at-rest for credentials
 * Microservice discovery (feature-flagging via announced endpoints)
 * GeoIP location lookup and map display
 * Customizable per-account grant limits (such as list size, number of contacts)
 * Application and usage-billing metrics, along with a prometheus viewer
 * User-profile and settings screens
-* Authentication by password or API key
+* Authentication by password, LDAP or API key
 * MFA with Google Authenticator
 * Extensible internationalization support
 * Photo and file uploads, with a mobile-friendly photo album

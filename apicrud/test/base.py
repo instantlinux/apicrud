@@ -5,13 +5,17 @@ Mixin of shared functions for the TestBase class
 created 10-oct-2019 by richb@instantlinux.net
 """
 import base64
+from collections import namedtuple
+from contextlib import contextmanager
 from flask import g
 import json
 import jwt
+import os
+import tempfile
 import unittest
 import yaml
 
-from .. import database, ServiceConfig, SessionManager
+from .. import database, service_config, ServiceConfig, SessionManager
 
 test_globals = {}
 
@@ -120,3 +124,50 @@ class TestBaseMixin(object):
                     base_url + endpoint, headers=headers)
             g.db.remove()
             return response
+
+    @contextmanager
+    def config_overrides(self, **kwargs):
+        """Method to override ServiceConfig values, restoring upon
+        completion. In normal production, the configuration is
+        immutable until restart. This provides a test mechanism to override
+        this security-design constraint. Example usage:
+
+        with self.config_overrides(
+                login_session_limit=10, login_attempts_max=1):
+            ...tests...
+
+        Args:
+          kwargs: key/values to set
+        Returns:
+          (obj): the config object
+        """
+        config = ServiceConfig().config
+        models = ServiceConfig().models
+        saved_state = service_config.state.copy()
+        saved_config = service_config.config._asdict()
+        configfile = tempfile.mkstemp(prefix='_cfg')[1]
+
+        def _restore():
+            service_config.state = saved_state
+            service_config.config = namedtuple('Struct', [
+                key for key in saved_config.keys()])(*saved_config.values())
+            os.remove(configfile)
+
+        with open(configfile, 'w') as f:
+            yaml.dump(kwargs, f)
+        try:
+            ret = ServiceConfig(
+                file=configfile, reset=True,
+                babel_translation_directories=(
+                    config.BABEL_TRANSLATION_DIRECTORIES),
+                db_seed_file=config.DB_SEED_FILE,
+                db_migrations=config.DB_MIGRATIONS,
+                models=models, rbac_file=config.RBAC_FILE).config
+        except AttributeError:
+            _restore()
+            raise
+
+        try:
+            yield ret
+        finally:
+            _restore()

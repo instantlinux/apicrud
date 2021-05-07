@@ -9,6 +9,7 @@ import logging
 import os
 from sqlalchemy.exc import DataError, IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
+import time
 
 from . import state
 from .access import AccessControl
@@ -17,6 +18,7 @@ from .const import Constants
 from .database import db_abort
 from .messaging.confirmation import Confirmation
 from .metrics import Metrics
+from .ratelimit import RateLimit
 from .service_config import ServiceConfig
 from .service_registry import ServiceRegistry
 from .utils import gen_id, identity_normalize, utcnow
@@ -44,14 +46,16 @@ class SessionAuth(object):
         self.roles_from = roles_from
         self.redis_conn = state.redis_conn
 
-    def account_login(self, username, password, method='local', otp=None):
+    def account_login(self, username, password, method=None, otp=None,
+                      nonce=None):
         """Log in using local or OAuth2 credentials
 
         Args:
           username (str): account name or email
           password (str): credential
-          method (str): local, or google / facebook / twitter etc
+          method (str): local, ldap, or google / facebook / twitter etc
           otp (str): one-time or backup password
+          nonce (str): a nonce check value (for OAuth2: optional)
 
         Returns:
           dict:
@@ -59,33 +63,56 @@ class SessionAuth(object):
             ID of entry in settings database, and a sub-dictionary
             with mapping of endpoints registered to microservices
         """
-        from .auth import local_func, oauth2_func, totp_func
+        from .auth import ldap_func, local_func, oauth2_func, totp_func
 
         logmsg = dict(action='login', username=username, method=method)
         acc = AccessControl()
+        content, status, headers = _(u'access denied'), 403, []
+        if RateLimit(enable=True,
+                     interval=self.config.LOGIN_LOCKOUT_INTERVAL).call(
+                         limit=self.config.LOGIN_ATTEMPTS_MAX,
+                         service='login.attempt', uid=username):
+            time.sleep(5)
+            msg = _(u'locked out')
+            logging.warning(dict(message=msg, **logmsg))
+            return dict(username=username, message=msg), 403
         if acc.auth and ('pendingtotp' in acc.auth or (otp and acc.apikey_id)):
             # TODO make this pendingtotp finite-state logic more robust
             if otp:
-                ret = totp_func.login(username, otp,
-                                      redis_conn=self.redis_conn)
-                if ret[1] != 200:
-                    return ret
-                return self.login_accepted(username, ret[3], method,
-                                           headers=ret[2])
+                content, status, headers, account = totp_func.login(
+                    username, otp, redis_conn=self.redis_conn)
+                if status == 200:
+                    content, status, headers = self.login_accepted(
+                        username, account, acc.auth_method, headers=headers)
             else:
                 logging.info(dict(error='otp token omitted', **logmsg))
-                return dict(message=_(u'access denied')), 403
-        elif not method or method == 'local':
-            ret = local_func.login(username, password)
-            if ret[1] != 200:
-                return ret
-            return self.login_accepted(username, ret[2], 'local')
         elif method in self.config.AUTH_PARAMS.keys():
-            return oauth2_func.login(self.oauth, method, cache=Ocache())
+            content, status = oauth2_func.login(self.oauth, method,
+                                                nonce=nonce)
+        elif not method or method in self.config.AUTH_METHODS:
+            items = method if method else self.config.AUTH_METHODS
+            for item in items:
+                if item == 'local':
+                    content, status, account = local_func.login(username,
+                                                                password)
+                elif item == 'ldap':
+                    content, status, account = ldap_func.login(username,
+                                                               password)
+                if status == 200:
+                    method = item
+                    break
+            if status == 200:
+                content, status, headers = self.login_accepted(
+                    username, account, method)
         else:
             msg = _(u'unsupported login method')
             logging.error(dict(message=msg, **logmsg))
             return dict(message=msg), 500
+        if status in (200, 201):
+            RateLimit().reset(service='login.attempt', uid=username)
+        else:
+            Metrics().store('logins_fail_total', labels=['method=%s' % method])
+        return content, status, headers
 
     def login_accepted(self, username, account, method, headers=None):
         """Login accepted from provider: create a session
@@ -97,11 +124,6 @@ class SessionAuth(object):
           headers (dict): additional headers, such as Set-Cookie
         """
         account.last_login = utcnow()
-        account.invalid_attempts = 0
-        try:
-            g.db.commit()
-        except Exception as ex:
-            return db_abort(str(ex), action='login_accepted')
 
         # connexion doesn't support cookie auth. probably just as well,
         #  this forced me to implement a JWT design with nonce token
@@ -121,11 +143,12 @@ class SessionAuth(object):
             roles = ['person', 'pwchange']
             duration = 300
         elif not account.totp and self.config.LOGIN_MFA_REQUIRED and (
-                method == 'local' or self.config.LOGIN_MFA_EXTERNAL):
+                method in ('local', 'ldap') or self.config.LOGIN_MFA_EXTERNAL):
             roles = ['mfarequired']
             duration = 300
         elif not self.totp_bypass(account.uid) and account.totp and (
-                method == 'local' or self.config.LOGIN_MFA_EXTERNAL) and not (
+                method in ('local', 'ldap') or
+                self.config.LOGIN_MFA_EXTERNAL) and not (
                     acc.auth and 'pendingtotp' in acc.auth):
             roles = ['pendingtotp']
             logmsg['action'] = 'totp_challenge'
@@ -145,18 +168,20 @@ class SessionAuth(object):
             logmsg['apikey'] = acc.apikey_id
         logging.info(logmsg)
         ses = g.session.create(account.uid, roles, acc=account.id,
-                               identity=account.owner.identity, ttl=duration)
+                               identity=account.owner.identity,
+                               method=method, ttl=duration)
         if ses:
             retval = dict(
                 jwt_token=jwt.encode(
-                    ses, self.jwt_secret, algorithm='HS256').decode('utf-8'),
+                    ses, self.jwt_secret, algorithm='HS256'),
                 resources=ServiceRegistry().find()['url_map'],
-                settings_id=account.settings_id)
+                settings_id=account.settings_id, username=account.name)
             if hasattr(account.settings, 'default_storage_id'):
                 retval['storage_id'] = account.settings.default_storage_id
             if 'pendingtotp' not in roles:
-                Metrics().store('logins_success_total')
-            if method == 'local':
+                Metrics().store('logins_success_total', labels=['method=%s' %
+                                                                method])
+            if method in ('local', 'ldap'):
                 return retval, 201, headers
             else:
                 return redirect('%s%s?token=%s' % (
@@ -264,7 +289,17 @@ class SessionAuth(object):
             except (DataError, IntegrityError):
                 # Dup entry from previous attempt or value too long
                 g.db.rollback()
-        return Confirmation().request(cid, template=template)
+        if template:
+            return Confirmation().request(cid, template=template)
+        else:
+            try:
+                g.db.query(self.models.Contact).filter_by(
+                    id=cid).one().status = 'active'
+                g.db.commit()
+            except Exception as ex:
+                return db_abort(str(ex), rollback=True,
+                                msg=_(u'contact activation problem'), **logmsg)
+            return dict(uid=uid, message='registered'), 200
 
     def account_add(self, username, uid):
         """Add an account with the given username
@@ -289,7 +324,7 @@ class SessionAuth(object):
             g.db.commit()
         except Exception as ex:
             return db_abort(str(ex), rollback=True, **logmsg)
-        return dict(id=account.id, uid=uid), 201
+        return dict(id=account.id, uid=uid, username=username), 201
 
     def auth_params(self):
         """Get authorization info"""
@@ -311,11 +346,15 @@ class SessionAuth(object):
     def methods(self):
         """Return list of available auth methods"""
         internal_policy = self.config.LOGIN_INTERNAL_POLICY
-        if not self.config.LOGIN_LOCAL:
+        if 'local' not in self.config.AUTH_METHODS:
             internal_policy = 'closed'
-        ret = ['local'] if self.config.LOGIN_LOCAL else []
-        for method in self.config.AUTH_PARAMS.keys():
-            if os.environ.get('%s_CLIENT_ID' % method.upper()):
+        ret = []
+        for method in self.config.AUTH_METHODS:
+            if method == 'oauth2':
+                for ext_method in self.config.AUTH_PARAMS.keys():
+                    if os.environ.get('%s_CLIENT_ID' % ext_method.upper()):
+                        ret.append(ext_method)
+            else:
                 ret.append(method)
         return dict(
             items=ret, count=len(ret),
@@ -340,6 +379,8 @@ class SessionAuth(object):
         # TODO improve defaulting of member_model and resource from
         #  rbac.yaml
         resource = resource or acc.primary_resource
+        if not member_model and len(state.private_res):
+            member_model = state.private_res[0].get('resource')
         if not resource or not member_model:
             return []
         column = '%s_id' % resource
@@ -383,17 +424,3 @@ class SessionAuth(object):
             creds = request.authorization
             g.session.update(creds.username, creds.password, 'auth',
                              ':'.join(current))
-
-
-# TODO this goes away when OAuth2 debugging is done
-class Ocache(object):
-    def __init__(self):
-        if 'cache' not in OC:
-            OC['cache'] = {}
-        self.cache = OC['cache']
-
-    def set(self, key, value, expires=None):
-        self.cache[key] = value
-
-    def get(self, key):
-        return self.cache.get(key)

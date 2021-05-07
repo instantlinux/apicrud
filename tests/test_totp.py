@@ -5,6 +5,7 @@ Tests for auth TOTP
 created 6-apr-2021 by richb@instantlinux.net
 """
 
+import jwt
 import pyotp
 import pytest
 
@@ -200,3 +201,27 @@ class TestAuthTOTP(test_base.TestBase):
         db_session.remove()
         response = self.call_endpoint('/auth_totp', 'get')
         self.assertEqual(response.status_code, 403, 'generate unexpected')
+
+    def test_totp_required(self):
+        account = dict(name='Greg Cote', username='gcote123',
+                       identity='gcote123@example.com')
+        password = dict(new_password='b0M8b@dvy', verify_password='b0M8b@dvy')
+
+        response = self.call_endpoint('/account', 'post', data=account)
+        self.assertEqual(response.status_code, 201)
+        uid = response.get_json()['uid']
+
+        for call in self.mock_messaging.call_args_list:
+            password['reset_token'] = call.kwargs.get('token')
+        response = self.call_endpoint(
+            '/account_password/%s' % uid, 'put', data=password)
+        self.assertEqual(response.status_code, 200, 'put failed message=%s' %
+                         response.get_json().get('message'))
+        with self.config_overrides(login_mfa_required=True):
+            response = self.call_endpoint('/auth', 'post', data=dict(
+                username=account['username'],
+                password=password['new_password']))
+            self.assertEqual(response.status_code, 201)
+            tok = jwt.decode(response.get_json()['jwt_token'],
+                             self.config.JWT_SECRET, algorithms=['HS256'])
+            self.assertEqual(tok['auth'], 'mfarequired')
