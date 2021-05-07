@@ -60,6 +60,7 @@ class ServiceRegistry(object):
 
         global service_data
 
+        start = utils.utcnow().timestamp()
         try:
             ipv4 = socket.gethostbyname(instance_id)
         except socket.gaierror:
@@ -76,7 +77,9 @@ class ServiceRegistry(object):
         service_data['id'] = instance_id
         logging.info(dict(action='service.register', id=instance_id,
                           redis_ip=redis_ip,
-                          name=service_data['name'], **service_data['info']))
+                          name=service_data['name'], duration='%.3f' %
+                          (utils.utcnow().timestamp() - start),
+                          **service_data['info']))
         self._save_entry()
         refresh_thread = threading.Timer(1, ServiceRegistry.update, ())
         refresh_thread.start()

@@ -26,6 +26,7 @@ import yaml
 from .const import Constants
 from .session_manager import Mutex
 from .service_config import ServiceConfig
+from .utils import utcnow
 
 Base = declarative_base()
 db_engine = None
@@ -124,13 +125,15 @@ def alembic_migrate(models, version, script_location, migrate=False,
       seed_func (function): function to seed initial records in blank db
     """
 
+    start = utcnow().timestamp()
     cfg = alembic.config.Config()
     cfg.set_main_option('script_location', script_location)
     script = alembic.script.ScriptDirectory.from_config(cfg)
     env = EnvironmentContext(cfg, script)
+    logmsg = dict(action='schema_update', version=version)
     if (version == script.get_heads()[0]):
-        logging.info('action=schema_update version=%s is current' %
-                     version)
+        logging.info(dict(message='is current', duration='%.3f' %
+                          (utcnow().timestamp() - start), **logmsg))
     elif migrate:
         def _do_upgrade(revision, context):
             return script._upgrade_revs(script.get_heads(), revision)
@@ -154,8 +157,8 @@ def alembic_migrate(models, version, script_location, migrate=False,
                       verbose=True, fn=_do_upgrade)
         with env.begin_transaction():
             env.run_migrations()
-        logging.info('action=schema_update finished migration, '
-                     'version=%s' % script.get_heads()[0])
+        logging.info(dict(message='finished migration', duration='%0.3f' %
+                          (utcnow().timestamp() - start), **logmsg))
     else:
         # Not migrating: must wait
         wait_time = schema_maxtime

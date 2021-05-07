@@ -17,13 +17,18 @@ from .service_config import ServiceConfig
 
 class RateLimit(object):
     """Rate Limiting
+
+    Args:
+      enable (bool): enable limits [default: config.RATELIMIT_ENABLE]
+      interval (int): seconds to count limit [config.RATELIMIT_INTERVAL]
     """
-    def __init__(self):
+    def __init__(self, enable=False, interval=None):
         self.config = ServiceConfig().config
-        self.interval = self.config.RATELIMIT_INTERVAL
+        self.enable = enable or self.config.RATELIMIT_ENABLE
+        self.interval = interval or self.config.RATELIMIT_INTERVAL
         self.redis = state.redis_conn
 
-    def call(self, service='*', uid=None):
+    def call(self, limit=None, service='*', uid=None):
         """Apply the granted rate limit for uid to a given service
         Two redis keys are used, for even and odd intervals as measured
         modulo the Unix epoch time. The current interval's key is
@@ -33,20 +38,21 @@ class RateLimit(object):
         after the user stops sending calls.
 
         Args:
+          limit (int): limit for interval [default: from Grants]
           service (str): name of a service
           uid (str): a user ID
 
         Returns:
           bool: true if limit exceeded
         """
-        if not self.config.RATELIMIT_ENABLE:
+        if not self.enable:
             return False
         uid = uid or self._get_request_uid()
         if not uid:
             # No limit on anonymous requests, TODO make this smarter to
             #  protect against brute-force DDOS / security attacks
             return False
-        limit = Grants().get('ratelimit', uid=uid)
+        limit = limit or Grants().get('ratelimit', uid=uid)
         curr = round(time.time()) % (self.interval * 2) // self.interval
         key = 'rate:%s:%s:%d' % (service, uid, curr)
         altkey = 'rate:%s:%s:%d' % (service, uid, 0 if curr else 1)
@@ -67,6 +73,16 @@ class RateLimit(object):
                               service=service, message='limit exceeded'))
             return True
         return False
+
+    def reset(self, service='*', uid=None):
+        """Clear the current entry for a service
+
+        Args:
+          service (str): name of a service
+          uid (str): a user ID
+        """
+        self.redis.delete('rate:%s:%s:0' % (service, uid))
+        self.redis.delete('rate:%s:%s:1' % (service, uid))
 
     def _get_request_uid(self):
         """Examine headers to find uid

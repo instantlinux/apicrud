@@ -113,19 +113,10 @@ class OAuth2(SessionAuth):
             Metrics().store('logins_fail_total')
             return dict(message=msg), 403
         elif self.config.LOGIN_EXTERNAL_POLICY == 'auto':
-            # suppress the registration confirmation email
-            # TODO fix this and make this configurable
-            self.func_send = None
-            ret = self.register(identity, username, name, picture=picture)
+            ret = self.register(identity, username, name, picture=picture,
+                                template=None)
             if ret[1] != 200:
                 return ret
-            try:
-                g.db.query(self.models.Contact).filter_by(
-                    id=ret[0]['id']).one().status = 'active'
-                g.db.commit()
-            except Exception as ex:
-                return db_abort(str(ex), rollback=True,
-                                msg=_(u'contact activation problem'), **logmsg)
             ret = self.account_add(username, uid=ret[0]['uid'])
             if ret[1] != 201:
                 return ret

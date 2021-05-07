@@ -13,8 +13,10 @@ import redis
 
 from . import database, AccessControl, AccountSettings, Metrics, RateLimit, \
     ServiceConfig, ServiceRegistry, state
+from .auth.ldap_func import ldap_init
 from .const import Constants
 from .session_manager import SessionManager
+from .utils import utcnow
 
 
 def app(application, controllers, models, path, redis_conn=None,
@@ -35,11 +37,11 @@ def app(application, controllers, models, path, redis_conn=None,
     Returns:
       obj: Flask app
     """
+    start = utcnow().timestamp()
     config = ServiceConfig(
         babel_translation_directories='i18n;%s' % os.path.join(path, 'i18n'),
         file=os.path.join(path, 'config.yaml'), models=models,
         reset=True, **kwargs).config
-    print('init: loglevel=%s' % config.LOG_LEVEL)
     logging.basicConfig(level=config.LOG_LEVEL,
                         format='%(asctime)s %(levelname)s %(message)s',
                         datefmt='%m-%d %H:%M:%S')
@@ -67,6 +69,8 @@ def app(application, controllers, models, path, redis_conn=None,
         Metrics().store(
             'api_start_timestamp', value=int(datetime.now().timestamp()))
     AccessControl().load_rbac(config.RBAC_FILE)
+    if 'ldap' in config.AUTH_METHODS:
+        ldap_init(ldap_serverpool=kwargs.get('ldap_serverpool'))
     for provider in config.AUTH_PARAMS.keys():
         client_id = os.environ.get('%s_CLIENT_ID' % provider.upper())
         client_secret = os.environ.get('%s_CLIENT_SECRET' % provider.upper())
@@ -76,7 +80,8 @@ def app(application, controllers, models, path, redis_conn=None,
                                          **config.AUTH_PARAMS[provider])
             logging.info(dict(action='initialize', provider=provider))
 
-    logging.info(dict(action='initialize_app', port=config.APP_PORT))
+    logging.info(dict(action='initialize_app', port=config.APP_PORT,
+                      duration='%.3f' % (utcnow().timestamp() - start)))
     return application.app
 
 
@@ -84,7 +89,7 @@ def before_request():
     """flask session setup - database and metrics"""
     g.db = database.get_session()
     g.session = SessionManager()
-    g.request_start_time = datetime.utcnow()
+    g.request_start_time = utcnow()
     try:
         resource = request.url_rule.rule.split('/')[3]
     except Exception:
@@ -109,7 +114,7 @@ def after_request(response):
         except (AttributeError, IndexError):
             pass
     Metrics().store(
-        'api_request_seconds_total', value=datetime.utcnow().timestamp() -
+        'api_request_seconds_total', value=utcnow().timestamp() -
         g.request_start_time.timestamp())
     return response
 

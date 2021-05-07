@@ -83,7 +83,8 @@ class ServiceConfig(object):
                     else:
                         state[key] = os.environ[key.upper()]
                 elif key in overrides:
-                    if key in ('metrics',):
+                    if schema['type'] == 'object':
+                        state[key] = schema['default']
                         state[key].update(overrides[key])
                     else:
                         state[key] = overrides[key]

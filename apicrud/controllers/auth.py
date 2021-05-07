@@ -32,7 +32,7 @@ class AuthController(object):
         """
         return SessionAuth().account_login(
             body.get('username'), body.get('password'),
-            method=body.get('method', 'local'), otp=body.get('otp'))
+            method=body.get('method'), otp=body.get('otp'))
 
     def logout():
         """Logout

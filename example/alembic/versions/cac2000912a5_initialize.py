@@ -289,8 +289,6 @@ def upgrade():
     sa.Column('is_admin', sa.BOOLEAN(), server_default=sa.text('0'), nullable=False),
     sa.Column('settings_id', sa.String(length=16), nullable=False),
     sa.Column('last_login', sa.TIMESTAMP(), nullable=True),
-    sa.Column('invalid_attempts', sa.INTEGER(), server_default='0', nullable=False),
-    sa.Column('last_invalid_attempt', sa.TIMESTAMP(), nullable=True),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.Column('modified', sa.TIMESTAMP(), nullable=True),
     sa.Column('status', sa.Enum('active', 'disabled'), nullable=False),

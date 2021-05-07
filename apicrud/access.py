@@ -79,7 +79,7 @@ class AccessControl(object):
             self.model = model
             self.models = ServiceConfig().models
             self.resource = model.__name__.lower() if model else None
-            self.auth = None
+            self.auth = self.auth_method = None
             header_auth = ServiceConfig().config.HEADER_AUTH_APIKEY
             self.apikey_id = None
             if header_auth in request.headers:
@@ -108,6 +108,7 @@ class AccessControl(object):
                     if ev:
                         self.auth_ids[self.primary_resource].append(ev)
                 self.account_id = g.session.get(uid, secret, 'acc')
+                self.auth_method = g.session.get(uid, secret, 'method')
                 self.identity = g.session.get(uid, secret, 'identity')
             else:
                 # For anonymous-access paths that don't require security
