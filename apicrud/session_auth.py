@@ -46,7 +46,8 @@ class SessionAuth(object):
         self.roles_from = roles_from
         self.redis_conn = state.redis_conn
 
-    def account_login(self, username, password, method=None, otp=None):
+    def account_login(self, username, password, method=None, otp=None,
+                      nonce=None):
         """Log in using local or OAuth2 credentials
 
         Args:
@@ -54,6 +55,7 @@ class SessionAuth(object):
           password (str): credential
           method (str): local, ldap, or google / facebook / twitter etc
           otp (str): one-time or backup password
+          nonce (str): a nonce check value (for OAuth2: optional)
 
         Returns:
           dict:
@@ -85,8 +87,8 @@ class SessionAuth(object):
             else:
                 logging.info(dict(error='otp token omitted', **logmsg))
         elif method in self.config.AUTH_PARAMS.keys():
-            content, status = oauth2_func.login(self.oauth,
-                                                method, cache=Ocache())
+            content, status = oauth2_func.login(self.oauth, method,
+                                                nonce=nonce)
         elif not method or method in self.config.AUTH_METHODS:
             items = method if method else self.config.AUTH_METHODS
             for item in items:
@@ -173,7 +175,7 @@ class SessionAuth(object):
                 jwt_token=jwt.encode(
                     ses, self.jwt_secret, algorithm='HS256'),
                 resources=ServiceRegistry().find()['url_map'],
-                settings_id=account.settings_id)
+                settings_id=account.settings_id, username=account.name)
             if hasattr(account.settings, 'default_storage_id'):
                 retval['storage_id'] = account.settings.default_storage_id
             if 'pendingtotp' not in roles:
@@ -322,7 +324,7 @@ class SessionAuth(object):
             g.db.commit()
         except Exception as ex:
             return db_abort(str(ex), rollback=True, **logmsg)
-        return dict(id=account.id, uid=uid), 201
+        return dict(id=account.id, uid=uid, username=username), 201
 
     def auth_params(self):
         """Get authorization info"""

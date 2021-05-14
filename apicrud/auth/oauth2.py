@@ -2,7 +2,7 @@
 
 created 26-mar-2021 by richb@instantlinux.net
 """
-from flask import g, session as flask_session
+from flask import g
 from flask_babel import _
 import logging
 from sqlalchemy.orm.exc import NoResultFound
@@ -11,7 +11,7 @@ import string
 from .. import state
 from ..database import db_abort
 from ..metrics import Metrics
-from ..session_auth import Ocache, SessionAuth
+from ..session_auth import SessionAuth
 from ..utils import gen_id, identity_normalize
 
 
@@ -39,9 +39,6 @@ class OAuth2(SessionAuth):
             msg = _(u'login client missing')
             logging.error(dict(message=msg, **logmsg))
             return dict(message=msg), 405
-        if self.config.AUTH_SKIP_CORS:
-            flask_session['_%s_authlib_state_' % method] = Ocache().get(
-                'session_foo_state')
         try:
             token = client.authorize_access_token(
                 redirect_uri='%s%s/%s/%s' % (self.config.PUBLIC_URL,
@@ -51,6 +48,7 @@ class OAuth2(SessionAuth):
             msg = _(u'openid client failure')
             logging.warning(dict(message=msg, error=str(ex),
                                  suggest='for dev: AUTH_SKIP_CORS', **logmsg))
+            raise
             return dict(message=msg), 405
         if 'id_token' in token:
             user = client.parse_id_token(token)
