@@ -4,14 +4,8 @@ Tests for metrics
 
 created 23-feb-2021 by richb@instantlinux.net
 """
-import os
-import tempfile
-import yaml
-
 import test_base
-from apicrud import database, Metrics, ServiceConfig
-
-import models
+from apicrud import database, Metrics
 
 
 class TestMetrics(test_base.TestBase):
@@ -119,33 +113,21 @@ class TestMetrics(test_base.TestBase):
             name=grant, value=str(limit), uid=self.test_uid))
         self.assertEqual(response.status_code, 201)
 
-        configfile = tempfile.mkstemp(prefix='_cfg')[1]
-        with open(configfile, 'w') as f:
-            yaml.dump(dict(metrics=metric), f)
-        ServiceConfig(file=configfile, reset=True, models=models)
-
-        self.authorize(new_session=True)
-        for count in range(limit):
-            self.assertTrue(
+        with self.config_overrides(metrics=metric):
+            self.authorize(new_session=True)
+            for count in range(limit):
+                self.assertTrue(
+                    Metrics(
+                        uid=self.test_uid, db_session=db_session).store(grant))
+            response = self.call_endpoint(
+                '/metric?filter={"name":"%s","uid":"%s"}' % (grant,
+                                                             self.test_uid),
+                'get')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.get_json().get('items'), [
+                dict(labels=['uid=%s' % self.test_uid], name=grant, value=0)])
+            self.assertFalse(
                 Metrics(uid=self.test_uid, db_session=db_session).store(grant))
-        response = self.call_endpoint(
-            '/metric?filter={"name":"%s","uid":"%s"}' % (grant, self.test_uid),
-            'get')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get_json().get('items'), [
-            dict(labels=['uid=%s' % self.test_uid], name=grant, value=0)])
-        self.assertFalse(
-            Metrics(uid=self.test_uid, db_session=db_session).store(grant))
-
-        # Restore settings
-        path = os.path.join(os.path.abspath(os.path.join(
-            os.path.dirname(__file__), '..')), 'example')
-        ServiceConfig(reset=True, models=models,
-                      babel_translation_directories=(
-                          'i18n;%s' % os.path.join(path, 'i18n')),
-                      db_seed_file=os.path.join(path, 'db_seed.yaml'),
-                      db_migrations=os.path.join(path, 'alembic'),
-                      rbac_file='/tmp/rbac.yaml')
 
     def test_check_limit_decrement(self):
         grant = 'sms_monthly_total'
@@ -167,32 +149,19 @@ class TestMetrics(test_base.TestBase):
             name=grant, value=str(limit), uid=self.test_uid))
         self.assertEqual(response.status_code, 201)
 
-        configfile = tempfile.mkstemp(prefix='_cfg')[1]
-        with open(configfile, 'w') as f:
-            yaml.dump(dict(metrics=metric), f)
-        ServiceConfig(file=configfile, reset=True, models=models)
-
-        self.authorize(new_session=True)
-        for count in range(limit):
-            self.assertTrue(
-                Metrics(uid=self.test_uid, db_session=db_session,
-                        func_send=self.mock_messaging).store(grant))
-        self.mock_messaging.assert_called_once_with(
-            to_uid=self.test_uid, template='usage_notify',
-            period='day', percent=metric[grant]['notify'], resource=grant)
-        response = self.call_endpoint(
-            '/metric?filter={"name":"%s","uid":"%s"}' % (grant, self.test_uid),
-            'get')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get_json().get('items'), [
-            dict(labels=['uid=%s' % self.test_uid], name=grant, value=0)])
-
-        # Restore settings
-        path = os.path.join(os.path.abspath(os.path.join(
-            os.path.dirname(__file__), '..')), 'example')
-        ServiceConfig(reset=True, models=models,
-                      babel_translation_directories=(
-                          'i18n;%s' % os.path.join(path, 'i18n')),
-                      db_seed_file=os.path.join(path, 'db_seed.yaml'),
-                      db_migrations=os.path.join(path, 'alembic'),
-                      rbac_file='/tmp/rbac.yaml')
+        with self.config_overrides(metrics=metric):
+            self.authorize(new_session=True)
+            for count in range(limit):
+                self.assertTrue(
+                    Metrics(uid=self.test_uid, db_session=db_session,
+                            func_send=self.mock_messaging).store(grant))
+            self.mock_messaging.assert_called_once_with(
+                to_uid=self.test_uid, template='usage_notify',
+                period='day', percent=metric[grant]['notify'], resource=grant)
+            response = self.call_endpoint(
+                '/metric?filter={"name":"%s","uid":"%s"}' % (
+                    grant, self.test_uid),
+                'get')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.get_json().get('items'), [
+                dict(labels=['uid=%s' % self.test_uid], name=grant, value=0)])

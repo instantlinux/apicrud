@@ -39,18 +39,27 @@ def login(username, password):
     bind_dn = username
     if config.LDAP_PARAMS['domain'] and '\\' not in username:
         bind_dn = config.LDAP_PARAMS['domain'] + '\\' + username
-    try:
-        conn = LDAPConnection(
-            state.ldap_serverpool,
-            user=bind_dn, password=password, auto_bind=True,
-            authentication=config.LDAP_PARAMS['authentication'])
-    except LDAPBindError:
-        logging.info(dict(credential='invalid', **logmsg))
-        return dict(message=_(u'access denied')), 403, None
-    except Exception as ex:
-        logging.warning(dict(message='LDAP connection failure',
-                             error=str(ex), **logmsg))
-        return dict(message=_(u'access denied')), 403, None
+    if state.ldap_mock:
+        # This is an embarrassing / ugly hack due to absence of support
+        # for the bind() call in ldap3 library's MOCK_SYNC feature, along
+        # with the difficulty of patching-out the guts of ldap3.Connect
+        conn = state.ldap_mock
+        if not conn.bind():
+            logging.info(dict(credential='invalid', **logmsg))
+            return dict(message=_(u'access denied')), 403, None
+    else:
+        try:
+            conn = LDAPConnection(
+                state.ldap_serverpool,
+                user=bind_dn, password=password, auto_bind=True,
+                authentication=config.LDAP_PARAMS['authentication'])
+        except LDAPBindError:
+            logging.info(dict(credential='invalid', **logmsg))
+            return dict(message=_(u'access denied')), 403, None
+        except Exception as ex:
+            logging.warning(dict(message='LDAP connection failure',
+                                 error=str(ex), **logmsg))
+            return dict(message=_(u'access denied')), 403, None
     if state.ldap_conn:
         conn.unbind()
         conn = state.ldap_conn
@@ -64,7 +73,9 @@ def login(username, password):
             get_operational_attributes=True):
         logging.info(dict(message='search failed', **logmsg))
         return dict(message=_(u'access denied')), 403, None
-    user = conn.response[0]['attributes']
+    user = {key: ''.join(val)
+            for (key, val) in conn.response[0]['attributes'].items()
+            if type(val) is str or type(val[0]) is str}
     account_name = user.get(config.LDAP_PARAMS['attr_name'])
     if config.LDAP_PARAMS['attr_identity']:
         identity = identity_normalize(user.get(
@@ -86,7 +97,7 @@ def login(username, password):
     except Exception as ex:
         return db_abort(str(ex), **logmsg)
     if not account:
-        name = user.get('displayName')
+        name = user.get('displayName') or user.get('cn')
         username = user.get(config.LDAP_PARAMS['attr_name'])
         ses = SessionAuth()
         content, status = ses.register(identity, username, name, template=None)
@@ -100,12 +111,17 @@ def login(username, password):
     return {}, 200, account
 
 
-def ldap_init(ldap_serverpool=None):
+def ldap_init(ldap_conn=None, ldap_mock=None):
+    """Initialize LDAP server pool
+
+    Args:
+      ldap_conn (obj): an open connection (for testing)
+      ldap_mock (obj): a mock (also for testing)
+    """
     start = utcnow().timestamp()
     config = ServiceConfig().config
-    if ldap_serverpool:
-        state.ldap_serverpool = ldap_serverpool
-    elif config.LDAP_PARAMS['servers']:
+
+    if config.LDAP_PARAMS['servers']:
         state.ldap_serverpool = LDAPServerPool(
             None,
             pool_strategy=config.LDAP_PARAMS['pool_strategy'],
@@ -130,3 +146,6 @@ def ldap_init(ldap_serverpool=None):
         except Exception as ex:
             logging.error(dict(action='ldap_init', error=str(ex),
                                message='LDAP connection failure'))
+    if ldap_mock:
+        state.ldap_mock = ldap_mock
+        state.ldap_conn = ldap_conn

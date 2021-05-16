@@ -47,13 +47,6 @@ def app(application, controllers, models, path, redis_conn=None,
     logging.basicConfig(level=config.LOG_LEVEL,
                         format='%(asctime)s %(levelname)s %(message)s',
                         datefmt='%m-%d %H:%M:%S')
-    """
-    HTTPConnection.debuglevel = 1
-    logging.getLogger().setLevel(logging.DEBUG)
-    requests_log = logging.getLogger('urllib3')
-    requests_log.setLevel(logging.DEBUG)
-    requests_log.propagate = True
-    """
     logging.getLogger('werkzeug').setLevel(logging.ERROR)
     application.app.config.from_object(config)
     application.add_api(

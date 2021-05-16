@@ -379,6 +379,8 @@ class SessionAuth(object):
         # TODO improve defaulting of member_model and resource from
         #  rbac.yaml
         resource = resource or acc.primary_resource
+        if not member_model and len(state.private_res):
+            member_model = state.private_res[0].get('resource')
         if not resource or not member_model:
             return []
         column = '%s_id' % resource

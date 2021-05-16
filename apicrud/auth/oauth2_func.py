@@ -33,7 +33,6 @@ def login(oauth_reg, method, nonce=None):
                             config.BASE_URL,
                             'auth_callback', method), nonce=nonce)
         if retval.status_code == 302:
-            print('values are %s' % dir(retval))
             return dict(location=retval.location), 200
     except Exception as ex:
         error = str(ex)

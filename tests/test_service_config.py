@@ -25,25 +25,42 @@ class TestServiceConfig(test_base.TestBase):
         response = self.call_endpoint('/config', 'get')
         self.assertEqual(response.status_code, 200)
         app_config = response.get_json()
+        # TODO hack
+        app_config.pop('ldap_params')
 
         configfile = tempfile.mkstemp(prefix='_cfg')[1]
-        os.environ.pop('APPNAME', None)
+        env_save = os.environ.pop('APPNAME', None)
         with open(configfile, 'w') as f:
             yaml.dump(updates, f)
-        path = os.path.join(os.path.abspath(os.path.join(
-            os.path.dirname(__file__), '..')), 'example')
+        path = os.path.abspath(os.path.join(os.path.dirname(
+            __file__), '..', 'example'))
         ServiceConfig(file=configfile, reset=True,
                       babel_translation_directories='i18n;' + (
                           os.path.join(path, 'i18n')),
-                      db_seed_file=os.path.join(path, 'db_seed.yaml'),
+                      db_seed_file=os.path.join(path, '..', 'tests', 'data',
+                                                'db_fixture.yaml'),
                       db_migrations=os.path.join(path, 'alembic'),
                       models=models, rbac_file=app_config['rbac_file'])
         app_config.update(updates)
         app_config['log_level'] = logging.WARNING
 
         response = self.call_endpoint('/config', 'get')
+        # TODO remove hack
+        result = response.get_json()
+        result.pop('ldap_params')
+
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get_json(), app_config)
+        self.assertEqual(result, app_config)
+
+        # restore settings
+        os.environ['APPNAME'] = env_save
+        ServiceConfig(reset=True,
+                      babel_translation_directories='i18n;' + (
+                          os.path.join(path, 'i18n')),
+                      db_seed_file=os.path.join(path, '..', 'tests', 'data',
+                                                'db_fixture.yaml'),
+                      db_migrations=os.path.join(path, 'alembic'),
+                      models=models, rbac_file=app_config['rbac_file'])
         os.remove(configfile)
 
     def test_get_config_unauthorized(self):
@@ -51,41 +68,21 @@ class TestServiceConfig(test_base.TestBase):
         self.assertEqual(response.status_code, 403)
 
     def test_env_var_booleans(self):
-
         self.authorize(username=self.admin_name, password=self.admin_pw)
-        response = self.call_endpoint('/config', 'get')
-        self.assertEqual(response.status_code, 200)
-        app_config = response.get_json()
-
         os.environ['DB_GEO_SUPPORT'] = 'TRUE'
         os.environ['DEBUG'] = '0'
-        path = os.path.join(os.path.abspath(os.path.join(
-            os.path.dirname(__file__), '..')), 'example')
-        ServiceConfig(reset=True,
-                      db_seed_file=app_config['db_seed_file'],
-                      db_migrations=app_config['db_migrations'],
-                      babel_translation_directories=(
-                          'i18n;%s' % os.path.join(path, 'i18n')),
-                      rbac_file=app_config['rbac_file'])
-        app_config['db_geo_support'] = True
+        with self.config_overrides(appname='Example'):
+            response = self.call_endpoint('/config', 'get')
+            result = response.get_json()
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(result['db_geo_support'])
+            self.assertFalse(result['debug'])
 
-        response = self.call_endpoint('/config', 'get')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get_json(), app_config)
-
-        os.environ['DEBUG'] = 'NOTVALID'
-        with self.assertRaises(AttributeError):
-            ServiceConfig(reset=True)
-
-        del os.environ['DEBUG']
-        del os.environ['DB_GEO_SUPPORT']
-        # Restore settings
-        ServiceConfig(reset=True,
-                      db_seed_file=os.path.join(path, 'db_seed.yaml'),
-                      db_migrations=os.path.join(path, 'alembic'),
-                      babel_translation_directories=(
-                          'i18n;%s' % os.path.join(path, 'i18n')),
-                      models=models, rbac_file=app_config['rbac_file'])
+            os.environ['DEBUG'] = 'NOTVALID'
+            with self.assertRaises(AttributeError):
+                ServiceConfig(reset=True)
+            del os.environ['DEBUG']
+            del os.environ['DB_GEO_SUPPORT']
 
     def test_set_one_value(self):
         new_value = 'testservice'
@@ -94,10 +91,32 @@ class TestServiceConfig(test_base.TestBase):
         response = self.call_endpoint('/config', 'get')
         self.assertEqual(response.status_code, 200)
         app_config = response.get_json()
+        # TODO - remove temporary hack
+        app_config.pop('ldap_params')
 
-        ServiceConfig().set('service_name', new_value)
-        app_config['service_name'] = new_value
+        with self.config_overrides(service_name=new_value):
+            app_config['service_name'] = new_value
 
-        response = self.call_endpoint('/config', 'get')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get_json(), app_config)
+            response = self.call_endpoint('/config', 'get')
+            result = response.get_json()
+            result.pop('ldap_params')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(result, app_config)
+
+    def test_badconfig_raises_exception(self):
+        with self.assertRaises(AttributeError):
+            with self.config_overrides(invalid_entry=True):
+                pass
+
+    def test_empty_overrides_raises_exception(self):
+        with self.assertRaises(AttributeError):
+            with self.config_overrides():
+                pass
+
+    def test_metric__config_exception(self):
+        funky_metric = dict(api_calls_total=dict(
+            scope='instance', invalidkey=''))
+
+        with self.assertRaises(AttributeError):
+            with self.config_overrides(metrics=funky_metric):
+                pass

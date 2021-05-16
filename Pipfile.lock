@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "59013417c029b934a4be7735184f9e13e0b704254b7209247333a9cf3aa8469e"
+            "sha256": "01329e94589951abae275cceeae8b712e2452d5958bb226dd1a84ca4dd2b906c"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -181,6 +181,9 @@
             "version": "==20.10.2"
         },
         "connexion": {
+            "extras": [
+                "swagger-ui"
+            ],
             "hashes": [
                 "sha256:1ccfac57d4bb7adf4295ba6f5e48f5a1f66057df6a0713417766c9b5235182ee",
                 "sha256:5439e9659a89c4380d93a07acfbf3380d70be4130574de8881e5f0dfec7ad0e2"
