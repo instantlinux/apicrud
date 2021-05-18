@@ -60,6 +60,7 @@ setuptools.setup(
         'Flask-Cors>=3.0.10',
         'geocoder>=1.38.1',
         'itsdangerous>=1.1.0',
+        'ldap3>=2.9',
         'PyJWT>=2.1.0',
         'passlib>=1.7.4',
         'pycryptodomex>=3.9.9',

@@ -25,8 +25,6 @@ class TestServiceConfig(test_base.TestBase):
         response = self.call_endpoint('/config', 'get')
         self.assertEqual(response.status_code, 200)
         app_config = response.get_json()
-        # TODO hack
-        app_config.pop('ldap_params')
 
         configfile = tempfile.mkstemp(prefix='_cfg')[1]
         env_save = os.environ.pop('APPNAME', None)
@@ -45,12 +43,8 @@ class TestServiceConfig(test_base.TestBase):
         app_config['log_level'] = logging.WARNING
 
         response = self.call_endpoint('/config', 'get')
-        # TODO remove hack
-        result = response.get_json()
-        result.pop('ldap_params')
-
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(result, app_config)
+        self.assertEqual(response.get_json(), app_config)
 
         # restore settings
         os.environ['APPNAME'] = env_save
@@ -91,17 +85,13 @@ class TestServiceConfig(test_base.TestBase):
         response = self.call_endpoint('/config', 'get')
         self.assertEqual(response.status_code, 200)
         app_config = response.get_json()
-        # TODO - remove temporary hack
-        app_config.pop('ldap_params')
 
         with self.config_overrides(service_name=new_value):
             app_config['service_name'] = new_value
 
             response = self.call_endpoint('/config', 'get')
-            result = response.get_json()
-            result.pop('ldap_params')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(result, app_config)
+            self.assertEqual(response.get_json(), app_config)
 
     def test_badconfig_raises_exception(self):
         with self.assertRaises(AttributeError):

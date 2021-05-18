@@ -29,7 +29,7 @@ def login(username, otp, redis_conn=None):
       redis_conn (obj): connection to redis
 
     Returns:
-      tuple: 4 items if successful; first 2 if not
+      tuple: 4 items
         dict with error message
         http status (200 if OK)
         headers (Set-Cookie)
@@ -47,7 +47,7 @@ def login(username, otp, redis_conn=None):
         account = query.one()
     except NoResultFound:
         logging.info(dict(message=u'account not found', **logmsg))
-        return dict(message=_(u'access denied')), 403
+        return dict(message=_(u'access denied')), 403, None, None
     logmsg['identity'] = account.owner.identity
     if len(otp) == Constants.MFA_BACKUP_CODELEN:
         index, valid = 0, False
@@ -65,16 +65,16 @@ def login(username, otp, redis_conn=None):
             index += 16
         if not valid:
             logging.info(dict(backup_code='invalid', **logmsg))
-            return dict(message=_(u'access denied')), 403
+            return dict(message=_(u'access denied')), 403, None, None
     elif not account.totp:
         msg = _(u'access denied')
         logging.warning(dict(message=msg, error='missing totp', **logmsg))
-        return dict(message=msg), 403
+        return dict(message=msg), 403, None, None
     elif not pyotp.TOTP(account.totp_secret).verify(otp, valid_window=TICKS):
         Metrics().store('logins_fail_total')
         logging.info(dict(otp='invalid', **logmsg))
         g.db.commit()
-        return dict(message=_(u'access denied')), 403
+        return dict(message=_(u'access denied')), 403, None, None
     # Block replay of same otp for next minute by setting a redis key
     result, error, status = None, 'otp replay', 403
     try:
@@ -85,7 +85,7 @@ def login(username, otp, redis_conn=None):
     if not result:
         msg = _(u'access denied')
         logging.warning(dict(message=msg, error=error, **logmsg))
-        return dict(message=msg), status
+        return dict(message=msg), status, None, None
 
     headers = None
     if config.LOGIN_MFA_COOKIE_LIMIT > 0:

@@ -24,7 +24,10 @@ def login(username, password):
       password (str): password
 
     Returns:
-      tuple: dict with error message, http status (200 if OK), account object
+      tuple: 3 items
+        dict with error message
+        http status (200 if OK)
+        account (sqlalchemy query object)
     """
     models = ServiceConfig().models
     try:
@@ -43,7 +46,8 @@ def login(username, password):
     except (NoResultFound, TypeError):
         return dict(username=username, message=_(u'not valid')), 403, None
     except OperationalError as ex:
-        return db_abort(str(ex), action='login')
+        content, status = db_abort(str(ex), action='login')
+        return content, status, None
 
     if account.password == '':
         logging.error("username=%s, message='no password'" % username)

@@ -28,7 +28,10 @@ def login(username, password):
       password (str): password
 
     Returns:
-      tuple: dict with error message, http status (200 if OK), account
+      tuple: 3 items
+        dict with error message
+        http status (200 if OK)
+        account (sqlalchemy query object)
     """
     from ..session_auth import SessionAuth
 
@@ -95,7 +98,8 @@ def login(username, password):
     except NoResultFound:
         account = None
     except Exception as ex:
-        return db_abort(str(ex), **logmsg)
+        content, status = db_abort(str(ex), **logmsg)
+        return content, status, None
     if not account:
         name = user.get('displayName') or user.get('cn')
         username = user.get(config.LDAP_PARAMS['attr_name'])
