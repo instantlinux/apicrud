@@ -14,7 +14,7 @@ sphinx-markdown-tables==0.0.15
 # sphinxcontrib-openapi==0.7.0
 sphinx-rtd-theme==0.5.2
 
--r ../requirements-dev.txt
+-r req.created
 # Pillow==7.2.0
 
 # transitive dependencies

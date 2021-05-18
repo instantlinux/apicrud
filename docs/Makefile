@@ -24,10 +24,14 @@ $(VDIR)/bin/python3:
 	@echo "Creating virtual environment"
 	python3 -m venv --system-site-packages $(VENV)
 
-$(VDIR)/lib/python$(PYTHONVER)/site-packages/sphinx/application.py: python_env
+$(VDIR)/lib/python$(PYTHONVER)/site-packages/sphinx/application.py: python_env req.created
 	@echo "Installing main requirements"
 	. $(VDIR)/bin/activate && pip3 install -r requirements.txt
 py_requirements: $(VDIR)/lib/python$(PYTHONVER)/site-packages/sphinx/application.py
+
+req.created:
+# TODO remove this once conflict is resolved
+	@sed -e 's/docutils==.*//' ../requirements-dev.txt > $@
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
