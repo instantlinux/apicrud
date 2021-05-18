@@ -28,11 +28,11 @@ chardet==4.0.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2
 click==8.0.0; python_version >= '3.6'
 clickclick==20.10.2
 colorama==0.4.4; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
-connexion==2.7.0
+connexion[swagger-ui]==2.7.0
 coverage[toml]==5.5
 cryptography==3.3.2
 decorator==5.0.7; python_version >= '3.5'
-docutils==0.17.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
+docutils
 dollar-ref==0.1.3
 fakeredis==1.5.0
 flake8==3.9.1
@@ -94,7 +94,7 @@ s3transfer==0.3.7
 secretstorage==3.3.1; sys_platform == 'linux'
 six==1.15.0
 sortedcontainers==2.3.0
-sqlalchemy-utils==0.37.0
+sqlalchemy-utils==0.37.2
 sqlalchemy==1.3.24
 swagger-ui-bundle==0.0.8
 termcolor==1.1.0

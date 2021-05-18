@@ -59,7 +59,9 @@ requirements-dev.txt: python_env
 	@echo Updating Pipfile.lock and requirements-dev.txt
 	. $(VDIR)/bin/activate && pipenv lock --requirements --dev > $@ || rm $@
 	@echo "Installing dev requirements"
-	. $(VDIR)/bin/activate && pip install -r requirements-dev.txt
+	. $(VDIR)/bin/activate && pip install -r $@
+# TODO remove this when doc build works with sphinx 4.x
+	sed -i -e 's/docutils==.*/docutils/' $@
 
 test: dev_requirements apicrud/i18n/en/LC_MESSAGES/messages.mo \
 	  example/openapi.yaml

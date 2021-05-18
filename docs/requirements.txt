@@ -14,15 +14,13 @@ sphinx-markdown-tables==0.0.15
 # sphinxcontrib-openapi==0.7.0
 sphinx-rtd-theme==0.5.2
 
--r req.created
+-r ../requirements-dev.txt
 # Pillow==7.2.0
 
 # transitive dependencies
 alabaster==0.7.12
 beautifulsoup4==4.9.3
 commonmark==0.9.1
-# held back, remove when sphinx 4.x works
-docutils==0.16
 imagesize==1.2.0
 Jinja2==3.0.0
 Markdown==3.3.4
