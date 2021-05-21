@@ -5,8 +5,7 @@ APIkey controller
 created 27-dec-2020 by richb@instantlinux.net
 """
 
-from apicrud import BasicCRUD, ServiceConfig
-import models
+from apicrud import BasicCRUD, ServiceConfig, state
 
 
 class APIkeyController(BasicCRUD):
@@ -14,7 +13,7 @@ class APIkeyController(BasicCRUD):
     CRUD for API keys
     """
     def __init__(self):
-        super().__init__(resource='apikey', model=models.APIkey)
+        super().__init__(resource='apikey', model=state.models.APIkey)
 
     @staticmethod
     def create(body):

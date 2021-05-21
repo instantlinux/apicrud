@@ -73,7 +73,6 @@ This example serves a simple message-board. The `source code <https://github.com
      :toctree: stubs
      :recursive:
 
-     config
      constants
      controllers
      main

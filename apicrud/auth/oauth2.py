@@ -60,28 +60,37 @@ class OAuth2(SessionAuth):
                                  **logmsg))
             return dict(message=_(u'access denied')), 403
         try:
+            contact = g.db.query(self.models.Contact).filter_by(
+                    info=identity).one()
+        except NoResultFound:
+            return self._handle_unknown_user(method, user)
+        except Exception as ex:
+            return db_abort(str(ex), **logmsg)
+        try:
             account = g.db.query(self.models.Account).join(
                 self.models.Person).filter(
                     self.models.Person.identity == identity,
                     self.models.Account.status == 'active').one()
-            username = account.name
         except NoResultFound:
-            account = None
+            pass
         except Exception as ex:
             return db_abort(str(ex), **logmsg)
         if not account:
             try:
                 account = g.db.query(self.models.Account).join(
                     self.models.Person).join(self.models.Contact).filter(
-                    self.models.Contact.info == identity,
-                    self.models.Contact.type == 'email',
-                    self.models.Contact.status == 'active',
-                    self.models.Account.status == 'active').one()
-                username = account.name
+                        self.models.Contact.info == identity,
+                        self.models.Contact.type == 'email').one()
             except NoResultFound:
-                return self._handle_unknown_user(method, user)
-        logging.info(dict(usermeta=user, **logmsg))
-        return self.login_accepted(username, account, method)
+                logging.warning(dict(message='lookup failed', **logmsg))
+                return dict(message=_(u'access denied')), 403
+            except Exception as ex:
+                return db_abort(str(ex), **logmsg)
+        if (account.status != 'active' or account.owner.status != 'active'
+                or contact.status == 'inactive'):
+            logging.info(dict(message='disabled account', **logmsg))
+            return dict(message=_(u'access denied')), 403
+        return self.login_accepted(account.name, account, method)
 
     def _handle_unknown_user(self, method, usermeta):
         """Handle unknown external user access based on configured
@@ -101,7 +110,7 @@ class OAuth2(SessionAuth):
             identity.split('@')[0][:15],
             gen_id(length=6, prefix='',
                    chars=string.digits + string.ascii_lowercase))
-        logmsg = dict(action='login', method=method, identity=identity)
+        logmsg = dict(action='register', method=method, identity=identity)
 
         if self.config.LOGIN_EXTERNAL_POLICY == 'closed':
             msg = _(u'not valid')
@@ -118,12 +127,14 @@ class OAuth2(SessionAuth):
                 return ret
             account = g.db.query(self.models.Account).filter_by(
                 id=ret[0]['id']).one()
+            logging.info(dict(usermeta=usermeta, **logmsg))
             return self.login_accepted(username, account, method)
         elif self.config.LOGIN_EXTERNAL_POLICY == 'open':
             ret = self.register(identity, username, name, picture=picture)
             if ret[1] != 200:
                 return ret
             ret2 = self.account_add(username, uid=ret[0]['uid'])
+            logging.info(dict(usermeta=usermeta, **logmsg))
             return ret2 if ret2 == 201 else ret
 
         # TODO LOGIN_EXTERNAL_POLICY == 'onrequest'

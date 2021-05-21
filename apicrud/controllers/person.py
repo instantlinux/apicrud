@@ -3,8 +3,6 @@ import logging
 
 from apicrud import AccessControl, BasicCRUD, state, utils
 
-from models import Contact
-
 
 class PersonController(BasicCRUD):
     def __init__(self):
@@ -23,9 +21,9 @@ class PersonController(BasicCRUD):
         if retval[1] != 201:
             return retval
         self = state.controllers[request.url_rule.rule.split('/')[3]]
-        record = Contact(id=utils.gen_id(), uid=retval[0]['id'],
-                         type='email', info=body['identity'],
-                         status='unconfirmed')
+        record = state.models.Contact(
+            id=utils.gen_id(), uid=retval[0]['id'],
+            type='email', info=body['identity'], status='unconfirmed')
         g.db.add(record)
         try:
             g.db.commit()

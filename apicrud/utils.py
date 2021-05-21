@@ -53,7 +53,8 @@ def identity_normalize(identity):
     and in certain cases remove characters. This is required to secure
     against a type of attack involving password-resets: an example
     of the vulnerability is described here:
-     https://jameshfisher.com/2018/04/07/the-dots-do-matter-how-to-scam-a-gmail-user/
+
+    https://jameshfisher.com/2018/04/07/the-dots-do-matter-how-to-scam-a-gmail-user/
 
     Args:
       identity (str): a raw email address

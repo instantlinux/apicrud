@@ -71,7 +71,7 @@ def app(application, controllers, models, path, redis_conn=None,
             'api_start_timestamp', value=int(datetime.now().timestamp()))
     AccessControl().load_rbac(config.RBAC_FILE)
     if 'ldap' in config.AUTH_METHODS:
-        ldap_init(ldap_serverpool=kwargs.get('ldap_serverpool'))
+        ldap_init()
     if config.AUTH_PARAMS:
         oauth2_init(application.app)
 

@@ -39,8 +39,9 @@ class LocationController(BasicCRUD):
         """
         results, status = super(LocationController, LocationController).find(
             **kwargs)
-        for record in results['items']:
-            if 'geolat' in record:
-                access = 'r' if record['privacy'] == 'public' else None
-                geocode.with_privacy(record, access)
+        if status == 200:
+            for record in results['items']:
+                if 'geolat' in record:
+                    access = 'r' if record['privacy'] == 'public' else None
+                    geocode.with_privacy(record, access)
         return results, status

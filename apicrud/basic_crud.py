@@ -415,9 +415,9 @@ class BasicCRUD(object):
         query = acc.with_filter(query)
         try:
             results = query.slice(offset, offset + limit + 1).all()
+            retval = dict(items=[], count=query.count())
         except Exception as ex:
             return db_abort(str(ex), **logmsg)
-        retval = dict(items=[], count=query.count())
         count = 0
         for result in results[:limit]:
             record = result.as_dict()

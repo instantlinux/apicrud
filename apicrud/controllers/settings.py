@@ -2,8 +2,7 @@ from flask import g
 import logging
 from sqlalchemy.orm.exc import NoResultFound
 
-from apicrud import AccountSettings, BasicCRUD
-from models import Account
+from apicrud import AccountSettings, BasicCRUD, state
 
 
 class SettingsController(BasicCRUD):
@@ -17,7 +16,7 @@ class SettingsController(BasicCRUD):
         if retval[1] == 200:
             account_id = None
             try:
-                account_id = g.db.query(Account).filter_by(
+                account_id = g.db.query(state.models.Account).filter_by(
                     name='admin').one().id
             except NoResultFound:
                 logging.warning('action=update message="Missing admin"')
