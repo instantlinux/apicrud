@@ -68,7 +68,7 @@ test: dev_requirements apicrud/i18n/en/LC_MESSAGES/messages.mo \
 	@echo "Running pytest unit tests"
 	cd apicrud && \
 	(. $(VDIR)/bin/activate && \
-	 PYTHONPATH=..:../example python3 -m pytest $(XARGS) ../tests \
+	 PYTHONPATH=..:../example python3 -m pytest $(XARGS) -n 2 ../tests \
 	 --maxfail=$(MAXFAIL) \
 	 --durations=10 \
 	 --junitxml=../tests/results.xml \
