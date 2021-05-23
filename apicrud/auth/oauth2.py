@@ -38,7 +38,7 @@ class OAuth2(SessionAuth):
         if not client:
             msg = _(u'login client missing')
             logging.error(dict(message=msg, **logmsg))
-            return dict(message=msg), 405
+            return dict(message=msg), 500
         try:
             token = client.authorize_access_token(
                 redirect_uri='%s%s/%s/%s' % (self.config.PUBLIC_URL,
@@ -47,7 +47,7 @@ class OAuth2(SessionAuth):
         except Exception as ex:
             msg = _(u'openid client failure')
             logging.warning(dict(message=msg, error=str(ex), **logmsg))
-            return dict(message=msg), 405
+            return dict(message=msg), 500
         if 'id_token' in token:
             user = client.parse_id_token(token)
         else:
@@ -72,7 +72,7 @@ class OAuth2(SessionAuth):
                     self.models.Person.identity == identity,
                     self.models.Account.status == 'active').one()
         except NoResultFound:
-            pass
+            account = None
         except Exception as ex:
             return db_abort(str(ex), **logmsg)
         if not account:
@@ -86,8 +86,7 @@ class OAuth2(SessionAuth):
                 return dict(message=_(u'access denied')), 403
             except Exception as ex:
                 return db_abort(str(ex), **logmsg)
-        if (account.status != 'active' or account.owner.status != 'active'
-                or contact.status == 'inactive'):
+        if account.owner.status != 'active' or contact.status == 'disabled':
             logging.info(dict(message='disabled account', **logmsg))
             return dict(message=_(u'access denied')), 403
         return self.login_accepted(account.name, account, method)

@@ -250,19 +250,21 @@ class SessionAuth(object):
                 cid = g.db.query(self.models.Contact).filter_by(
                     info=identity, type='email').one().id
             except Exception as ex:
-                msg = 'registration trouble, error=%s' % str(ex)
-                logging.error(dict(message=msg, **logmsg))
-                return dict(message=msg), 405
+                return db_abort(str(ex), msg=_(u'contact lookup'), **logmsg)
         else:
             person = self.models.Person(
                 id=gen_id(prefix='u-'), name=name, identity=identity,
                 status='active')
             uid = person.id
             cid = gen_id()
-            g.db.add(person)
-            g.db.add(self.models.Contact(id=cid, uid=uid, type='email',
-                                         info=identity))
-            g.db.commit()
+            try:
+                g.db.add(person)
+                g.db.add(self.models.Contact(id=cid, uid=uid, type='email',
+                                             info=identity))
+                g.db.commit()
+            except Exception as ex:
+                return db_abort(str(ex), rollback=True,
+                                msg=_(u'contact activation problem'), **logmsg)
             logging.info(dict(message=_(u'person added'), uid=uid, **logmsg))
         # If browser language does not match global default language, add
         # a profile setting

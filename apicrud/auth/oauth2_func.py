@@ -24,19 +24,15 @@ def login(oauth_reg, method, nonce=None):
     except RuntimeError as ex:
         msg = _(u'login client missing')
         logging.error(dict(message=msg, error=str(ex), **logmsg))
-        return dict(message=msg), 405
+        return dict(message=msg), 500
     config = ServiceConfig().config
-    msg, error = _(u'openid client failure'), ''
-    try:
-        retval = client.authorize_redirect(
-            '%s%s/%s/%s' % (config.PUBLIC_URL,
-                            config.BASE_URL,
-                            'auth_callback', method), nonce=nonce)
-        if retval.status_code == 302:
-            return dict(location=retval.location), 200
-    except Exception as ex:
-        error = str(ex)
-    logging.error(dict(message=msg, error=error, **logmsg))
+    msg = _(u'openid client failure')
+    retval = client.authorize_redirect(
+        '%s%s/%s/%s' % (config.PUBLIC_URL, config.BASE_URL,
+                        'auth_callback', method), nonce=nonce)
+    if retval.status_code == 302:
+        return dict(location=retval.location), 200
+    logging.error(dict(status_code=retval.status_code, **logmsg))
     return dict(message=msg), 405
 
 

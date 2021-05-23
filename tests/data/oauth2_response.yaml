@@ -1,0 +1,153 @@
+---
+# HTTP responses for OAuth2 tests
+openid_google:
+  issuer: 'https://accounts.google.com'
+  authorization_endpoint: 'https://accounts.google.com/o/oauth2/v2/auth'
+  device_authorization_endpoint: 'https://oauth2.googleapis.com/device/code'
+  token_endpoint: 'https://oauth2.googleapis.com/token'
+  userinfo_endpoint: 'https://openidconnect.googleapis.com/v1/userinfo'
+  revocation_endpoint: 'https://oauth2.googleapis.com/revoke'
+  jwks_uri: 'https://www.googleapis.com/oauth2/v3/certs'
+  response_types_supported:
+    - code
+    - token
+    - id_token
+    - code token
+    - code id_token
+    - token id_token
+    - code token id_token
+    - none
+  subject_types_supported:
+    - public
+  id_token_signing_alg_values_supported:
+    - RS256
+  scopes_supported:
+    - openid
+    - email
+    - profile
+  token_endpoint_auth_methods_supported:
+    - client_secret_post
+    - client_secret_basic
+  claims_supported:
+    - aud
+    - email
+    - email_verified
+    - exp
+    - family_name
+    - given_name
+    - iat
+    - iss
+    - locale
+    - name
+    - picture
+    - sub
+  code_challenge_methods_supported:
+    - plain
+    - S256
+  grant_types_supported:
+    - authorization_code
+    - refresh_token
+    - 'urn:ietf:params:oauth:grant-type:device_code'
+    - 'urn:ietf:params:oauth:grant-type:jwt-bearer'
+users:
+- name: Example User
+  iss: 'https://accounts.google.com'
+  azp: 81427209327-c9674sudcht4aah93bkbpnl01np7escv.apps.googleusercontent.com
+  aud: 81427209327-c9674sudcht4aah93bkbpnl01np7escv.apps.googleusercontent.com
+  sub: '113286501677855023761'
+  email: example.user@gmail.com
+  email_verified: true
+  picture: >-
+    https://lh3.googleusercontent.com/a-/AOh14GjSeNWxamGEBVdf0YZRMZ9C3Pgd2k1DVHuPXcNb=s96-c
+  given_name: Example
+  family_name: User
+  locale: en
+- name: Elizabeth Zabielski
+  iss: 'https://accounts.google.com'
+  azp: 81427209327-c9674sudcht4aah93bkbpnl01np7escv.apps.googleusercontent.com
+  aud: 81427209327-c9674sudcht4aah93bkbpnl01np7escv.apps.googleusercontent.com
+  sub: '113286501677855023761'
+  email: elizabeth89@gmail.com
+  email_verified: true
+  gravatar_id: 7d6c0925ce9699c74e82037f88b535de
+  given_name: Elizabeth
+  family_name: Zabielski
+  locale: en
+- user:
+    id: W012A3CDE
+    team_id: T012AB3C4
+    name: spengler
+    deleted: false
+    color: 9f69e7
+    real_name: Egon Spengler
+    tz: America/Los_Angeles
+    tz_label: Pacific Daylight Time
+    tz_offset: -25200
+    profile:
+      avatar_hash: ge3b51ca72de
+      status_text: Print is dead
+      status_emoji: ":books:"
+      real_name: Egon Spengler
+      display_name: spengler
+      real_name_normalized: Egon Spengler
+      display_name_normalized: spengler
+      email: spengler@ghostbusters.example.com
+      image_original: https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg
+      image_24: https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg
+      image_32: https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg
+      image_48: https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg
+      image_72: https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg
+      image_192: https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg
+      image_512: https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg
+      team: T012AB3C4
+    is_admin: true
+    is_owner: false
+    is_primary_owner: false
+    is_restricted: false
+    is_ultra_restricted: false
+    is_bot: false
+    updated: 1502138686
+    is_app_user: false
+    has_2fa: false
+- name: monalisa octocat
+  login: octocat
+  id: 1
+  node_id: MDQ6VXNlcjE=
+  avatar_url: https://github.com/images/error/octocat_happy.gif
+  gravatar_id: ''
+  url: https://api.github.com/users/octocat
+  html_url: https://github.com/octocat
+  followers_url: https://api.github.com/users/octocat/followers
+  following_url: https://api.github.com/users/octocat/following{/other_user}
+  gists_url: https://api.github.com/users/octocat/gists{/gist_id}
+  starred_url: https://api.github.com/users/octocat/starred{/owner}{/repo}
+  subscriptions_url: https://api.github.com/users/octocat/subscriptions
+  organizations_url: https://api.github.com/users/octocat/orgs
+  repos_url: https://api.github.com/users/octocat/repos
+  events_url: https://api.github.com/users/octocat/events{/privacy}
+  received_events_url: https://api.github.com/users/octocat/received_events
+  type: User
+  site_admin: false
+  company: GitHub
+  blog: https://github.com/blog
+  location: San Francisco
+  email: octocat@github.com
+  hireable: false
+  bio: There once was...
+  public_repos: 2
+  public_gists: 1
+  followers: 20
+  following: 0
+  created_at: '2008-01-14T04:33:35Z'
+  updated_at: '2008-01-14T04:33:35Z'
+  total_private_repos: 100
+  owned_private_repos: 100
+  private_gists: 81
+  disk_usage: 10000
+  collaborators: 8
+  two_factor_authentication: true
+  plan:
+    name: Medium
+    space: 400
+    private_repos: 20
+    collaborators: 0
