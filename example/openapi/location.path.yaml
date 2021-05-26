@@ -33,6 +33,13 @@ location:
         type: integer
         minimum: 0
         maximum: 2147483647
+    - description: Cursor for pagination
+      in: query
+      name: cursor_next
+      schema:
+        type: string
+        maxLength: 64
+        format: b64string
     - description: Sort-by field
       in: query
       name: sort

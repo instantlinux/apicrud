@@ -11,7 +11,7 @@ import pytest
 import tempfile
 import unittest
 
-from apicrud import initialize, state
+from apicrud import initialize
 from apicrud.test.base import TestBaseMixin, test_globals
 import controllers
 from main import application
@@ -51,5 +51,4 @@ class TestBase(TestBaseMixin, unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.mock_messaging = state.func_send = unittest.mock.Mock()
         cls.classSetup(cls)

@@ -27,9 +27,3 @@ class APIkeyController(BasicCRUD):
         return super(APIkeyController, APIkeyController).update(
             id, body, limit_related=dict(
                 scopes=ServiceConfig().config.SCOPES_MAX))
-
-    @staticmethod
-    def delete(ids):
-        """Undelete is disabled"""
-        return super(
-            APIkeyController, APIkeyController).delete(ids, force=True)

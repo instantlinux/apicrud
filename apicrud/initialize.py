@@ -10,8 +10,6 @@ import logging
 import os
 import redis
 
-# from http.client import HTTPConnection
-
 from . import database, AccessControl, AccountSettings, Metrics, RateLimit, \
     ServiceConfig, ServiceRegistry, state
 from .auth.ldap_func import ldap_init

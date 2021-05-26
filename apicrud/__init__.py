@@ -10,7 +10,9 @@ from .service_config import ServiceConfig
 from .service_registry import ServiceRegistry
 from .session_auth import SessionAuth
 from .session_manager import SessionManager, Mutex
+from .trashcan import Trashcan
 
 __all__ = ('AccessControl', 'AccountSettings', 'AESEncrypt', 'AESEncryptBin',
            'BasicCRUD', 'Grants', 'Metrics', 'Mutex', 'RateLimit',
-           'ServiceConfig', 'ServiceRegistry', 'SessionAuth', 'SessionManager')
+           'ServiceConfig', 'ServiceRegistry', 'SessionAuth', 'SessionManager',
+           'Trashcan')

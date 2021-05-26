@@ -338,6 +338,7 @@ class SessionAuth(object):
         except Exception as ex:
             return db_abort(str(ex), action='auth_params')
         retval = dict(
+            account_id=account_id, uid=AccessControl().uid,
             resources=ServiceRegistry().find()['url_map'],
             settings_id=settings.get.id, totp=account.totp)
         storage_id = settings.get.default_storage_id

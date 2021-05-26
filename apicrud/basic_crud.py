@@ -454,8 +454,9 @@ class BasicCRUD(object):
         """
         logmsg = dict(action='create', resource='contact',
                       uid=body.get('uid'))
+        acc = AccessControl()
         if body.get('type') == 'sms':
-            if body['carrier'] is None:
+            if body.get('carrier') is None:
                 return dict(message=_(u'carrier required for sms')), 405
             elif not re.match(Constants.REGEX_PHONE, body['info']):
                 return dict(message=_(u'invalid mobile number')), 405
@@ -466,8 +467,7 @@ class BasicCRUD(object):
                 return dict(message=_(u'invalid email address')), 405
         elif 'type' in body and body.get('type') not in ['sms', 'email']:
             return dict(message='contact type not yet supported'), 405
-        if (body.get('uid') != AccessControl().uid and
-                'admin' not in AccessControl().auth):
+        if body.get('uid', acc.uid) != acc.uid and 'admin' not in acc.auth:
             logging.warning(dict(message=_(u'access denied'), **logmsg))
             return dict(message=_(u'access denied')), 403
         if not body.get('status'):
@@ -488,7 +488,7 @@ class BasicCRUD(object):
 
         logmsg = dict(action='update', id=id, info=body.get('info'))
         if body.get('type') == 'sms':
-            if body['carrier'] is None:
+            if body.get('carrier') is None:
                 return dict(message=_(u'carrier required for sms')), 405
             if not re.match(Constants.REGEX_PHONE, body['info']):
                 return dict(message=_(u'invalid mobile number')), 405

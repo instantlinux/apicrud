@@ -71,10 +71,10 @@ class TestAPIkeys(test_base.TestBase):
         response = self.call_endpoint('/apikey', 'post', data=record)
         self.assertEqual(response.status_code, 201)
         id = response.get_json()['id']
-        response = self.call_endpoint('/apikey/%s' % id, 'delete')
+        response = self.call_endpoint('/apikey/%s?force=true' % id, 'delete')
         self.assertEqual(response.status_code, 204)
 
-        # Delete is forced -- should no longer exist
+        # Delete-force -- should no longer exist
         response = self.call_endpoint('/apikey/%s' % id, 'get')
         result = response.get_json()
         self.assertEqual(response.status_code, 404)
@@ -103,43 +103,28 @@ class TestAPIkeys(test_base.TestBase):
     @pytest.mark.slow
     def test_add_too_many_apikeys(self):
         max_apikeys = self.config.DEFAULT_GRANTS.get('apikeys')
-        account = dict(
-            name='Francis Scott Key', username='fskey',
-            identity='fskey@conclave.events')
-        password = dict(new_password='5db7f#483', verify_password='5db7f#483')
 
-        response = self.call_endpoint('/account', 'post', data=account)
-        self.assertEqual(response.status_code, 201)
-        uid = response.get_json()['uid']
-        for call in self.mock_messaging.call_args_list:
-            password['reset_token'] = call.kwargs.get('token')
-        response = self.call_endpoint(
-            '/account_password/%s' % uid, 'put', data=password)
-        self.assertEqual(response.status_code, 200, 'put failed message=%s' %
-                         response.get_json().get('message'))
+        with self.scratch_account('fskey', 'Francis Scott Key') as acc:
+            response = self.call_endpoint('/grant?filter={"name":"apikeys"}',
+                                          'get')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.get_json()['items'], [dict(
+                id='%s:apikeys' % acc.uid, name='apikeys', value='2',
+                uid=acc.uid, rbac='r', status='active')])
 
-        self.authorize(username=account['username'],
-                       password=password['new_password'], new_session=True)
-
-        response = self.call_endpoint('/grant?filter={"name":"apikeys"}',
-                                      'get')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get_json()['items'], [dict(
-            id='%s:apikeys' % uid, name='apikeys', value='2', uid=uid,
-            rbac='r', status='active')])
-
-        for i in range(max_apikeys):
+            for i in range(max_apikeys):
+                response = self.call_endpoint('/apikey', 'post', data=dict(
+                    name='key-%d' % i, uid=acc.uid))
+                self.assertEqual(response.status_code, 201, 'post message=%s' %
+                                 response.get_json().get('message'))
             response = self.call_endpoint('/apikey', 'post', data=dict(
-                name='key-%d' % i, uid=uid))
-            self.assertEqual(response.status_code, 201, 'post message=%s' %
-                             response.get_json().get('message'))
-        response = self.call_endpoint('/apikey', 'post', data=dict(
-            name='key-%d' % max_apikeys, uid=uid))
-        self.assertEqual(response.status_code, 405, 'status %d unexpected, '
-                         'message=%s' % (response.status_code,
-                                         response.get_json().get('message')))
-        self.assertEqual(response.get_json(), dict(
-            message=u'user limit exceeded', allowed=max_apikeys))
+                name='key-%d' % max_apikeys, uid=acc.uid))
+            self.assertEqual(
+                response.status_code, 405, 'status %d unexpected, '
+                'message=%s' % (response.status_code,
+                                response.get_json().get('message')))
+            self.assertEqual(response.get_json(), dict(
+                message=u'user limit exceeded', allowed=max_apikeys))
 
     def test_get_apikey_restricted(self):
         """Attempt to fetch apikey from admin user
@@ -172,89 +157,61 @@ class TestAPIkeys(test_base.TestBase):
         self.assertEqual(response.get_json(), dict(message='access denied'))
 
     def test_apikey_create_and_invoke(self):
-        account = dict(name='Script Kiddie', username='skid',
-                       identity='skid@conclave.events')
         expected = dict(
-            is_admin=False, name=account['username'], owner=account['name'],
+            is_admin=False, name='skid', owner='Script Kiddie',
             password_must_change=False, rbac='dru', status='active',
             totp=False, settings_id=self.settings_id)
-        password = dict(new_password='0d9bcd-2', verify_password='0d9bcd-2')
 
-        response = self.call_endpoint('/account', 'post', data=account)
-        self.assertEqual(response.status_code, 201)
-        acc = response.get_json()['id']
-        uid = response.get_json()['uid']
-        record = dict(name='Test2', uid=uid, scopes=[self.scope_id])
+        with self.scratch_account(expected['name'], expected['owner']) as acc:
+            record = dict(name='Test2', uid=acc.uid, scopes=[self.scope_id])
+            response = self.call_endpoint('/apikey', 'post', data=record)
+            self.assertEqual(response.status_code, 201)
+            id = response.get_json()['id']
+            new_key = response.get_json()['apikey']
+            self.assertEqual(len(new_key), 41)
+            response = self.call_endpoint('/apikey/%s' % id, 'get')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.get_json()['last_used'], None)
+            response = self.call_endpoint('/logout', 'get')
+            self.assertEqual(
+                response.status_code, 200, 'get failed message=%s' %
+                response.get_json().get('message'))
 
-        for call in self.mock_messaging.call_args_list:
-            password['reset_token'] = call.kwargs.get('token')
-        response = self.call_endpoint(
-            '/account_password/%s' % uid, 'put', data=password)
-        self.assertEqual(response.status_code, 200, 'put failed message=%s' %
-                         response.get_json().get('message'))
-        self.authorize(username=account['username'],
-                       password=password['new_password'], new_session=True)
+            ret = self.authorize(apikey=new_key)
+            self.assertEqual(ret, 200, 'APIkey failed')
+            response = self.call_endpoint('/account/%s' % acc.id, 'get')
+            self.assertEqual(
+                response.status_code, 200, 'get failed message=%s' %
+                response.get_json().get('message'))
+            result = response.get_json()
+            del(result['created'])
+            del(result['last_login'])
+            expected['id'] = acc.id
+            expected['uid'] = acc.uid
+            self.assertEqual(result, expected)
 
-        response = self.call_endpoint('/apikey', 'post', data=record)
-        self.assertEqual(response.status_code, 201)
-        id = response.get_json()['id']
-        new_key = response.get_json()['apikey']
-        self.assertEqual(len(new_key), 41)
-        response = self.call_endpoint('/apikey/%s' % id, 'get')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get_json()['last_used'], None)
-        response = self.call_endpoint('/logout', 'get')
-        self.assertEqual(response.status_code, 200, 'get failed message=%s' %
-                         response.get_json().get('message'))
-
-        ret = self.authorize(apikey=new_key)
-        self.assertEqual(ret, 200, 'APIkey failed')
-        response = self.call_endpoint('/account/%s' % acc, 'get')
-        self.assertEqual(response.status_code, 200, 'get failed message=%s' %
-                         response.get_json().get('message'))
-        result = response.get_json()
-        del(result['created'])
-        del(result['last_login'])
-        expected['id'] = acc
-        expected['uid'] = uid
-        self.assertEqual(result, expected)
-
-        response = self.call_endpoint('/apikey/%s' % id, 'get')
-        self.assertEqual(response.status_code, 200)
-        self.assertNotEqual(response.get_json()['last_used'], None)
+            response = self.call_endpoint('/apikey/%s' % id, 'get')
+            self.assertEqual(response.status_code, 200)
+            self.assertNotEqual(response.get_json()['last_used'], None)
 
     @pytest.mark.slow
     @mock.patch('logging.info')
     def test_expired_apikey(self, mock_logging):
-        account = dict(name='Uncompliant Dev', username='dev1',
-                       identity='dev1@conclave.events')
-        password = dict(new_password='455#8b76', verify_password='455#8b76')
+        with self.scratch_account('dev1', 'Uncompliant Dev') as acc:
+            record = dict(
+                name='KeyExp1', uid=acc.uid, scopes=[self.scope_id],
+                expires=(datetime.utcnow() - timedelta(hours=1)).strftime(
+                    '%Y-%m-%dT%H:%M:%SZ'))
 
-        response = self.call_endpoint('/account', 'post', data=account)
-        self.assertEqual(response.status_code, 201)
-        uid = response.get_json()['uid']
-        record = dict(
-            name='KeyExp1', uid=uid, scopes=[self.scope_id],
-            expires=(datetime.utcnow() - timedelta(hours=1)).strftime(
-                '%Y-%m-%dT%H:%M:%SZ'))
+            response = self.call_endpoint('/apikey', 'post', data=record)
+            self.assertEqual(response.status_code, 201)
+            new_key = response.get_json()['apikey']
+            self.assertEqual(len(new_key), 41)
+            response = self.call_endpoint('/logout', 'get')
+            self.assertEqual(response.status_code, 200)
 
-        for call in self.mock_messaging.call_args_list:
-            password['reset_token'] = call.kwargs.get('token')
-        response = self.call_endpoint(
-            '/account_password/%s' % uid, 'put', data=password)
-        self.assertEqual(response.status_code, 200, 'put failed message=%s' %
-                         response.get_json().get('message'))
-        self.authorize(username=account['username'],
-                       password=password['new_password'], new_session=True)
-
-        response = self.call_endpoint('/apikey', 'post', data=record)
-        self.assertEqual(response.status_code, 201)
-        new_key = response.get_json()['apikey']
-        self.assertEqual(len(new_key), 41)
-        response = self.call_endpoint('/logout', 'get')
-        self.assertEqual(response.status_code, 200)
-
-        ret = self.authorize(apikey=new_key)
-        self.assertEqual(ret, 401)
-        mock_logging.assert_called_with(dict(
-            action='api_key', key_id=new_key[:8], uid=uid, message='expired'))
+            ret = self.authorize(apikey=new_key)
+            self.assertEqual(ret, 401)
+            mock_logging.assert_called_with(dict(
+                action='api_key', key_id=new_key[:8], uid=acc.uid,
+                message='expired'))

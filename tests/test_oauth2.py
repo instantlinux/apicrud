@@ -28,12 +28,12 @@ class TestAuth(test_base.TestBase):
     def setUp(self):
         os.environ['GOOGLE_CLIENT_ID'] = (
             '81427209327-c9674sudcht4aah93bkbpnl0'
-            '1np7escv.apps.googleusercontent.com')
-        os.environ['GOOGLE_CLIENT_SECRET'] = 'Xv-r5yOgDCquIUMqt33RJSkl'
+            '1np7fake.apps.googleusercontent.com')
+        os.environ['GOOGLE_CLIENT_SECRET'] = 'Xv-r5yOgDCquIUMqt33Rfake'
         fixture_path = os.path.join(os.path.dirname(os.path.abspath(
             __file__)), 'data')
         self.code = ('4%2F0AY0e-g5kPv0ekCxPxaiUnrggLHmgNRPhA'
-                     'PwrUQkXJSpfv4NtBf1Ck7_gMdo6ZWpV3MxS8Q')
+                     'PwrUQkXJSpfv4NtBf1Ck7_gMdo6ZWpV3Mfake')
         self.nonce = generate_token()
         self.privatekey = open(
             os.path.join(fixture_path, 'jwt.pem'), 'rb').read()
@@ -383,9 +383,9 @@ class TestAuth(test_base.TestBase):
     """
     # TODO these tests trigger RuntimeError: Missing "jwks_uri" in metadata
     def test_oauth2_github(self):
-        os.environ['GITHUB_CLIENT_ID'] = '42fab9bcd671453b696c'
+        os.environ['GITHUB_CLIENT_ID'] = '42fab9bcd671453bfake'
         os.environ['GITHUB_CLIENT_SECRET'] = (
-            '17db7669573f40f9b06c00a340ea8c6511d252eb')
+            '17db7669573f40f9b06c00a340ea8c6511d2fake')
         oauth2_init(self.app)
         provider = 'github'
         httpretty.register_uri(
@@ -416,8 +416,8 @@ class TestAuth(test_base.TestBase):
         self.assertEqual(response.status_code, 200)
 
     def test_oauth2_slack(self):
-        os.environ['SLACK_CLIENT_ID'] = '1922374891962.1941560170238'
-        os.environ['SLACK_CLIENT_SECRET'] = 'c85500243266464e924123355fa3c938'
+        os.environ['SLACK_CLIENT_ID'] = '1922374891962.194156017fake'
+        os.environ['SLACK_CLIENT_SECRET'] = 'c85500243266464e924123355fa3fake'
         oauth2_init(self.app)
         provider = 'slack'
         httpretty.register_uri(

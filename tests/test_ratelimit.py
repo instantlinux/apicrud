@@ -16,51 +16,40 @@ from apicrud import database, RateLimit
 
 class TestRateLimit(test_base.TestBase):
 
+    """
     def setUp(self):
         self.authorize(username=self.admin_name, password=self.admin_pw)
+    """
 
     @pytest.mark.slow
     def test_set_max_verify(self):
-        account = dict(name='Robert Morris', username='rmorris',
-                       identity='rmorris@conclave.events')
-        password = dict(new_password='x73eZrW9', verify_password='x73eZrW9')
+        username = 'rmorris'
         expected = dict(error=dict(code=429, status='Too Many Requests'),
                         message=('This user has exceeded an allotted request '
                                  'count. Try again later.'))
         maxcalls = 3
 
-        # Make a new account
-        response = self.call_endpoint('/account', 'post', data=account)
-        self.assertEqual(response.status_code, 201)
-        acc = response.get_json()['id']
-        uid = response.get_json()['uid']
+        with self.scratch_account(username, 'Robert Morris') as acc:
+            # Set the account's ratelimit
+            self.authorize(username=self.admin_name, password=self.admin_pw)
+            record = dict(name='ratelimit', value=str(maxcalls), uid=acc.uid)
+            response = self.call_endpoint('/grant', 'post', data=record)
+            self.assertEqual(response.status_code, 201)
 
-        for call in self.mock_messaging.call_args_list:
-            password['reset_token'] = call.kwargs.get('token')
-        response = self.call_endpoint(
-            '/account_password/%s' % uid, 'put', data=password)
-        self.assertEqual(response.status_code, 200, 'put failed message=%s' %
-                         response.get_json().get('message'))
+            # Authorize and test the limit
+            self.authorize(username=username, password=acc.password,
+                           new_session=True)
+            for call in range(maxcalls - 1):
+                response = self.call_endpoint('/account/%s' % acc.id, 'get')
+                self.assertEqual(response.status_code, 200)
+            response = self.call_endpoint('/account/%s' % acc.id, 'get')
+            self.assertEqual(response.status_code, 429, 'expecting rate-limit')
+            self.assertEqual(response.get_json(), expected)
 
-        # Set the account's ratelimit
-        record = dict(name='ratelimit', value=str(maxcalls), uid=uid)
-        response = self.call_endpoint('/grant', 'post', data=record)
-        self.assertEqual(response.status_code, 201)
-
-        # Authorize and test the limit
-        self.authorize(username=account['username'],
-                       password=password['new_password'], new_session=True)
-        for call in range(maxcalls):
-            response = self.call_endpoint('/account/%s' % acc, 'get')
-            self.assertEqual(response.status_code, 200)
-        response = self.call_endpoint('/account/%s' % acc, 'get')
-        self.assertEqual(response.status_code, 429, 'expecting rate-limit')
-        self.assertEqual(response.get_json(), expected)
-
-        # Turn off rate-limiting and re-try
-        with self.config_overrides(ratelimit_enable=False):
-            response = self.call_endpoint('/account/%s' % acc, 'get')
-            self.assertEqual(response.status_code, 200)
+            # Turn off rate-limiting and re-try
+            with self.config_overrides(ratelimit_enable=False):
+                response = self.call_endpoint('/account/%s' % acc.id, 'get')
+                self.assertEqual(response.status_code, 200)
 
     @mock.patch('logging.error')
     @mock.patch('redis.Redis.pipeline')

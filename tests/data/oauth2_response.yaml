@@ -52,8 +52,8 @@ openid_google:
 users:
 - name: Example User
   iss: 'https://accounts.google.com'
-  azp: 81427209327-c9674sudcht4aah93bkbpnl01np7escv.apps.googleusercontent.com
-  aud: 81427209327-c9674sudcht4aah93bkbpnl01np7escv.apps.googleusercontent.com
+  azp: 81427209327-c9674sudcht4aah93bkbpnl01np7fake.apps.googleusercontent.com
+  aud: 81427209327-c9674sudcht4aah93bkbpnl01np7fake.apps.googleusercontent.com
   sub: '113286501677855023761'
   email: example.user@gmail.com
   email_verified: true
@@ -64,8 +64,8 @@ users:
   locale: en
 - name: Elizabeth Zabielski
   iss: 'https://accounts.google.com'
-  azp: 81427209327-c9674sudcht4aah93bkbpnl01np7escv.apps.googleusercontent.com
-  aud: 81427209327-c9674sudcht4aah93bkbpnl01np7escv.apps.googleusercontent.com
+  azp: 81427209327-c9674sudcht4aah93bkbpnl01np7fake.apps.googleusercontent.com
+  aud: 81427209327-c9674sudcht4aah93bkbpnl01np7fake.apps.googleusercontent.com
   sub: '113286501677855023761'
   email: elizabeth89@gmail.com
   email_verified: true

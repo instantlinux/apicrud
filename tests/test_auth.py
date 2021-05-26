@@ -17,6 +17,7 @@ class TestAuth(test_base.TestBase):
 
     def test_auth_params(self):
         expected = dict(
+            account_id=self.account_id, uid=self.test_uid,
             resources=ServiceRegistry().find()['url_map'],
             settings_id=self.settings_id, totp=False)
 

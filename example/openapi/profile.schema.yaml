@@ -52,7 +52,6 @@ Profile:
       type: string
   required:
   - item
-  - uid
   title: a profile item
   type: object
   xml:

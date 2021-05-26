@@ -111,51 +111,37 @@ class TestContacts(test_base.TestBase):
     @pytest.mark.slow
     def test_add_too_many_contacts(self):
         max_contacts = self.config.DEFAULT_GRANTS.get('contacts')
-        account = dict(
-            name='Robin Smith', username='rsmith',
-            identity='rsmith@conclave.events')
-        password = dict(new_password='dC5$#xHg', verify_password='dC5$#xHg')
         contact = dict(
             carrier=None, label='home', type='email', privacy='invitee')
 
-        response = self.call_endpoint('/account', 'post', data=account)
-        self.assertEqual(response.status_code, 201)
-        uid = response.get_json()['uid']
-        for call in self.mock_messaging.call_args_list:
-            password['reset_token'] = call.kwargs.get('token')
-        response = self.call_endpoint(
-            '/account_password/%s' % uid, 'put', data=password)
-        self.assertEqual(response.status_code, 200, 'put failed message=%s' %
-                         response.get_json().get('message'))
+        with self.scratch_account('rsmith', 'Robin Smith') as acc:
+            response = self.call_endpoint('/grant?filter={"name":"contacts"}',
+                                          'get')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.get_json()['items'], [dict(
+                id='%s:contacts' % acc.uid, name='contacts', value='8',
+                uid=acc.uid, rbac='r', status='active')])
 
-        self.authorize(username=account['username'],
-                       password=password['new_password'], new_session=True)
-
-        response = self.call_endpoint('/grant?filter={"name":"contacts"}',
-                                      'get')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get_json()['items'], [dict(
-            id='%s:contacts' % uid, name='contacts', value='8', uid=uid,
-            rbac='r', status='active')])
-
-        calls = []
-        for i in range(max_contacts - 1):
+            calls = []
+            for i in range(max_contacts - 1):
+                response = self.call_endpoint('/contact', 'post', data=dict(
+                    info='email%d@conclave.events' % i,
+                    uid=acc.uid, **contact))
+                self.assertEqual(response.status_code, 201, 'post message=%s' %
+                                 response.get_json().get('message'))
+                calls.append(
+                    mock.call(
+                        to=response.get_json().get('id'),
+                        template='contact_add', token=mock.ANY, type='email'))
             response = self.call_endpoint('/contact', 'post', data=dict(
-                info='email%d@conclave.events' % i, uid=uid, **contact))
-            self.assertEqual(response.status_code, 201, 'post message=%s' %
-                             response.get_json().get('message'))
-            calls.append(
-                mock.call(
-                    to=response.get_json().get('id'),
-                    template='contact_add', token=mock.ANY, type='email'))
-        response = self.call_endpoint('/contact', 'post', data=dict(
-            info='email%d@conclave.events' % max_contacts, uid=uid,
-            **contact))
-        self.assertEqual(response.status_code, 405, 'unexpected message=%s' %
-                         response.get_json().get('message'))
-        self.assertEqual(response.get_json(), dict(
-            message=u'user limit exceeded', allowed=max_contacts))
-        self.mock_messaging.assert_has_calls(calls)
+                info='email%d@conclave.events' % max_contacts, uid=acc.uid,
+                **contact))
+            self.assertEqual(
+                response.status_code, 405, 'unexpected message=%s' %
+                response.get_json().get('message'))
+            self.assertEqual(response.get_json(), dict(
+                message=u'user limit exceeded', allowed=max_contacts))
+            self.mock_messaging.assert_has_calls(calls)
 
     def test_get_contact_restricted(self):
         """Attempt to fetch private contact from an unprivileged user

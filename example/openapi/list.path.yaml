@@ -33,6 +33,13 @@ list:
         type: integer
         minimum: 0
         maximum: 2147483647
+    - description: Cursor for pagination
+      in: query
+      name: cursor_next
+      schema:
+        type: string
+        format: b64string
+        maxLength: 64
     - description: Sort-by field
       in: query
       name: sort

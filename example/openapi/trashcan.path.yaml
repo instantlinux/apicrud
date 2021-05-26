@@ -8,15 +8,12 @@ trashcan:
       in: query
       name: id
       schema:
-        $ref: '#/components/schemas/base/properties/id'
+        $ref: '#/components/schemas/Trashcan/properties/id'
     - description: Resource name
       in: query
       name: resource
       schema:
-        type: string
-        minLength: 2
-        maxLength: 24
-        pattern: ^[a-z_-]$
+        $ref: '#/components/schemas/Trashcan/properties/resource'
     - description: Status
       in: query
       name: status
@@ -36,6 +33,13 @@ trashcan:
         type: integer
         minimum: 0
         maximum: 2147483647
+    - description: Cursor for pagination
+      in: query
+      name: cursor_next
+      schema:
+        type: string
+        format: b64string
+        maxLength: 64
     - description: Sort-by field
       in: query
       name: sort
@@ -85,9 +89,7 @@ trashcan-id:
       name: id
       required: true
       schema:
-        type: string
-        minLength: 10
-        maxLength: 10
+        $ref: '#/components/schemas/Trashcan/properties/id'
     responses:
       200:
         content:
@@ -123,17 +125,12 @@ trashcan-id:
       name: id
       required: true
       schema:
-        type: string
-        minLength: 10
-        maxLength: 10
+        $ref: '#/components/schemas/Trashcan/properties/id'
     - description: Resource name
       in: query
       name: resource
       schema:
-        type: string
-        minLength: 2
-        maxLength: 24
-        pattern: ^[a-z_-]$
+        $ref: '#/components/schemas/Trashcan/properties/resource'
     responses:
       404:
         content: {}
@@ -153,15 +150,13 @@ trashcan-ids:
   delete:
     operationId: TrashcanController.delete
     parameters:
-    - description: Resource ids to delete
+    - description: Resource ids to permanently purge
       in: path
       name: ids
       required: true
       schema:
         items:
-          type: string
-          minLength: 10
-          maxLength: 10
+          $ref: '#/components/schemas/Trashcan/properties/id'
         type: array
     responses:
       400:
@@ -170,7 +165,7 @@ trashcan-ids:
     security:
     - apikey: ['full']
     - basic: []
-    summary: Deletes one or more trashcans
+    summary: Purges one or more resources
     tags:
     - trashcan
     x-openapi-router-controller: controllers.trashcan

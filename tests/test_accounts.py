@@ -286,64 +286,31 @@ class TestAccounts(test_base.TestBase):
     @pytest.mark.slow
     @mock.patch('time.sleep')
     def test_account_lockout(self, mock_sleep):
-        record = dict(
-            name='Brute Force', identity='brute@ddos.net', username='brute')
-        password = dict(new_password='WorkingPa3s&',
-                        verify_password='WorkingPa3s&')
+        username = 'brute'
+        with self.scratch_account(username, 'Brute Force') as acc:
+            for i in range(self.config.LOGIN_ATTEMPTS_MAX):
+                status = self.authorize(username=username,
+                                        password='Disa1lowed',
+                                        new_session=True)
+                self.assertEqual(status, 403)
 
-        response = self.call_endpoint('/account', 'post', data=record)
-        self.assertEqual(response.status_code, 201)
-        uid = response.get_json()['uid']
-        for call in self.mock_messaging.call_args_list:
-            password['reset_token'] = call.kwargs.get('token')
-
-        response = self.call_endpoint(
-            '/account_password/%s' % uid, 'put', data=password)
-        self.assertEqual(response.status_code, 200, 'put failed message=%s' %
-                         response.get_json().get('message'))
-
-        for i in range(self.config.LOGIN_ATTEMPTS_MAX):
-            status = self.authorize(username=record['username'],
-                                    password='Disallowed',
+            status = self.authorize(username=username,
+                                    password=acc.password,
                                     new_session=True)
             self.assertEqual(status, 403)
-
-        status = self.authorize(username=record['username'],
-                                password=password['new_password'],
-                                new_session=True)
-        self.assertEqual(status, 403)
-        mock_sleep.assert_has_calls([mock.call(5)])
+            mock_sleep.assert_has_calls([mock.call(5)])
 
     @pytest.mark.slow
     def test_account_disabled(self):
-        record = dict(
-            name='Adam Tsui', identity='tsui@conclave.events', username='tsui')
-        password = dict(new_password='%4orohOH', verify_password='%4orohOH')
+        username = 'tsui'
+        with self.scratch_account(username, 'Adam Tsui') as acc:
+            self.authorize(username=self.admin_name, password=self.admin_pw)
+            response = self.call_endpoint('/account/%s' % acc.id, 'delete')
+            self.assertEqual(response.status_code, 204)
 
-        response = self.call_endpoint('/account', 'post', data=record)
-        self.assertEqual(response.status_code, 201)
-        id = response.get_json()['id']
-        uid = response.get_json()['uid']
-        for call in self.mock_messaging.call_args_list:
-            password['reset_token'] = call.kwargs.get('token')
-
-        response = self.call_endpoint(
-            '/account_password/%s' % uid, 'put', data=password)
-        self.assertEqual(response.status_code, 200, 'put failed message=%s' %
-                         response.get_json().get('message'))
-
-        status = self.authorize(username=record['username'],
-                                password=password['new_password'])
-        self.assertEqual(status, 201)
-
-        self.authorize(username=self.admin_name, password=self.admin_pw)
-        response = self.call_endpoint('/account/%s' % id, 'delete')
-        self.assertEqual(response.status_code, 204)
-
-        status = self.authorize(username=record['username'],
-                                password=password['new_password'],
-                                new_session=True)
-        self.assertEqual(status, 403)
+            status = self.authorize(username=username, password=acc.password,
+                                    new_session=True)
+            self.assertEqual(status, 403)
 
     @pytest.mark.slow
     def test_account_reset_bad_token(self):

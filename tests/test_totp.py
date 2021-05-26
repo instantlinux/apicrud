@@ -19,209 +19,155 @@ class TestAuthTOTP(test_base.TestBase):
     def test_totp_generate_reg(self):
         """Generate and register a token"""
 
-        account = dict(name='IT Admin', username='theboss',
-                       identity='theboss@example.com')
         expected = dict(
-            is_admin=False, name=account['username'], owner=account['name'],
+            is_admin=False, name='theboss', owner='IT Admin',
             password_must_change=False, rbac='dru', status='active',
             totp=False, settings_id=self.settings_id)
-        password = dict(new_password='a049bcd-8', verify_password='a049bcd-8')
 
-        response = self.call_endpoint('/account', 'post', data=account)
-        self.assertEqual(response.status_code, 201)
-        acc = response.get_json()['id']
-        uid = response.get_json()['uid']
+        with self.scratch_account(expected['name'], expected['owner']) as acc:
+            response = self.call_endpoint('/auth_totp', 'get')
+            result = response.get_json()
+            self.assertEqual(response.status_code, 200)
+            nonce = result['jti']
+            otp = pyotp.TOTP(result['totp']).now()
+            self.assertEqual(result['auth'], 'pendingtotp')
+            self.assertRegex(result['uri'],
+                             '^otpauth://totp/[A-Za-z]+:theboss%40example.com'
+                             '[?]+secret=[A-Z0-9]{32}&issuer=[A-Za-z]+$')
 
-        for call in self.mock_messaging.call_args_list:
-            password['reset_token'] = call.kwargs.get('token')
-        response = self.call_endpoint(
-            '/account_password/%s' % uid, 'put', data=password)
-        self.assertEqual(response.status_code, 200, 'put failed message=%s' %
-                         response.get_json().get('message'))
-        self.authorize(username=account['username'],
-                       password=password['new_password'], new_session=True)
+            # Examine account before registration
+            response = self.call_endpoint('/account/%s' % acc.id, 'get')
+            self.assertEqual(response.status_code, 200)
+            result = response.get_json()
+            del(result['created'])
+            del(result['last_login'])
+            del(result['uid'])
+            expected['id'] = acc.id
+            self.assertEqual(result, expected)
 
-        response = self.call_endpoint('/auth_totp', 'get')
-        result = response.get_json()
-        self.assertEqual(response.status_code, 200)
-        nonce = result['jti']
-        otp = pyotp.TOTP(result['totp']).now()
-        self.assertEqual(result['auth'], 'pendingtotp')
-        self.assertRegex(result['uri'],
-                         '^otpauth://totp/[A-Za-z]+:theboss%40example.com[?]+'
-                         'secret=[A-Z0-9]{32}&issuer=[A-Za-z]+$')
+            # Register token, check for backup codes
+            response = self.call_endpoint('/auth_totp', 'post', data=dict(
+                nonce=nonce, otp_first=otp))
+            self.assertEqual(
+                response.status_code, 200, 'post failed message=%s' %
+                response.get_json().get('message'))
+            self.assertEqual(len(response.get_json().get('backup_codes')), 6)
 
-        # Examine account before registration
-        response = self.call_endpoint('/account/%s' % acc, 'get')
-        self.assertEqual(response.status_code, 200)
-        result = response.get_json()
-        del(result['created'])
-        del(result['last_login'])
-        del(result['uid'])
-        expected['id'] = acc
-        self.assertEqual(result, expected)
+            # Confirm registered
+            response = self.call_endpoint('/account/%s' % acc.id, 'get')
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(response.get_json().get('totp'))
 
-        # Register token, check for backup codes
-        response = self.call_endpoint('/auth_totp', 'post', data=dict(
-            nonce=nonce, otp_first=otp))
-        self.assertEqual(response.status_code, 200, 'post failed message=%s' %
-                         response.get_json().get('message'))
-        self.assertEqual(len(response.get_json().get('backup_codes')), 6)
-
-        # Confirm registered
-        response = self.call_endpoint('/account/%s' % acc, 'get')
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.get_json().get('totp'))
-
-        # Confirm double-registration is disallowed
-        response = self.call_endpoint('/auth_totp', 'post', data=dict(
-            nonce=nonce, otp_first=otp))
-        self.assertEqual(response.status_code, 403, 'unexpected message=%s' %
-                         response.get_json().get('message'))
+            # Confirm double-registration is disallowed
+            response = self.call_endpoint('/auth_totp', 'post', data=dict(
+                nonce=nonce, otp_first=otp))
+            self.assertEqual(
+                response.status_code, 403, 'unexpected message=%s' %
+                response.get_json().get('message'))
 
     @pytest.mark.slow
     def test_totp_login_with_backup(self):
         """Register a token, verify otp login and backup code login"""
 
-        account = dict(name='IT Flunkie', username='underpaid',
-                       identity='underpaid@example.com')
-        password = dict(new_password='a0a5bcd-x', verify_password='a0a5bcd-x')
+        username = 'underpaid'
+        with self.scratch_account(username, 'IT Flunkie') as acc:
+            response = self.call_endpoint('/auth_totp', 'get')
+            result = response.get_json()
+            self.assertEqual(response.status_code, 200)
 
-        response = self.call_endpoint('/account', 'post', data=account)
-        self.assertEqual(response.status_code, 201)
-        uid = response.get_json()['uid']
+            # Register token
+            response = self.call_endpoint('/auth_totp', 'post', data=dict(
+                nonce=result.get('jti'),
+                otp_first=pyotp.TOTP(result.get('totp')).now()))
+            self.assertEqual(
+                response.status_code, 200, 'post failed message=%s' %
+                response.get_json().get('message'))
+            code = response.get_json().get('backup_codes')[3]
 
-        for call in self.mock_messaging.call_args_list:
-            password['reset_token'] = call.kwargs.get('token')
-        response = self.call_endpoint(
-            '/account_password/%s' % uid, 'put', data=password)
-        self.assertEqual(response.status_code, 200, 'put failed message=%s' %
-                         response.get_json().get('message'))
-        self.authorize(username=account['username'],
-                       password=password['new_password'], new_session=True)
+            self.authorize(username=username, password=acc.password,
+                           new_session=True)
+            # Confirm session doesn't yet have permission to fetch resources
+            response = self.call_endpoint(
+                '/credential?filter={"uid":"%s"}' % acc.uid, 'get')
+            self.assertEqual(
+                response.status_code, 403, 'unexpected message=%s' %
+                response.get_json().get('message'))
+            self.authorize(username=username,
+                           otp=pyotp.TOTP(result.get('totp')).now())
+            # Now have permissions
+            response = self.call_endpoint(
+                '/credential?filter={"uid":"%s"}' % acc.uid, 'get')
+            self.assertEqual(response.status_code, 200)
+            self.assertIn('__Secure-totp', self.flask.cookie_jar._cookies[
+                'localhost.local']['/api/v1/auth'].keys())
 
-        response = self.call_endpoint('/auth_totp', 'get')
-        result = response.get_json()
-        self.assertEqual(response.status_code, 200)
+            # Reauth, without OTP -- using bypass cookie
+            self.authorize(username=username, password=acc.password,
+                           new_session=True)
+            response = self.call_endpoint(
+                '/credential?filter={"uid":"%s"}' % acc.uid, 'get')
+            self.assertEqual(response.status_code, 200)
 
-        # Register token
-        response = self.call_endpoint('/auth_totp', 'post', data=dict(
-            nonce=result.get('jti'),
-            otp_first=pyotp.TOTP(result.get('totp')).now()))
-        self.assertEqual(response.status_code, 200, 'post failed message=%s' %
-                         response.get_json().get('message'))
-        code = response.get_json().get('backup_codes')[3]
+            # Clear cookie and auth with backup code
+            self.flask.cookie_jar._cookies.clear()
+            self.authorize(username=username, password=acc.password,
+                           new_session=True)
+            response = self.call_endpoint(
+                '/credential?filter={"uid":"%s"}' % acc.uid, 'get')
+            self.assertEqual(response.status_code, 403)
+            self.authorize(username=username, otp=code)
+            response = self.call_endpoint(
+                '/credential?filter={"uid":"%s"}' % acc.uid, 'get')
+            self.assertEqual(response.status_code, 200)
 
-        self.authorize(username=account['username'],
-                       password=password['new_password'], new_session=True)
-        # Confirm session doesn't yet have permission to fetch resources
-        response = self.call_endpoint('/credential?filter={"uid":"%s"}' % uid,
-                                      'get')
-        self.assertEqual(response.status_code, 403, 'unexpected message=%s' %
-                         response.get_json().get('message'))
-        self.authorize(username=account['username'],
-                       otp=pyotp.TOTP(result.get('totp')).now())
-        # Now have permissions
-        response = self.call_endpoint('/credential?filter={"uid":"%s"}' % uid,
-                                      'get')
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('__Secure-totp', self.flask.cookie_jar._cookies[
-            'localhost.local']['/api/v1/auth'].keys())
-
-        # Reauth, without OTP -- using bypass cookie
-        self.authorize(username=account['username'],
-                       password=password['new_password'], new_session=True)
-        response = self.call_endpoint('/credential?filter={"uid":"%s"}' % uid,
-                                      'get')
-        self.assertEqual(response.status_code, 200)
-
-        # Clear cookie and auth with backup code
-        self.flask.cookie_jar._cookies.clear()
-        self.authorize(username=account['username'],
-                       password=password['new_password'], new_session=True)
-        response = self.call_endpoint('/credential?filter={"uid":"%s"}' % uid,
-                                      'get')
-        self.assertEqual(response.status_code, 403)
-        self.authorize(username=account['username'], otp=code)
-        response = self.call_endpoint('/credential?filter={"uid":"%s"}' % uid,
-                                      'get')
-        self.assertEqual(response.status_code, 200)
-
-        # Repeat with bad backup code
-        self.flask.cookie_jar._cookies.clear()
-        self.authorize(username=account['username'],
-                       password=password['new_password'], new_session=True)
-        response = self.call_endpoint('/credential?filter={"uid":"%s"}' % uid,
-                                      'get')
-        self.assertEqual(response.status_code, 403)
-        self.authorize(username=account['username'], otp='8digits8')
-        response = self.call_endpoint('/credential?filter={"uid":"%s"}' % uid,
-                                      'get')
-        self.assertEqual(response.status_code, 403)
+            # Repeat with bad backup code
+            self.flask.cookie_jar._cookies.clear()
+            self.authorize(username=username, password=acc.password,
+                           new_session=True)
+            response = self.call_endpoint(
+                '/credential?filter={"uid":"%s"}' % acc.uid, 'get')
+            self.assertEqual(response.status_code, 403)
+            self.authorize(username=username, otp='8digits8')
+            response = self.call_endpoint(
+                '/credential?filter={"uid":"%s"}' % acc.uid, 'get')
+            self.assertEqual(response.status_code, 403)
 
     def test_totp_failures(self):
-        account = dict(name='Rodney Danger', username='danger23',
-                       identity='danger23@example.com')
-        password = dict(new_password='a0M5bNdvx', verify_password='a0M5bNdvx')
+        with self.scratch_account('danger23', 'Rodney Danger'):
+            # Try to register a token using invalid nonce
+            response = self.call_endpoint('/auth_totp', 'post', dict(
+                nonce='invalid', otp_first='654321'))
+            self.assertEqual(response.status_code, 403, 'register unexpected')
 
-        response = self.call_endpoint('/account', 'post', data=account)
-        self.assertEqual(response.status_code, 201)
-        acc = response.get_json()['id']
-        uid = response.get_json()['uid']
+            # Try to register using invalid otp
+            response = self.call_endpoint('/auth_totp', 'get')
+            result = response.get_json()
+            self.assertEqual(response.status_code, 200)
+            nonce = result['jti']
+            otp = pyotp.TOTP(result['totp']).now()
+            response = self.call_endpoint('/auth_totp', 'post', dict(
+                nonce=nonce, otp_first=str(int(otp) ^ 0xffff).zfill(6)))
+            self.assertEqual(response.status_code, 403, 'register unexpected')
 
-        for call in self.mock_messaging.call_args_list:
-            password['reset_token'] = call.kwargs.get('token')
-        response = self.call_endpoint(
-            '/account_password/%s' % uid, 'put', data=password)
-        self.assertEqual(response.status_code, 200, 'put failed message=%s' %
-                         response.get_json().get('message'))
-        self.authorize(username=account['username'],
-                       password=password['new_password'], new_session=True)
+            response = self.call_endpoint('/auth_params', 'get')
+            self.assertEqual(response.status_code, 200)
 
-        # Try to register a token using invalid nonce
-        response = self.call_endpoint('/auth_totp', 'post', dict(
-            nonce='invalid', otp_first='654321'))
-        self.assertEqual(response.status_code, 403, 'register unexpected')
-
-        # Try to register using invalid otp
-        response = self.call_endpoint('/auth_totp', 'get')
-        result = response.get_json()
-        self.assertEqual(response.status_code, 200)
-        nonce = result['jti']
-        otp = pyotp.TOTP(result['totp']).now()
-        response = self.call_endpoint('/auth_totp', 'post', dict(
-            nonce=nonce, otp_first=str(int(otp) ^ 0xffff).zfill(6)))
-        self.assertEqual(response.status_code, 403, 'register unexpected')
-
-        # Try to generate a token for an account already registered
-        db_session = database.get_session(db_url=self.config.DB_URL)
-        account = db_session.query(Account).filter_by(id=acc).one()
-        account.totp_secret = pyotp.random_base32()
-        db_session.commit()
-        db_session.remove()
-        response = self.call_endpoint('/auth_totp', 'get')
-        self.assertEqual(response.status_code, 403, 'generate unexpected')
+            # Try to generate a token for an account already registered
+            db_session = database.get_session(db_url=self.config.DB_URL)
+            account = db_session.query(Account).filter_by(
+                id=response.get_json()['account_id']).one()
+            account.totp_secret = pyotp.random_base32()
+            db_session.commit()
+            db_session.remove()
+            response = self.call_endpoint('/auth_totp', 'get')
+            self.assertEqual(response.status_code, 403, 'generate unexpected')
 
     def test_totp_required(self):
-        account = dict(name='Greg Cote', username='gcote123',
-                       identity='gcote123@example.com')
-        password = dict(new_password='b0M8b@dvy', verify_password='b0M8b@dvy')
-
-        response = self.call_endpoint('/account', 'post', data=account)
-        self.assertEqual(response.status_code, 201)
-        uid = response.get_json()['uid']
-
-        for call in self.mock_messaging.call_args_list:
-            password['reset_token'] = call.kwargs.get('token')
-        response = self.call_endpoint(
-            '/account_password/%s' % uid, 'put', data=password)
-        self.assertEqual(response.status_code, 200, 'put failed message=%s' %
-                         response.get_json().get('message'))
-        with self.config_overrides(login_mfa_required=True):
-            response = self.call_endpoint('/auth', 'post', data=dict(
-                username=account['username'],
-                password=password['new_password']))
-            self.assertEqual(response.status_code, 201)
-            tok = jwt.decode(response.get_json()['jwt_token'],
-                             self.config.JWT_SECRET, algorithms=['HS256'])
-            self.assertEqual(tok['auth'], 'mfarequired')
+        with self.scratch_account('gcote123', 'Greg Cote') as acc:
+            with self.config_overrides(login_mfa_required=True):
+                response = self.call_endpoint('/auth', 'post', data=dict(
+                    username='gcote123', password=acc.password))
+                self.assertEqual(response.status_code, 201)
+                tok = jwt.decode(response.get_json()['jwt_token'],
+                                 self.config.JWT_SECRET, algorithms=['HS256'])
+                self.assertEqual(tok['auth'], 'mfarequired')

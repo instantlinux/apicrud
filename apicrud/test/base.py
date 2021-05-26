@@ -7,6 +7,7 @@ created 10-oct-2019 by richb@instantlinux.net
 import base64
 from collections import namedtuple
 from contextlib import contextmanager
+from dataclasses import dataclass
 from flask import g
 import json
 import jwt
@@ -15,7 +16,8 @@ import tempfile
 import unittest
 import yaml
 
-from .. import database, service_config, ServiceConfig, SessionManager
+from .. import database, service_config, ServiceConfig, SessionManager, \
+    state, utils
 
 test_globals = {}
 
@@ -51,6 +53,7 @@ class TestBaseMixin(object):
         self.base_url = self.config.BASE_URL
         self.credentials = {}
         self.authuser = None
+        self.mock_messaging = state.func_send = unittest.mock.Mock()
         for item, val in test_globals['constants'].items():
             setattr(self, item, val)
 
@@ -171,3 +174,44 @@ class TestBaseMixin(object):
             yield ret
         finally:
             _restore()
+
+    @contextmanager
+    def scratch_account(self, username, name):
+        """Set up a scratch account and login. This relies on
+        a mock_messaging objected created in classSetup.
+
+        Returns: obj
+          id (str): account ID
+          password (str): random password
+          uid (str): ID of user
+        """
+        @dataclass
+        class Return:
+            id: str
+            password: str
+            uid: str
+
+        account = dict(
+            name=name, identity='%s@example.com' % username, username=username)
+        pw = '@Xx%s' % utils.gen_id()
+        password = dict(new_password=pw, verify_password=pw)
+
+        response = self.call_endpoint('/account', 'post', data=account)
+        self.assertEqual(response.status_code, 201)
+        id = response.get_json()['id']
+        uid = response.get_json()['uid']
+
+        for call in self.mock_messaging.call_args_list:
+            password['reset_token'] = call.kwargs.get('token')
+        response = self.call_endpoint(
+            '/account_password/%s' % uid, 'put', data=password)
+        self.assertEqual(response.status_code, 200)
+        status = self.authorize(username=account['username'], password=pw)
+        self.assertEqual(status, 201)
+
+        try:
+            yield Return(id=id, password=pw, uid=uid)
+        finally:
+            self.authorize(username=self.admin_name, password=self.admin_pw)
+            self.call_endpoint('/account/%s?force=true' % id, 'delete')
+            self.assertEqual(response.status_code, 200)

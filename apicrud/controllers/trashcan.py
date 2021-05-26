@@ -4,17 +4,10 @@ Trashcan
 
 created 22-apr-2021 by richb@instantlinux.net
 """
-from flask_babel import _
-
-from apicrud import BasicCRUD, state
+from apicrud import Trashcan
 
 
-class TrashcanController(BasicCRUD):
-    def __init__(self):
-        self.resource = 'trashcan'
-        if self.resource not in state.controllers:
-            state.controllers[self.resource] = self
-
+class TrashcanController(Trashcan):
     @staticmethod
     def find(**kwargs):
         """Find deleted resources
@@ -22,7 +15,7 @@ class TrashcanController(BasicCRUD):
         Args:
             kwargs: as defined in openapi.yaml
         """
-        return dict(count=0, items=[]), 200
+        return Trashcan().find(**kwargs)
 
     @staticmethod
     def get(id):
@@ -31,13 +24,13 @@ class TrashcanController(BasicCRUD):
         Args:
             id (str): Database or hybrid grant ID
         """
-        return dict(message=_(u'not found')), 404
+        return Trashcan().get(id)
 
     @staticmethod
     def update(id, body):
         """Update deleted resource - undelete
         """
-        return dict(message=_(u'not found')), 404
+        return Trashcan().update(id, body)
 
     @staticmethod
     def delete(ids):
@@ -50,4 +43,4 @@ class TrashcanController(BasicCRUD):
             first element is a dict with the id, second element is
             response code (200 on success)
         """
-        return dict(message=_(u'not found')), 404
+        return Trashcan().delete(ids)
