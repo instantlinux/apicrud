@@ -5,12 +5,15 @@ created 27-may-2019 by richb@instantlinux.net
 
 from cachetools import TTLCache
 from flask import g
+from flask_babel import _
+from inflection import singularize
 import json
 import logging
+from sqlalchemy.orm.exc import NoResultFound
 
 from .access import AccessControl
 from .service_config import ServiceConfig
-from . import utils
+from . import utils, state
 
 
 class Grants(object):
@@ -72,7 +75,8 @@ class Grants(object):
         if name in self._cache[uid]:
             ret = self._cache[uid].get(name)
         else:
-            if name not in self._cache['defaults']:
+            if (name not in self._cache['defaults'] and singularize(name)
+                    not in state.controllers.keys()):
                 logging.error('Grant name=%s undefined in config.yaml' % name)
             ret = self._cache['defaults'].get(name)
         try:
@@ -108,10 +112,24 @@ class Grants(object):
             crud_results (tuple): preliminary response
             name (str): name filter, if specified
         """
-        filter = json.loads(kwargs.get('filter', '{}'))
+        try:
+            filter = json.loads(kwargs.get('filter', '{}'))
+        except json.decoder.JSONDecodeError as ex:
+            msg = _(u'invalid filter specified') + '=%s' % str(ex)
+            logging.warning(dict(message=msg, action='find', resource='grant'))
+            return dict(message=msg), 405
         name = kwargs.get('name') or filter.get('name')
         acc = AccessControl(model=self.models.Grant)
-        uid = filter.get('uid') or acc.uid
+        if 'account_id' in filter:
+            try:
+                account = g.db.query(self.models.Account).filter_by(
+                    id=filter['account_id']).one()
+            except NoResultFound:
+                return dict(count=0, items=[],
+                            message=_(u'not found')), 404
+            uid = account.uid
+        else:
+            uid = filter.get('uid') or acc.uid
         rbac = ''.join(sorted(list(acc.rbac_permissions(owner_uid=uid))))
         result = []
         for key, val in self._cache['defaults'].items():
@@ -122,6 +140,7 @@ class Grants(object):
                     result.append(row)
                     break
             else:
+                # If no record found in crud_results, apply default
                 result.append(dict(id='%s:%s' % (uid, key), uid=uid,
                                    name=key, value=str(val), rbac=rbac,
                                    status='active'))

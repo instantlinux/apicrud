@@ -8,6 +8,7 @@ Grant:
     expires:
       format: date-time
       type: string
+      nullable: true
     id:
       maxLength: 35
       minLength: 10

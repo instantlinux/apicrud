@@ -86,11 +86,9 @@ class BasicCRUD(object):
         body['created'] = utils.utcnow()
         if body.get('expires'):
             try:
-                body['expires'] = datetime.strptime(
-                    body['expires'], '%Y-%m-%dT%H:%M:%S.%fZ')
-            except ValueError:
-                body['expires'] = datetime.strptime(
-                    body['expires'], '%Y-%m-%dT%H:%M:%SZ')
+                body['expires'] = self._fromdate(body['expires'])
+            except Exception:
+                return dict(message=_(u'invalid date')), 405
         if hasattr(self.model, 'uid') and not body.get('uid'):
             body['uid'] = acc.uid
         uid = logmsg['uid'] = body.get('uid')
@@ -230,11 +228,9 @@ class BasicCRUD(object):
         body['modified'] = utils.utcnow()
         if body.get('expires'):
             try:
-                body['expires'] = datetime.strptime(
-                    body['expires'], '%Y-%m-%dT%H:%M:%S.%fZ')
-            except ValueError:
-                body['expires'] = datetime.strptime(
-                    body['expires'], '%Y-%m-%dT%H:%M:%SZ')
+                body['expires'] = self._fromdate(body['expires'])
+            except Exception:
+                return dict(message=_(u'invalid date')), 405
         if 'totp' in body and not body.pop('totp'):
             body['totp_secret'] = None
         if hasattr(self.model, '__rest_related__'):
@@ -380,6 +376,15 @@ class BasicCRUD(object):
                     del(filter['id'])
         elif 'filter' in kwargs and not filter:
             return dict(count=0, items=[]), 200
+        if filter.get('account_id') and not hasattr(self.model, 'account_id'):
+            try:
+                account = g.db.query(self.models.Account).filter_by(
+                    id=filter['account_id']).one()
+            except NoResultFound:
+                return dict(count=0, items=[],
+                            message=_(u'not found')), 404
+            filter['uid'] = account.uid
+            filter.pop('account_id')
         for key in filter.copy():
             if filter[key] == '*':
                 filter.pop(key)
@@ -572,6 +577,27 @@ class BasicCRUD(object):
     @staticmethod
     def _fromb64(text):
         return base64.b64decode(bytes(text, 'utf8')).decode('ascii')
+
+    @staticmethod
+    def _fromdate(date_string):
+        """Convert a serialized ISO 8601 date-string to datetime format;
+        handle variants where milliseconds are specified or hour/min/sec
+        are omitted
+
+        Args:
+          date_string (str): ISO 8601 string like 2021-06-02T22:15:00Z
+        Returns:
+          datetime object
+        """
+        exp = date_string
+        if re.match('^2[0-9]{3}-((0[1-9])|(1[0-2]))-([0-2][1-9]|3[0-1])$',
+                    exp):
+            exp += 'T23:59:59Z'
+        try:
+            expires = datetime.strptime(exp, '%Y-%m-%dT%H:%M:%S.%fZ')
+        except ValueError:
+            expires = datetime.strptime(exp, '%Y-%m-%dT%H:%M:%SZ')
+        return expires
 
     def db_get(self, id):
         """Activate a SQLalchemy query object for the specified ID in

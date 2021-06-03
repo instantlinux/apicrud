@@ -123,8 +123,6 @@ class SessionAuth(object):
           method (str): method, e.g. local or google
           headers (dict): additional headers, such as Set-Cookie
         """
-        account.last_login = utcnow()
-
         # connexion doesn't support cookie auth. probably just as well,
         #  this forced me to implement a JWT design with nonce token
         # https://github.com/zalando/connexion/issues/791
@@ -162,6 +160,12 @@ class SessionAuth(object):
             if self.roles_from:
                 roles += self.get_roles(account.uid,
                                         member_model=self.roles_from)
+            try:
+                account.last_login = utcnow()
+                g.db.commit()
+            except Exception as ex:
+                logging.error(dict(message='DB operational error',
+                                   error=str(ex), **logmsg))
         else:
             roles = []
         if acc.apikey_id:

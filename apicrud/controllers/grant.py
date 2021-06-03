@@ -12,6 +12,8 @@ class GrantController(BasicCRUD):
 
     @staticmethod
     def create(body):
+        if not body.get('expires'):
+            body.pop('expires', None)
         ret = super(GrantController, GrantController).create(body)
         Grants().uncache(body.get('uid'))
         return ret
@@ -26,6 +28,8 @@ class GrantController(BasicCRUD):
             body (dict): resource fields as defined by openapi.yaml schema
         """
         Grants().uncache(body.get('uid'))
+        if not body.get('expires'):
+            body['expires'] = None
         if ':' in id:
             body['uid'] = id.split(':')[0]
             body.pop('id', None)
