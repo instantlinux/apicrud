@@ -7,37 +7,43 @@ With a MacBook or Linux-based laptop, you can launch all the supported component
 Clone this repo to your local environment. To start the example application in a shell session (on a Linux or Mac laptop):
 
 * Install docker ([desktop for Mac](https://docs.docker.com/docker-for-mac/) or [Linux/Ubuntu](https://docs.docker.com/engine/install/ubuntu/)) and enable kubernetes; if you're on a Mac install [homebrew](https://brew.sh); Linux _kubeadm_ setup is beyond scope of this README
+* Install helm: `sudo make helm_install`
 * To run the full example demo in your local kubernetes:
     * Make secrets available: `ln -s example/secrets/.gnupg ~` if you don't already use gpg, or `make sops-import-gpg` if gpg is already installed
         * (If you've run through this once before and wiped your kubernetes configuration, run `make clean secrets`)
     * Invoke `TAG=latest make deploy_local` and wait for services to come up:
 ```
     $ kubectl get pods
+    apicrud-backend-mariadb-0                 1/1     Running     0  9h
+    apicrud-backend-redis-0                   1/1     Running     0  9h
+    apicrud-backend-rmq-0                     1/1     Running     0  9h
     example-api-9d898b479-c52hs               1/1     Running     3  32h
-    example-mariadb-0                         1/1     Running     0  9h
-    example-redis-f54fb554d-t4rtc             1/1     Running     0  14d
-    example-rmq-0                             1/1     Running     0  14d
     example-ui-7c9c99d89b-lk8pf               1/1     Running     0  21h
     example-worker-messaging-cdcc4bf96-5f97f  1/1     Running     0  32h
     $ kubectl get services
+    apicrud-backend-mariadb ClusterIP      10.101.2.30      <none>   3306/TCP                    14d
+    apicrud-backend-redis   ClusterIP      10.101.2.10      <none>   6379/TCP                    14d
+    apicrud-backend-rmq     ClusterIP      10.101.2.20      <none>   4369/TCP,5671/TCP,5672/TCP  14d
     example-api        ClusterIP      10.101.2.2       <none>   8080/TCP                    8d
     example-dev-api    NodePort       10.97.75.110     <none>   8080:32080/TCP              8d
     example-dev-ui     NodePort       10.107.96.242    <none>   80:32180/TCP                8d
-    example-mariadb    ClusterIP      10.101.2.30      <none>   3306/TCP                    14d
-    example-redis      ClusterIP      10.101.2.10      <none>   6379/TCP                    14d
-    example-rmq        ClusterIP      10.101.2.20      <none>   4369/TCP,5671/TCP,5672/TCP  14d
     example-ui         ClusterIP      None             <none>   80/TCP                      8d
     example-worker-messaging ClusterIP 10.98.233.206   <none>   5555/TCP                    13d
 ```
-    Note -- if you get a message like `IP is not in the valid range`, kubernetes will tell you the valid range; you can override with env variables in ~/.bash_profile:
+    Note -- if you get a message like `IP is not in the valid range`, kubernetes will tell you the valid range; you can override the settings in example/values-local.yaml:
 ```
-cat <<EOT >~/.bash_profile
-    export API_IP=172.20.2.2
-    export DB_HOST=172.20.2.30 
-    export RABBITMQ_IP=172.20.2.20 
-    export REDIS_IP=172.20.2.10  
-EOT
-source ~/.bash_profile
+    db_host: 172.20.2.30
+    ...
+    api:
+      service:
+        clusterIP: 172.20.2.2
+    ...
+    redis:
+      service:
+        clusterIP: 172.20.2.10
+    rmq:
+      service:
+        clusterIP: 172.20.2.20
 ```
     * Browse http://localhost:32180 as `admin` with password `p@ssw0rd`
 * Or, to run only database/cache images for developing on your laptop:

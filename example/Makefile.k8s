@@ -1,7 +1,10 @@
 # Kubernetes deployment
 #  Env var TAG must be set; it will not default to 'latest'
 
-.PHONY: qemu gen_openapi
+HELM_TAR = helm-v$(VERSION_HELM)-linux-amd64.tar.gz
+CHARTS = $(notdir $(wildcard ./example/helm/*))
+
+.PHONY: qemu gen_openapi helm_install media_config $(CHARTS)
 
 create_image: qemu i18n_deploy openapi_deploy
 	@echo docker build -t $(REGISTRY)/$(APPNAME)-$(CI_JOB_NAME):$(TAG)
@@ -56,37 +59,59 @@ $(K8S_YAML):
 	@SERVICE_NAME=$(APPNAME) SERVICE_IP=$(SERVICE_IP) \
 	 envsubst < $@.yaml | kubectl --kubeconfig=$(KUBECONFIG) apply -f -
 
-deploy_k8s: example/k8s/rmq example/k8s/redis
+deploy_k8s: apicrud-backend media_config
 
-deploy_local: envsubst mariadb_adhoc redis_adhoc rmq_adhoc example/k8s/dev secrets
+deploy_local: envsubst apicrud-backend example/k8s/dev secrets
 ifeq ($(TAG),)
 	@echo Please specify an existing tag, e.g. bld_abcdefg or latest
 	@exit 1
 endif
-	APP_ENV=local TAG=$(TAG) \
-	make $(APPNAME)/k8s/api $(APPNAME)/k8s/worker $(APPNAME)/k8s/ui
-
-deploy_media:
-ifeq ($(TAG),)
-	@echo Please specify an existing media-image tag
-	@exit 1
-endif
-	APP_ENV=local TAG=$(TAG) \
-	make $(APPNAME)/k8s/media $(APPNAME)/k8s/media-worker
+	APP_ENV=local TAG=$(TAG) make example-api example-worker example-ui
 
 deploy_dev:
 ifeq ($(TAG),)
 	@echo Please specify an existing tag in form bld_abcdefg
 	@exit 1
 endif
-	APP_ENV=dev TAG=$(TAG) \
-	make deploy_k8s $(APPNAME)/k8s/api $(APPNAME)/k8s/worker
+	APP_ENV=dev TAG=$(TAG) deploy_k8s example-api example-worker \
+	  example-ui
 
 deploy_prod:  $(APPNAME)-api/tag $(APPNAME)-worker/tag
-	APP_ENV=prod make deploy_k8s $(APPNAME)/k8s/api $(APPNAME)k8s/worker \
-	  $(APPNAME)/k8s/ui
+	APP_ENV=prod make deploy_k8s example-api example-worker \
+	  example-ui
 
 $(APPNAME)-%/tag:
 	docker pull $(REGISTRY)/$(@D):latest
 	docker tag $(REGISTRY)/$(@D):latest $(REGISTRY)/$(@D):$(TAG)
 	docker push $(REGISTRY)/$(@D):$(TAG)
+
+media_config:
+	kubectl create configmap example-media-config \
+	 --kubeconfig=$(KUBECONFIG) -o yaml --dry-run \
+	 --from-file=example/rbac.yaml --from-file=example/config.yaml | \
+	 kubectl --kubeconfig=$(KUBECONFIG) apply -f -
+
+helm_install: /usr/local/bin/helm
+	helm repo add instantlinux https://instantlinux.github.io/docker-tools/
+helm_list:
+	@helm list --time-format="Mon Jan 2 15:04" --all-namespaces \
+	  --kube-context=sudo
+/usr/local/bin/helm:
+	wget -O /tmp/$(HELM_TAR) https://get.helm.sh/$(HELM_TAR)
+	wget -O /tmp/$(HELM_TAR).sha256 https://get.helm.sh/$(HELM_TAR).sha256sum
+	cd /tmp && echo "$(shell cat /tmp/"$(HELM_TAR)".sha256)" | sha256sum -c
+	tar xf /tmp/$(HELM_TAR) -C /tmp
+	sudo mv /tmp/linux-amd64/helm /usr/local/bin
+	rm -r /tmp/$(HELM_TAR)* /tmp/linux-amd64
+
+$(CHARTS):: %: example/helm/%/Chart.lock
+	@echo --$(NOTICE) $@--
+	@$(eval OVERRIDE := $(shell [ -s ./example/values-$(APP_ENV).yaml ] \
+	  && echo "-f ./example/values-$(APP_ENV).yaml"))
+	helm upgrade --install -f $< $(OVERRIDE) --set $(shell echo $@ | \
+	  cut -d- -f 2).image.tag=$(TAG) $(XARGS) $@ ./example/helm/$@
+	@helm list --time-format="Mon Jan 2 15:04" --selector name=$@
+
+CHARTLOCK = $(addsuffix /Chart.lock, $(addprefix example/helm/, $(CHARTS)))
+$(CHARTLOCK):
+	helm dependency update $(dir $@)

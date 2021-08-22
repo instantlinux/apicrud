@@ -1,0 +1,22 @@
+# Default values for prometheus.
+target: example-api
+
+# statefulset is defined in template directory, TODO define here when
+#   chartlib supports initContainers
+
+image:
+  repository: prom/prometheus
+  pullPolicy: IfNotPresent
+  # tag: default
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  enabled: false
+service:
+  clusterIP: None
+  ports: [ port: 9090 ]
+  type: ClusterIP
+autoscaling:
+  enabled: false

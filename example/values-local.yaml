@@ -1,0 +1,49 @@
+# Parameter overrides for local
+
+api:
+  nodePort: 32080
+  deployment:
+    env:
+      app_env: local
+      cors_origins: https://local.example.com,https://media-local.example.com,http://$(FQDN):3000,http://localhost:3000,http://localhost:32180,http:localhost:32085
+      db_host: 10.101.2.30
+      public_url: http://localhost:32080
+  service:
+    clusterIP: 10.101.2.2
+media:
+  enabled: true
+  nodePort: 32085
+  deployment:
+    env:
+      app_env: local
+      cors_origins: http://localhost:32080,http://localhost:32085,http://localhost:3000
+      db_host: 10.101.2.30
+      public_url: http://localhost:32085
+media-worker:
+  deployment:
+    env:
+      app_env: local
+      celery_app: media_worker
+      db_host: 10.101.2.30
+      queue: media
+  image:
+    repository: instantlinux/apicrud-media-worker
+    tag: 0.0.32
+worker:
+  deployment:
+    env:
+      app_env: local
+      db_host: 10.101.2.30
+ui:
+  nodePort: 32180
+  deployment:
+    env:
+      react_app_api_url: http://localhost:32080/api/v1
+  ingress:
+    enabled: false
+redis:
+  service:
+    clusterIP: 10.101.2.10
+rmq:
+  service:
+    clusterIP: 10.101.2.20

@@ -1,0 +1,14 @@
+# Subchart parameters
+worker:
+  deployment:
+    env:
+      app_env: dev
+media-worker:
+  deployment:
+    env:
+      app_env: dev
+      celery_app: media_worker
+      queue: media
+  image:
+    repository: registry.gitlab.com/instantlinux/apicrud-media/apicrud-media-worker
+    tag: 0.0.32

@@ -87,8 +87,8 @@ clean:
 	rm -rf build dist *.egg-info .cache .pytest_cache */__pycache__ \
 	 */*/__pycache__ */.coverage */.proto.sqlite */coverage.xml */htmlcov \
 	 */results.xml docs/_build docs/content/stubs example/openapi.yaml
-	find . -name '*.pyc' -or -name '*~' -or -name '*.created' \
-	 -exec rm \{} \;
+	find apicrud docs example tests \( -name '*.pyc' -or -name '*~' \
+	 -or -name '*.created' \) -exec rm \{} \;
 	find example -name __pycache__ -exec rm -rf \{} \;
 wipe_clean: clean
 	find apicrud/i18n example/i18n -name '*.mo' -exec rm -rf \{} \;

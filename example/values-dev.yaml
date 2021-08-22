@@ -1,0 +1,67 @@
+# Parameter overrides for dev
+
+api:
+  deployment:
+    env:
+      app_env: dev
+      cors_origins: https://dev.example.com,https://media-dev.example.com
+      public_url: https://dev.example.com
+    xenv:
+    - name: DB_AES_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: example-db-aes-secret
+          key: example-db-aes-secret
+    - name: DB_PASS
+      valueFrom:
+        secretKeyRef:
+          name: example-db-password
+          key: example-db-password
+    - name: FLASK_SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: example-flask-secret
+          key: example-flask-secret
+    - name: GOOGLE_CLIENT_ID
+      valueFrom:
+        secretKeyRef:
+          name: example-google-client
+          key: google_client_id
+    - name: GOOGLE_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: example-google-client
+          key: google_client_secret
+    - name: MAPQUEST_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: mapquest-api-key
+          key: mapquest-api-key
+    - name: REDIS_AES_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: example-redis-aes-secret
+          key: example-redis-aes-secret
+media:
+  enabled: true
+  deployment:
+    env:
+      app_env: dev
+      cors_origins: https://dev.example.com,https://media-dev.example.com
+      public_url: https://media-dev.example.com
+media-worker:
+  deployment:
+    env:
+      celery_app: media_worker
+      queue: media
+  image:
+    repository: instantlinux/apicrud-media-worker
+    tag: 0.0.32
+worker:
+  deployment:
+    env:
+      app_env: dev
+ui:
+  deployment:
+    env:
+      react_app_api_url: https://dev.example.com/api/v1

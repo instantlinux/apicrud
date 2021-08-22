@@ -4,12 +4,14 @@
 # To iterate on UI/API/worker code, clone github.com/instantlinux/apicrud-ui
 # into another directory, start 3 shell sessions and invoke the following to
 # launch the following commands in separate sesions:
+#    make apicrud-backend
+#    kubectl delete service example-api-nodeport
+#    kubectl delete deployment example-api
 #    make run_local       # (from top level of this clone)
 #    make messaging_worker
 #    make ui_local        # (from the other clone)
 
-run_local: dev_requirements envsubst redis_adhoc mariadb_adhoc \
-	   example/openapi.yaml
+run_local: dev_requirements envsubst example/openapi.yaml
 	@echo Serving http://localhost:$(APP_PORT) as PUBLIC_URL
 	. $(VDIR)/bin/activate && APP_ENV=$(APP_ENV) \
 	  AMQ_HOST=$(RABBITMQ_IP) REDIS_HOST=$(REDIS_IP) \
@@ -17,7 +19,7 @@ run_local: dev_requirements envsubst redis_adhoc mariadb_adhoc \
 	  LOGIN_MFA_COOKIE_NAME=totp \
 	  FLASK_ENV=development PYTHONPATH=example python3 -m example.main
 
-messaging_worker: rmq_adhoc
+messaging_worker: apicrud-backend
 	. $(VDIR)/bin/activate && cd example && \
 	  AMQ_HOST=$(RABBITMQ_IP) REDIS_HOST=$(REDIS_IP) TZ=UTC PYTHONPATH=.. \
 	  celery -A messaging worker -Q messaging_$(APP_ENV) \
@@ -32,15 +34,3 @@ endif
 /usr/local/bin/envsubst:
 	HOMEBREW_NO_AUTO_UPDATE=1 brew install gettext
 	brew link --force gettext
-
-mariadb_adhoc:
-	SERVICE_IP=$(MARIADB_IP) make example/k8s/mariadb
-
-prometheus_adhoc:
-	TARGET_PROMETHEUS=$(FQDN) make example/k8s/prometheus
-
-redis_adhoc:
-	SERVICE_IP=$(REDIS_IP) make example/k8s/redis
-
-rmq_adhoc:
-	SERVICE_IP=$(RABBITMQ_IP) make example/k8s/rmq

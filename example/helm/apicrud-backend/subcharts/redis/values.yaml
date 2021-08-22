@@ -1,0 +1,37 @@
+# Default values for redis.
+statefulset:
+  containerPorts: [ containerPort: 6379 ]
+  # args: [--requirepass, $(REDIS_PASS)]
+  # xenv:
+  # - name: REDIS_PASS
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: example-redis-password
+volumeMounts:
+- mountPath: /data
+  name: data
+volumeClaimTemplates:
+- metadata:
+    name: data
+  spec:
+    accessModes: [ ReadWriteOnce ]
+    resources:
+      requests:
+        storage: 500Mi
+
+image:
+  repository: redis
+  pullPolicy: IfNotPresent
+  # tag: default
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  enabled: false
+service:
+  clusterIP: None
+  ports: [ port: 6379 ]
+  type: ClusterIP
+autoscaling:
+  enabled: false

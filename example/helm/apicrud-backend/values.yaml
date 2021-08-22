@@ -1,0 +1,9 @@
+# Subchart parameters
+prometheus:
+  enabled: true
+redis:
+  service:
+    clusterIP: None
+rmq:
+  service:
+    clusterIP: None

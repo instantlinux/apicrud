@@ -1,0 +1,61 @@
+# Default values for mariadb.
+
+statefulset:
+  env:
+    mysql_database: example
+  xenv:
+  - name: MYSQL_ROOT_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: mariadb-root-password
+        key: mariadb-root-password
+  containerPorts: [ containerPort: 3306 ]  
+volumeMounts:
+- name: db
+  mountPath: /var/lib/mysql
+- name: initdb
+  mountPath: /etc/mysql/conf.d/my.cnf
+  subPath: my.cnf
+- name: initdb
+  mountPath: /docker-entrypoint-initdb.d/setup.sql
+  subPath: setup.sql
+volumes:
+- name: initdb
+  configMap:
+    name: example-initdb
+volumeClaimTemplates:
+- metadata:
+    name: db
+  spec:
+    accessModes: [ ReadWriteOnce ]
+    resources:
+      requests:
+        storage: 500Mi
+
+image:
+  repository: mariadb
+  pullPolicy: IfNotPresent
+  # tag: default
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  enabled: false
+service:
+  clusterIP: 10.101.2.30
+  ports: [ port: 3306 ]
+  type: ClusterIP
+autoscaling:
+  enabled: false
+
+configmap:
+  name: example-initdb
+  data:
+    setup.sql: |
+      GRANT ALL PRIVILEGES ON `example`.* TO 'example'@'%' IDENTIFIED BY 'example';
+    my.cnf: |
+      [mysqld]
+      character_set_server  = utf8
+      innodb_data_file_path = ibdata1:10M:autoextend
+    

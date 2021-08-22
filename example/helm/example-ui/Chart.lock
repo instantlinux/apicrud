@@ -1,0 +1,9 @@
+dependencies:
+- name: chartlib
+  repository: https://instantlinux.github.io/docker-tools
+  version: 0.1.6
+- name: ui
+  repository: file://subcharts/ui
+  version: 0.1.0
+digest: sha256:d76cda2a63b4358c089d168e007453151cb22cc90129a9d80b9095902c423db6
+generated: "2021-08-21T19:55:31.396378569-07:00"

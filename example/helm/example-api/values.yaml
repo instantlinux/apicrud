@@ -1,0 +1,68 @@
+# Subchart parameters
+api:
+  nodePort: None
+  deployment:
+    env:
+      app_env: dev
+      cors_origins: https://dev.example.com,https://media-dev.example.com
+      public_url: https://dev.example.com
+    xenv:
+    - name: DB_AES_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: example-redis-aes-secret
+          key: example-redis-aes-secret
+    - name: DB_PASS
+      valueFrom:
+        secretKeyRef:
+          name: example-db-password
+          key: example-db-password
+    - name: FLASK_SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: example-flask-secret
+          key: example-flask-secret
+    # Add this after obtaining from mapquest
+    # - name: MAPQUEST_API_KEY
+    #   valueFrom:
+    #     secretKeyRef:
+    #       name: mapquest-api-key
+    #       key: mapquest-api-key
+    - name: REDIS_AES_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: example-redis-aes-secret
+          key: example-redis-aes-secret
+  imagePullSecrets: [ name: regcred ]
+media:
+  enabled: true
+  nodePort: None
+  deployment:
+    env:
+      app_env: dev
+      cors_origins: https://dev.example.com,https://media-dev.example.com
+      public_url: https://media.example.com
+    xenv:
+    - name: DB_AES_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: example-redis-aes-secret
+          key: example-redis-aes-secret
+    - name: DB_PASS
+      valueFrom:
+        secretKeyRef:
+          name: example-db-password
+          key: example-db-password
+    - name: FLASK_SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: example-flask-secret
+          key: example-flask-secret
+    - name: REDIS_AES_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: example-redis-aes-secret
+          key: example-redis-aes-secret
+  image:
+    tag: 0.0.32
+  imagePullSecrets: [ name: regcred ]

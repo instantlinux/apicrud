@@ -1,0 +1,60 @@
+# Default values for ui.
+nodePort: None
+deployment:
+  containerPorts: [ containerPort: 80 ]
+  env:
+    react_app_api_url: https://dev.example.com/api/v1
+    tz: UTC
+  resources:
+    limits:
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+image:
+  repository: registry.gitlab.com/instantlinux/apicrud-ui
+  pullPolicy: IfNotPresent
+  # tag: default
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  enabled: false
+service:
+  clusterIP: None
+  ports: [ port: 80 ]
+  type: ClusterIP
+autoscaling:
+  enabled: false
+
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/client-body-buffer-size: 20m
+    nginx.ingress.kubernetes.io/proxy-body-size: 20m
+  rules:
+  - host: dev.example.com
+    http:
+      paths:
+      - path: /api
+        backend:
+          service:
+            name: example-api
+            port:
+              number: 80
+        pathType: Prefix
+      - path: /
+        backend:
+          service:
+            name: example-ui
+            port:
+              number: 80
+        pathType: Prefix
+  tls:
+  - hosts:
+    - dev.example.com
+    secretName: tls-example-public

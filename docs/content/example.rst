@@ -51,18 +51,23 @@ This example serves a simple message-board. The `source code <https://github.com
     │   ├── message.py
     │   ├── ...
     │   └── tz.py
-    ├── k8s                      # kubernetes resource specifications
-    │   ├── api.yaml
-    │   ├── dev.yaml
-    │   ├── mariadb.yaml
-    │   ├── media-worker.yaml
-    │   ├── media.yaml
-    │   ├── prod.yaml
-    │   ├── prometheus.yaml
-    │   ├── redis.yaml
-    │   ├── rmq.yaml
-    │   ├── ui.yaml
-    │   └── worker.yaml
+    ├── helm                     # kubernetes helm charts
+    │   ├── apicrud-backend
+    │   │   └── subcharts
+    │   │       ├── mariadb
+    │   │       ├── prometheus
+    │   │       ├── redis
+    │   │       └── rmq
+    │   ├── example-api
+    │   │   └── subcharts
+    │   │       ├── api
+    │   │       └── media
+    │   ├── example-ui
+    │   │   └── subcharts
+    │   │       └── ui
+    │   └── example-worker
+    │       └── subcharts
+    │           └── worker
     └── secrets                  # credentials used at runtime
 
 .. currentmodule:: example

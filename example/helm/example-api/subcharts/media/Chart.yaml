@@ -1,0 +1,13 @@
+mediaVersion: v2
+name: media
+description: APIcrud media
+home: https://github.com/instantlinux/apicrud-media
+sources:
+- https://github.com/instantlinux/apicrud-media.git
+type: application
+version: 0.1.0
+appVersion: "0.0.32"
+dependencies:
+- name: chartlib
+  version: 0.1.6
+  repository: https://instantlinux.github.io/docker-tools
