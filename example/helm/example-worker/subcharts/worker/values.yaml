@@ -1,0 +1,53 @@
+# Default values for worker.
+deployment:
+  containerPorts: [ containerPort: 5555 ]
+  env:
+    amq_host: example-backend-rmq
+    celery_app: messaging
+    app_env: dev
+    db_host: db00
+    db_name: example_dev
+    db_user: example_dev
+    queue: messaging
+    redis_host: apicrud-backend-redis
+    redis_port: 6379
+    tz: UTC
+  xenv:
+  - name: DB_AES_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: example-db-aes-secret
+        key: example-db-aes-secret
+  - name: DB_PASS
+    valueFrom:
+      secretKeyRef:
+        name: example-db-password
+        key: example-db-password
+  - name: REDIS_AES_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: example-redis-aes-secret
+        key: example-redis-aes-secret
+  resources:
+    limits:
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+image:
+  repository: registry.gitlab.com/instantlinux/apicrud/example-worker
+  pullPolicy: IfNotPresent
+  # tag: default
+imagePullSecrets: [ name: regcred ]
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  enabled: false
+service:
+  ports: [ port: 5555 ]
+  type: ClusterIP
+autoscaling:
+  enabled: false

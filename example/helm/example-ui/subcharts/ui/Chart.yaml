@@ -1,0 +1,13 @@
+uiVersion: v2
+name: ui
+description: Example UI
+home: https://git.instantlinux.net/richb/example.git
+sources:
+- https://git.instantlinux.net/richb/example.git
+type: application
+version: 0.1.0
+appVersion: "0.0.39"
+dependencies:
+- name: chartlib
+  version: 0.1.6
+  repository: https://instantlinux.github.io/docker-tools

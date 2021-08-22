@@ -20,7 +20,7 @@ RUN cd /usr/src && pipenv install --system --deploy && \
 
 COPY example/ /opt/example
 COPY apicrud/ /opt/apicrud
-RUN chmod -R g-w,o-w /opt/example && \
+RUN chmod -R g-w,o-w,g+rX,o+rX /opt/example && \
     ln -s /usr/lib/uwsgi/python3_plugin.so /opt/example/ && \
     sed -i -e "s/^vcs_ref =.*/vcs_ref = '$VCS_REF'/" \
     -e "s/^__version__ =.*/__version__ = '$TAG'/" \

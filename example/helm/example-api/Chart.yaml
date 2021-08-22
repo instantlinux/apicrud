@@ -1,0 +1,20 @@
+apiVersion: v2
+name: example-api
+description: Example events - API
+home: https://github.com/instantlinux/docker-tools
+sources:
+- git@git.instantlinux.net:richb/example.git 
+type: application
+version: 0.1.0
+appVersion: "0.1.6"
+dependencies:
+- name: chartlib
+  version: 0.1.6
+  repository: https://instantlinux.github.io/docker-tools
+- name: api
+  version: 0.1.0
+  repository: file://subcharts/api
+- name: media
+  version: 0.1.0
+  repository: file://subcharts/media
+  condition: media.enabled

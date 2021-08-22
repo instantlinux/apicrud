@@ -1,0 +1,13 @@
+# Subchart parameters
+ui:
+  deployment:
+    env:
+      react_app_api_url: https://dev.example.com/api/v1
+    # set mapbox token after registering one
+    # xenv:
+    # - name: REACT_APP_TOKEN_MAPBOX
+    #   valueFrom:
+    #     secretKeyRef:
+    #       name: example-token-mapbox
+    #       key: example-token-mapbox
+  imagePullSecrets: [ name: regcred ]
