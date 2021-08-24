@@ -23,7 +23,7 @@ botocore==1.20.93
 cachetools==4.2.2
 celery==5.1.2
 certifi==2021.5.30
-cffi==1.14.5
+cffi==1.14.6
 chardet==4.0.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
 charset-normalizer==2.0.4; python_version >= '3'
 click-didyoumean==0.0.3
@@ -108,7 +108,7 @@ sqlalchemy==1.4.23
 swagger-ui-bundle==0.0.8
 termcolor==1.1.0
 toml==0.10.2; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
-tqdm==4.62.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+tqdm==4.62.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 twine==3.4.2
 urllib3==1.26.6
 vine==5.0.0; python_version >= '3.6'

@@ -9,4 +9,4 @@ dependencies:
   repository: file://subcharts/worker
   version: 0.1.0
 digest: sha256:b66261c62e1b23e28d4d8b7d6e60b2944793cd3a88ecbe9c3f776d774d68f4b6
-generated: "2021-08-21T16:22:14.461121762-07:00"
+generated: "2021-08-23T07:44:47.78898724-07:00"

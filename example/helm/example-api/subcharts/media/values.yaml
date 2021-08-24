@@ -10,8 +10,8 @@ deployment:
     db_host: db00
     db_migrate_enable: "no"
     db_schema_maxtime: 0
-    db_name: example_dev
-    db_user: example_dev
+    db_name: example
+    db_user: example
     public_url: https://media-dev.example.com
     redis_host: apicrud-backend-redis
     redis_port: 6379

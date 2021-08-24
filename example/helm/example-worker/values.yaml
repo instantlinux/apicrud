@@ -3,15 +3,11 @@ worker:
   deployment:
     env:
       app_env: dev
-      db_name: example_dev
-      db_user: example_dev
 media-worker:
   deployment:
     env:
       app_env: dev
       celery_app: media_worker
-      db_name: example_dev
-      db_user: example_dev
       queue: media
   image:
     repository: registry.gitlab.com/instantlinux/apicrud-media/apicrud-media-worker

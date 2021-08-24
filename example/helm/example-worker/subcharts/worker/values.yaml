@@ -2,12 +2,12 @@
 deployment:
   containerPorts: [ containerPort: 5555 ]
   env:
-    amq_host: example-backend-rmq
+    amq_host: apicrud-backend-rmq
     celery_app: messaging
     app_env: dev
     db_host: db00
-    db_name: example_dev
-    db_user: example_dev
+    db_name: example
+    db_user: example
     queue: messaging
     redis_host: apicrud-backend-redis
     redis_port: 6379

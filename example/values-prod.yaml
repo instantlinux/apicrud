@@ -3,15 +3,15 @@
 api:
   deployment:
     env:
-      app_env: dev
-      cors_origins: https://dev.example.com,https://media-dev.example.com
-      public_url: https://dev.example.com
+      app_env: prod
+      cors_origins: https://www.example.com,https://media.example.com
+      public_url: https://www.example.com
     xenv:
     - name: DB_AES_SECRET
       valueFrom:
         secretKeyRef:
-          name: example-db-aes-secret
-          key: example-db-aes-secret
+          name: example-redis-aes-secret
+          key: example-redis-aes-secret
     - name: DB_PASS
       valueFrom:
         secretKeyRef:
@@ -46,9 +46,9 @@ media:
   enabled: true
   deployment:
     env:
-      app_env: dev
-      cors_origins: https://dev.example.com,https://media-dev.example.com
-      public_url: https://media-dev.example.com
+      app_env: prod
+      cors_origins: https://www.example.com,https://media.example.com
+      public_url: https://media.example.com
 media-worker:
   deployment:
     env:
@@ -60,8 +60,8 @@ media-worker:
 worker:
   deployment:
     env:
-      app_env: dev
+      app_env: prod
 ui:
   deployment:
     env:
-      react_app_api_url: https://dev.example.com/api/v1
+      react_app_api_url: https://www.example.com/api/v1

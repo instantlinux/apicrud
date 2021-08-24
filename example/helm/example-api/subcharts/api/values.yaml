@@ -8,8 +8,8 @@ deployment:
     cors_origins: https://dev.example.com
     db_connection_timeout: 1780
     db_host: db00
-    db_name: example_dev
-    db_user: example_dev
+    db_name: example
+    db_user: example
     public_url: https://dev.example.com
     redis_host: apicrud-backend-redis
     redis_port: 6379

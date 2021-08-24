@@ -5,8 +5,6 @@ api:
     env:
       app_env: dev
       cors_origins: https://dev.example.com,https://media-dev.example.com
-      db_name: example_dev
-      db_user: example_dev
       public_url: https://dev.example.com
     xenv:
     - name: DB_AES_SECRET
@@ -43,8 +41,6 @@ media:
     env:
       app_env: dev
       cors_origins: https://dev.example.com,https://media-dev.example.com
-      db_name: example_dev
-      db_user: example_dev
       public_url: https://media.example.com
     xenv:
     - name: DB_AES_SECRET
