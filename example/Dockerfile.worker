@@ -20,7 +20,7 @@ COPY apicrud/ /opt/apicrud
 COPY Pipfile* requirements-messaging.txt /usr/src/
 RUN cd /usr/src && pipenv install --system --deploy && \
     pip3 install -r /usr/src/requirements-messaging.txt && \
-    chmod -R g-w,o-w /opt/example && \
+    chmod -R g-w,o-w,g+rX,o+rX /opt/example /opt/apicrud && \
     adduser -u $CELERY_UID -D -s /bin/false -G users celery
 
 USER celery
