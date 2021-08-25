@@ -31,8 +31,9 @@ PyMySQL = "*"
 pyotp = "*"
 pytz = "*"
 redis = "*"
-SQLAlchemy = "*"
-SQLAlchemy-Utils = "*"
+# Held back due to SAWarnings about many-to-many tables
+SQLAlchemy = "==1.3.24"
+SQLAlchemy-Utils = "==0.37.6"
 swagger-ui-bundle = "*"
 urllib3 = "*"
 

@@ -103,8 +103,8 @@ s3transfer==0.4.2
 secretstorage==3.3.1; sys_platform == 'linux'
 six==1.15.0
 sortedcontainers==2.4.0
-sqlalchemy-utils==0.37.8
-sqlalchemy==1.4.23
+sqlalchemy-utils==0.37.6
+sqlalchemy==1.3.24
 swagger-ui-bundle==0.0.8
 termcolor==1.1.0
 toml==0.10.2; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'

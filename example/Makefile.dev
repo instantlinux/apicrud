@@ -4,11 +4,14 @@
 # To iterate on UI/API/worker code, clone github.com/instantlinux/apicrud-ui
 # into another directory, start 3 shell sessions and invoke the following to
 # launch the following commands in separate sesions:
+#    make apicrud-backend
+#    kubectl delete service example-api-nodeport
+#    kubectl delete deployment example-api
 #    make run_local       # (from top level of this clone)
 #    make messaging_worker
 #    make ui_local        # (from the other clone)
 
-run_local: dev_requirements envsubst apicrud-backend example/openapi.yaml
+run_local: dev_requirements envsubst example/openapi.yaml
 	@echo Serving http://localhost:$(APP_PORT) as PUBLIC_URL
 	. $(VDIR)/bin/activate && APP_ENV=$(APP_ENV) \
 	  AMQ_HOST=$(RABBITMQ_IP) REDIS_HOST=$(REDIS_IP) \
