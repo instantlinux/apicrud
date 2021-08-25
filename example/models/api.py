@@ -77,7 +77,6 @@ class APIkey(AsDictMixin, Base):
                     server_default=u'active')
 
     scopes = relationship('Scope', secondary='apikeyscopes',
-                          overlaps='scope,scopes',
                           backref=backref('scope'), order_by='Scope.name')
     owner = relationship('Person', foreign_keys=[uid], backref=backref(
         'apikey_uid', cascade='all, delete-orphan'))
@@ -96,7 +95,7 @@ class APIkeyScope(Base):
     created = Column(TIMESTAMP, nullable=False, server_default=func.now())
 
     apikey = relationship('APIkey', foreign_keys=[apikey_id], backref=backref(
-        'apikeyscopes', cascade='all, delete-orphan', overlaps='scope,scopes'))
+        'apikeyscopes', cascade='all, delete-orphan'))
     scope = relationship('Scope', backref=backref(
         'apikeyscopes', cascade='all, delete-orphan'))
 
