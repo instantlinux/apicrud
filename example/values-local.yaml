@@ -19,6 +19,8 @@ media:
       cors_origins: http://localhost:32080,http://localhost:32085,http://localhost:3000
       db_host: 10.101.2.30
       public_url: http://localhost:32085
+  ingress:
+    enabled: false
 media-worker:
   deployment:
     env:
@@ -28,7 +30,7 @@ media-worker:
       queue: media
   image:
     repository: instantlinux/apicrud-media-worker
-    tag: 0.0.32
+    tag: 0.0.33
 worker:
   deployment:
     env:

@@ -1,8 +1,33 @@
 # Default values for prometheus.
 target: example-api
 
-# statefulset is defined in template directory, TODO define here when
-#   chartlib supports initContainers
+statefulset:
+  containerPorts: [ containerPort: 9090 ]
+  initContainers:
+  - name: init
+    image: alpine:3.14
+    command: [ chown, nobody, /prometheus ]
+    volumeMounts:
+    - name: data
+      mountPath: /prometheus
+volumeMounts:
+- mountPath: /etc/prometheus/prometheus.yml
+  name: config
+  subPath: prometheus.yml
+- mountPath: /prometheus
+  name: data
+volumes:
+- name: config
+  configMap:
+    name: apicrud-backend-prometheus
+volumeClaimTemplates:
+- metadata:
+    name: data
+  spec:
+    accessModes: [ ReadWriteOnce ]
+    resources:
+      requests:
+        storage: 500Mi
 
 image:
   repository: prom/prometheus

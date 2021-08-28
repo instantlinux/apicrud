@@ -1,15 +1,15 @@
 apiVersion: v2
 name: apicrud-backend
 description: Backend services and monitoring
-home: https://github.com/instantlinux/docker-tools
+home: git@github.com/instantlinux/apicrud.git
 sources:
-- git@git.instantlinux.net:richb/example.git 
+- git@github.com/instantlinux/apicrud.git
 type: application
 version: 0.1.0
 appVersion: "0.1.6"
 dependencies:
 - name: chartlib
-  version: 0.1.6
+  version: 0.1.7
   repository: https://instantlinux.github.io/docker-tools
 - name: mariadb
   version: 0.1.0
