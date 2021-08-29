@@ -30,7 +30,7 @@ Clone this repo to your local environment. To start the example application in a
     example-ui         ClusterIP      None             <none>   80/TCP                      8d
     example-worker-messaging ClusterIP 10.98.233.206   <none>   5555/TCP                    13d
 ```
-    Note -- if you get a message like `IP is not in the valid range`, kubernetes will tell you the valid range; you can override the settings in example/values-local.yaml:
+Note -- if you get a message like `IP is not in the valid range`, kubernetes will tell you the valid range; you can override the settings in example/values-local.yaml:
 ```
     db_host: 172.20.2.30
     ...
@@ -48,14 +48,15 @@ Clone this repo to your local environment. To start the example application in a
     * Browse http://localhost:32180 as `admin` with password `p@ssw0rd`
 * Or, to run only database/cache images for developing on your laptop:
     * Optional: set environment variables (as defined below) if you wish to override default values
-    * Invoke `make run_local` to bring up the back-end API with its dependent services mariadb, redis and rabbitmq
+    * Invoke `make apicrud-backend` to bring up the dependent services mariadb, redis and rabbitmq
+    * Invoke `make run_local` to bring up the back-end API
     * Invoke `make messaging_worker` to bring up the email/SMS worker back-end
     * Clone the [instantlinux/apicrud-ui](https://github.com/instantlinux/apicrud-ui) repo to a separate directory and follow the instructions given in its README to start and log into the front-end
 * Optional: configure outbound email (via GMail or another provider)
     * Head to [App Passwords](https://myaccount.google.com/apppasswords) account settings in your GMail account and generate an app password
     * Login as `admin` to the example demo UI (as above)
     * At upper right, go into Settings and choose Credentials tab
-    * Add a new entry: `key` is your GMail email address, `secret` is the app password
+    * Add a new entry with name `gmail` and vendor `Google`: `key` is your GMail email address, `secret` is the app password
     * Choose Settings tab, set the smarthost to `smtp.gmail.com`, SMTP port to `587`, and select the SMTP credential you just created
     * Also in Settings tab, update the URL to match the hostname and port number you see in address bar
     * At upper right, go into Profile and select Contact Info
@@ -66,7 +67,7 @@ Clone this repo to your local environment. To start the example application in a
     * See usage instructions for [media service](https://github.com/instantlinux/apicrud-media#usage), starting with the `admin` login
     * Subsequent logins will now have access to media features in the UI
 * Optional: if running API within a docker container, update the kubernetes secrets defined below; see instructions in [example/Makefile.sops](https://github.com/instantlinux/apicrud/blob/master/example/Makefile.sops)
-* Optional: `make prometheus_adhoc` will start the metric collector, with a GUI on port 9090 of its container IP address
+* Prometheus metrics collector has a GUI on port 9090 of its container IP address
 * Optional for Linux: a full ansible-based bare-metal k8s cluster management suite is published at [instantlinux/docker-tools](https://github.com/instantlinux/docker-tools)
 
 The example MVC application provided here in this repo is also used as a fixture for its unit tests. You can fork / clone this repo and experiment with your own extensions to the database models, controller logic, and openapi.yaml REST endpoints. See [instantlinux/apicrud-ui](https://github.com/instantlinux/apicrud-ui) for definitions of the views (as React.js code).
@@ -117,5 +118,7 @@ Authentication via external providers such as Google, Twitter, GitHub, Facebook 
 * Add a secret containing the two values to your kubernetes installation.
 
 * From the secret, define the environment variables `[vendor]_CLIENT_ID` and `[vendor]_CLIENT_SECRET` in the container's kubernetes deployment definition.
+
+* Define the enviroment variable `AUTH_METHODS` as `local,oauth2`; the order determines which method will be tried first (local database or SSO).
 
 * Once properly configured, you should see a `sign in with [vendor]` button on the login page.

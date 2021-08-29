@@ -155,7 +155,7 @@ class SessionAuth(object):
         elif (g.db.query(self.models.Contact).filter(
                 self.models.Contact.info == account.owner.identity,
                 self.models.Contact.type == 'email'
-                ).one().status == 'active'):
+                ).one().status in ('active', 'unconfirmed')):
             roles = ['admin', 'user'] if account.is_admin else ['user']
             if self.roles_from:
                 roles += self.get_roles(account.uid,
@@ -352,6 +352,7 @@ class SessionAuth(object):
 
     def methods(self):
         """Return list of available auth methods"""
+        print(self.config)
         internal_policy = self.config.LOGIN_INTERNAL_POLICY
         if 'local' not in self.config.AUTH_METHODS:
             internal_policy = 'closed'

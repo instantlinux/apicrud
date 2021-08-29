@@ -30,17 +30,6 @@ livenessProbe:
   httpGet:
     path: /api/v1/health
     port: 8085
-volumeMounts:
-- mountPath: /opt/app/config.yaml
-  name: config
-  subPath: config.yaml
-- mountPath: /opt/app/rbac.yaml
-  name: config
-  subPath: rbac.yaml
-volumes:
-- name: config
-  configMap:
-    name: example-media-config
 
 image:
   repository: registry.gitlab.com/instantlinux/apicrud-media/apicrud-media

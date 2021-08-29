@@ -7,6 +7,7 @@ api:
       app_env: local
       cors_origins: https://local.example.com,https://media-local.example.com,http://$(FQDN):3000,http://localhost:3000,http://localhost:32180,http:localhost:32085
       db_host: 10.101.2.30
+      jwt_issuer: localhost:32080
       public_url: http://localhost:32080
   service:
     clusterIP: 10.101.2.2
@@ -16,7 +17,7 @@ media:
   deployment:
     env:
       app_env: local
-      cors_origins: http://localhost:32080,http://localhost:32085,http://localhost:3000
+      cors_origins: http://localhost:32180,http://localhost:32085,http://localhost:3000
       db_host: 10.101.2.30
       public_url: http://localhost:32085
   ingress:
@@ -28,9 +29,6 @@ media-worker:
       celery_app: media_worker
       db_host: 10.101.2.30
       queue: media
-  image:
-    repository: instantlinux/apicrud-media-worker
-    tag: 0.0.33
 worker:
   deployment:
     env:

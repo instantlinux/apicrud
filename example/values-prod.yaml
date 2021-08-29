@@ -5,13 +5,14 @@ api:
     env:
       app_env: prod
       cors_origins: https://www.example.com,https://media.example.com
+      dev_issuer: www.example.com
       public_url: https://www.example.com
     xenv:
     - name: DB_AES_SECRET
       valueFrom:
         secretKeyRef:
-          name: example-redis-aes-secret
-          key: example-redis-aes-secret
+          name: example-db-aes-secret
+          key: example-db-aes-secret
     - name: DB_PASS
       valueFrom:
         secretKeyRef:
@@ -54,9 +55,6 @@ media-worker:
     env:
       celery_app: media_worker
       queue: media
-  image:
-    repository: instantlinux/apicrud-media-worker
-    tag: 0.0.32
 worker:
   deployment:
     env:

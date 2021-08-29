@@ -78,6 +78,35 @@ def app(application, controllers, models, path, redis_conn=None,
     return application.app
 
 
+def worker(models, path, func_send=None, redis_conn=None):
+    """Initialize a celery worker
+    
+    Args:
+      models (obj): all models
+      path (str): location of configuration .yaml / i18n files
+      func_send (obj): application's function to send messages
+      redis_conn (obj): connection to redis
+    """
+    start = utcnow().timestamp()
+    config = ServiceConfig(
+        babel_translation_directories='i18n;%s' % os.path.join(path, 'i18n'),
+        file=os.path.join(path, 'config.yaml'), models=models, reset=True,
+        template_folders=[os.path.join(path, 'templates')]).config
+    logging.basicConfig(level=config.LOG_LEVEL,
+                        format='%(asctime)s %(levelname)s %(message)s',
+                        datefmt='%m-%d %H:%M:%S')
+    logging.getLogger('werkzeug').setLevel(logging.ERROR)
+    state.config = config
+    state.func_send = func_send
+    state.models = models
+    state.redis_conn = redis_conn or redis.Redis(
+        host=config.REDIS_HOST, port=config.REDIS_PORT, db=0)
+    # Register send_contact, for usage-alert notifications
+    Metrics(func_send=func_send)
+    logging.info(dict(action='initialize_app', port=config.APP_PORT,
+                      duration='%.3f' % (utcnow().timestamp() - start)))
+    
+
 def before_request():
     """flask session setup - database and metrics"""
     g.db = database.get_session()
@@ -88,7 +117,13 @@ def before_request():
     except Exception:
         resource = None
     if resource != 'metrics':
-        Metrics().store('api_calls_total', labels=['resource=%s' % resource])
+        try:
+            Metrics().store('api_calls_total', labels=['resource=%s' % resource])
+        except redis.exceptions.ConnectionError:
+            msg = 'redis cache unreachable'
+            logging.error(dict(action='before_request', status=503, error=msg))
+            if resource != 'health':
+                abort(503, msg)
     if request.method != 'OPTIONS' and RateLimit().call():
         Metrics().store('api_errors_total', labels=['code=%d' % 429])
         abort(429)
@@ -98,9 +133,12 @@ def after_request(response):
     """flask headers and metrics - all responses get a cache-control header"""
     config = ServiceConfig().config
     response.cache_control.max_age = config.HTTP_RESPONSE_CACHE_MAX_AGE
-    Metrics().store(
-        'api_request_seconds_total', value=utcnow().timestamp() -
-        g.request_start_time.timestamp())
+    try:
+        Metrics().store(
+            'api_request_seconds_total', value=utcnow().timestamp() -
+            g.request_start_time.timestamp())
+    except (redis.exceptions.ConnectionError, ConnectionRefusedError):
+        pass
     return response
 
 

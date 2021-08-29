@@ -19,7 +19,7 @@ run_local: dev_requirements envsubst example/openapi.yaml
 	  LOGIN_MFA_COOKIE_NAME=totp \
 	  FLASK_ENV=development PYTHONPATH=example python3 -m example.main
 
-messaging_worker: apicrud-backend
+messaging_worker:
 	. $(VDIR)/bin/activate && cd example && \
 	  AMQ_HOST=$(RABBITMQ_IP) REDIS_HOST=$(REDIS_IP) TZ=UTC PYTHONPATH=.. \
 	  celery -A messaging worker -Q messaging_$(APP_ENV) \

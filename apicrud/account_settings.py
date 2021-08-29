@@ -7,6 +7,7 @@ from cachetools import TTLCache
 from collections import namedtuple
 import logging
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy_utils.types.encrypted.padding import InvalidPaddingError
 
 from .service_config import ServiceConfig
 
@@ -64,6 +65,9 @@ class AccountSettings(object):
                     return None
                 uid = record.administrator_id
                 self._admin_id = account_id = account.id
+            except InvalidPaddingError as ex:
+                logging.error(dict(action='AccountSettings', error=str(ex)))
+                return None
             try:
                 category_id = db_session.query(models.Category).filter_by(
                     uid=uid).filter_by(name='default').one().id
@@ -112,5 +116,5 @@ class AccountSettings(object):
             return self.db_session.query(self.models.Profile).filter(
                 self.models.Profile.uid == self.uid,
                 self.models.Profile.item == 'lang').one().value
-        except NoResultFound:
+        except (NoResultFound, AttributeError):
             return None

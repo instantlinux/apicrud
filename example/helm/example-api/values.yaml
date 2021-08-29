@@ -5,13 +5,14 @@ api:
     env:
       app_env: dev
       cors_origins: https://dev.example.com,https://media-dev.example.com
+      jwt_issuer: dev.example.com
       public_url: https://dev.example.com
     xenv:
     - name: DB_AES_SECRET
       valueFrom:
         secretKeyRef:
-          name: example-redis-aes-secret
-          key: example-redis-aes-secret
+          name: example-db-aes-secret
+          key: example-db-aes-secret
     - name: DB_PASS
       valueFrom:
         secretKeyRef:
@@ -46,8 +47,8 @@ media:
     - name: DB_AES_SECRET
       valueFrom:
         secretKeyRef:
-          name: example-redis-aes-secret
-          key: example-redis-aes-secret
+          name: example-db-aes-secret
+          key: example-db-aes-secret
     - name: DB_PASS
       valueFrom:
         secretKeyRef:
@@ -64,5 +65,5 @@ media:
           name: example-redis-aes-secret
           key: example-redis-aes-secret
   image:
-    tag: 0.0.33
+    tag: 0.0.34
   imagePullSecrets: [ name: regcred ]

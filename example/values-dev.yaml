@@ -5,6 +5,7 @@ api:
     env:
       app_env: dev
       cors_origins: https://dev.example.com,https://media-dev.example.com
+      jwt_issuer: dev.example.com
       public_url: https://dev.example.com
     xenv:
     - name: DB_AES_SECRET
@@ -54,9 +55,6 @@ media-worker:
     env:
       celery_app: media_worker
       queue: media
-  image:
-    repository: instantlinux/apicrud-media-worker
-    tag: 0.0.32
 worker:
   deployment:
     env:
