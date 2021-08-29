@@ -19,6 +19,7 @@ import models
 app = celery.Celery()
 app.config_from_object(celeryconfig)
 
+
 @app.task(name='tasks.messaging.send_contact')
 def send_contact(frm=None, to=None, to_uid=None, template=None, **kwargs):
     """

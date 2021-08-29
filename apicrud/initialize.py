@@ -80,7 +80,7 @@ def app(application, controllers, models, path, redis_conn=None,
 
 def worker(models, path, func_send=None, redis_conn=None):
     """Initialize a celery worker
-    
+
     Args:
       models (obj): all models
       path (str): location of configuration .yaml / i18n files
@@ -105,7 +105,7 @@ def worker(models, path, func_send=None, redis_conn=None):
     Metrics(func_send=func_send)
     logging.info(dict(action='initialize_app', port=config.APP_PORT,
                       duration='%.3f' % (utcnow().timestamp() - start)))
-    
+
 
 def before_request():
     """flask session setup - database and metrics"""
@@ -118,7 +118,8 @@ def before_request():
         resource = None
     if resource != 'metrics':
         try:
-            Metrics().store('api_calls_total', labels=['resource=%s' % resource])
+            Metrics().store('api_calls_total',
+                            labels=['resource=%s' % resource])
         except redis.exceptions.ConnectionError:
             msg = 'redis cache unreachable'
             logging.error(dict(action='before_request', status=503, error=msg))
