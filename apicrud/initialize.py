@@ -95,7 +95,6 @@ def worker(models, path, func_send=None, redis_conn=None):
     logging.basicConfig(level=config.LOG_LEVEL,
                         format='%(asctime)s %(levelname)s %(message)s',
                         datefmt='%m-%d %H:%M:%S')
-    logging.getLogger('werkzeug').setLevel(logging.ERROR)
     state.config = config
     state.func_send = func_send
     state.models = models

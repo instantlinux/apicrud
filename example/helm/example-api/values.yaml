@@ -65,5 +65,5 @@ media:
           name: example-redis-aes-secret
           key: example-redis-aes-secret
   image:
-    tag: 0.0.34
+    tag: 0.0.36
   imagePullSecrets: [ name: regcred ]

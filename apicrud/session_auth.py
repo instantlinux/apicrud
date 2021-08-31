@@ -352,7 +352,6 @@ class SessionAuth(object):
 
     def methods(self):
         """Return list of available auth methods"""
-        print(self.config)
         internal_policy = self.config.LOGIN_INTERNAL_POLICY
         if 'local' not in self.config.AUTH_METHODS:
             internal_policy = 'closed'
