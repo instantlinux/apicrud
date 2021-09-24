@@ -20,7 +20,7 @@ class TestMain(test_base.TestBase):
         expected = dict(
             description=self.config.APPNAME + ' - ' + 'main',
             notes=['build_date:' + _version.build_date,
-                   'schema:cac2000912a5',
+                   'schema:b972839aee75',
                    'apicrud_version:' + apiver.__version__],
             releaseId='unset',
             serviceId='main',

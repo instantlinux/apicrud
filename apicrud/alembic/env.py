@@ -4,7 +4,7 @@ import os
 from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
 
-from example.models import Base
+from apicrud.models import Base
 
 import sys
 src_path = os.path.abspath(
@@ -18,8 +18,6 @@ sys.path.append(src_path)
 #  cd example
 #  DB_URL=mysql+pymysql://$user:$pw@db00/example_local \
 #    PYTHONPATH=.. alembic revision --autogenerate -m "comment"
-#
-# TODO 27-sep-2021 - *** autogen not working yet since schema split ***
 #
 # Then run once with compare_type=True to check for omitted
 # minor changes
@@ -58,7 +56,7 @@ target_metadata = Base.metadata
 
 
 def include_object(
-        object, name, type_, reflected, compare_to, schema='main'):
+        object, name, type_, reflected, compare_to, schema='apicrud'):
     if type_ == 'table' and object.schema != schema:
         return False
     else:
@@ -106,7 +104,7 @@ def run_migrations_online():
             connection=connection,
             include_object=include_object,
             target_metadata=target_metadata,
-            version_table='alembic_version_main'
+            version_table='alembic_version_apicrud'
         )
 
         with context.begin_transaction():

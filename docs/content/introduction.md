@@ -14,6 +14,7 @@ Out of the box, here are some of the capabilities included in the example applic
 * Single-signon via external OAuth2 / OpenID / Active Directory providers (google, twitter, many others)
 * Encryption-at-rest for credentials
 * Microservice discovery (feature-flagging via announced endpoints)
+* Per-service database schema
 * GeoIP location lookup and map display
 * Customizable per-account grant limits (such as list size, number of contacts)
 * Application and usage-billing metrics, along with a prometheus viewer

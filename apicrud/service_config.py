@@ -11,6 +11,7 @@ import os
 import yaml
 
 from .const import Constants
+from .models import base
 
 state = {}
 config = None
@@ -135,6 +136,7 @@ class ServiceConfig(object):
                 key.upper() for key in state.keys()])(*state.values())
             state['schema'] = openapi['components']['schemas']['Config']
 
+        base.aes_secret = config.DB_AES_SECRET
         if models:
             state['models'] = models
         self.models = state.get('models')

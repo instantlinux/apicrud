@@ -16,7 +16,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.event import listen
-from sqlalchemy.exc import OperationalError, ProgrammingError
+from sqlalchemy.exc import NoReferencedTableError, OperationalError, \
+    ProgrammingError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import select, func
 import sys
@@ -112,7 +113,8 @@ def db_abort(error, rollback=False, **kwargs):
 
 
 def alembic_migrate(models, version, script_location, migrate=False,
-                    db_session=None, schema_maxtime=0, seed_func=None):
+                    db_session=None, schema='apicrud', schema_maxtime=0,
+                    seed_func=None):
     """run schema migrations
 
     Args:
@@ -121,6 +123,7 @@ def alembic_migrate(models, version, script_location, migrate=False,
       script_location (str): relative path name of alembic's env.py
       migrate (bool): whether to run alembic migrations
       db_session (obj): existing db session
+      schema (str): name of schema
       schema_maxtime (int): how long to wait for migration
       seed_func (function): function to seed initial records in blank db
     """
@@ -130,7 +133,7 @@ def alembic_migrate(models, version, script_location, migrate=False,
     cfg.set_main_option('script_location', script_location)
     script = alembic.script.ScriptDirectory.from_config(cfg)
     env = EnvironmentContext(cfg, script)
-    logmsg = dict(action='schema_update', version=version)
+    logmsg = dict(action='schema_update', name=schema, version=version)
     if (version == script.get_heads()[0]):
         logging.info(dict(message='is current', duration='%.3f' %
                           (utcnow().timestamp() - start), **logmsg))
@@ -154,7 +157,8 @@ def alembic_migrate(models, version, script_location, migrate=False,
         if db_engine.dialect.name == 'sqlite' and spatialite_loaded:
             conn.execute(select([func.InitSpatialMetaData(1)]))
         env.configure(connection=conn, target_metadata=Base.metadata,
-                      verbose=True, fn=_do_upgrade)
+                      verbose=True, fn=_do_upgrade,
+                      version_table='alembic_version_%s' % schema)
         with env.begin_transaction():
             env.run_migrations()
         logging.info(dict(message='finished migration', duration='%0.3f' %
@@ -165,7 +169,8 @@ def alembic_migrate(models, version, script_location, migrate=False,
         while version != script.get_heads()[0] and wait_time:
             time.sleep(5)
             wait_time -= 5
-    if version is None and seed_func:
+    if (version is None and seed_func and
+            schema == ServiceConfig().config.DB_SCHEMAS[-1]):
         if not db_session:
             db_session = get_session(scoped=True)
         seed_func(db_session)
@@ -184,20 +189,29 @@ def schema_update(db_engine, models):
     """
     db_session = get_session(scoped=True)
     config = ServiceConfig().config
-    script_location = config.DB_MIGRATIONS
-    try:
-        version = db_session.query(models.AlembicVersion).one().version_num
-    except (NoResultFound, OperationalError, ProgrammingError) as ex:
-        logging.warning('DB schema does not yet exist: %s' % str(ex))
-        version = None
-    db_session.close()
-    if config.DB_SCHEMA_MAXTIME == 0:
-        logging.info('found schema version=%s, skipping update' % version)
-    else:
-        alembic_migrate(models, version, script_location,
-                        migrate=config.DB_MIGRATE_ENABLE,
-                        schema_maxtime=config.DB_SCHEMA_MAXTIME,
-                        seed_func=seed_new_db)
+    for schema in config.DB_SCHEMAS:
+        if schema == 'apicrud':
+            script_location = os.path.abspath(os.path.join(os.path.dirname(
+                __file__), 'alembic'))
+        else:
+            script_location = config.DB_MIGRATIONS
+        try:
+            version = db_session.query(getattr(
+                models,
+                'AlembicVersion' + schema.capitalize())).one().version_num
+        except (NoResultFound, OperationalError, ProgrammingError,
+                NoReferencedTableError) as ex:
+            logging.warning('DB schema does not yet exist: %s' % str(ex))
+            version = None
+        db_session.close()
+        if config.DB_SCHEMA_MAXTIME == 0:
+            logging.info('found schema name=%s version=%s, skipping update' %
+                         (schema, version))
+        else:
+            alembic_migrate(models, version, script_location,
+                            migrate=config.DB_MIGRATE_ENABLE, schema=schema,
+                            schema_maxtime=config.DB_SCHEMA_MAXTIME,
+                            seed_func=seed_new_db)
 
 
 def seed_new_db(db_session):
@@ -240,10 +254,13 @@ def _init_db(db_url=None, engine=None, connection_timeout=0,
              geo_support=True):
     global db_engine
     if not db_engine:
+        if 'postgres' not in db_url:
+            execution_options = dict(schema_translate_map={
+                key: None for key in ServiceConfig().config.DB_SCHEMAS})
         try:
             db_engine = engine or create_engine(
-                db_url, pool_pre_ping=True,
-                pool_recycle=connection_timeout)
+                db_url, execution_options=execution_options,
+                pool_pre_ping=True, pool_recycle=connection_timeout)
         except Exception as ex:
             logging.error('action=init_db status=error message=%s' % str(ex))
             return None

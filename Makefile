@@ -51,7 +51,7 @@ openapi_deploy:
 flake8: dev_requirements
 	@echo "Running flake8 code analysis"
 	. $(VDIR)/bin/activate && flake8 apicrud example tests \
-	 --per-file-ignores='example/alembic/versions/*:E501,E122,E128' 
+	 --per-file-ignores='*/alembic/versions/*:E501,E122,E128' 
 
 dev_requirements: python_env requirements-dev.txt
 

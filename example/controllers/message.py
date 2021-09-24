@@ -3,7 +3,7 @@ from flask_babel import _
 
 from apicrud import AccessControl, BasicCRUD, Metrics
 
-from models import ListMessage
+from example.models import ListMessage
 
 
 class MessageController(BasicCRUD):

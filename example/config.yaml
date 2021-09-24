@@ -1,3 +1,4 @@
 ---
 # Config settings for apicrud.ServiceConfig
+db_schemas: [ apicrud, main ]
 service_name: main

@@ -13,7 +13,7 @@ from apicrud import ServiceConfig, initialize
 
 import controllers
 from messaging import send_contact
-import models
+from example import models
 
 application = connexion.FlaskApp(__name__)
 babel = Babel(application.app)

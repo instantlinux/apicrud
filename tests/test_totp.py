@@ -12,7 +12,7 @@ import pytest
 import test_base
 
 from apicrud import database
-from models import Account
+from example.models import Account
 
 
 class TestAuthTOTP(test_base.TestBase):

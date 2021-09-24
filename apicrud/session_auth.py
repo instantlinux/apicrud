@@ -345,9 +345,10 @@ class SessionAuth(object):
             account_id=account_id, uid=AccessControl().uid,
             resources=ServiceRegistry().find()['url_map'],
             settings_id=settings.get.id, totp=account.totp)
-        storage_id = settings.get.default_storage_id
-        if storage_id:
-            retval['storage_id'] = storage_id
+        if hasattr(account.settings, 'default_storage_id'):
+            storage_id = settings.get.default_storage_id
+            if storage_id:
+                retval['storage_id'] = storage_id
         return retval, 200
 
     def methods(self):

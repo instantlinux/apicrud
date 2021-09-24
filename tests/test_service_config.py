@@ -12,7 +12,7 @@ import yaml
 
 import test_base
 from apicrud import ServiceConfig
-import models
+from example import models
 
 
 class TestServiceConfig(test_base.TestBase):
@@ -32,29 +32,26 @@ class TestServiceConfig(test_base.TestBase):
             yaml.dump(updates, f)
         path = os.path.abspath(os.path.join(os.path.dirname(
             __file__), '..', 'example'))
-        ServiceConfig(file=configfile, reset=True,
-                      babel_translation_directories='i18n;' + (
-                          os.path.join(path, 'i18n')),
-                      db_seed_file=os.path.join(path, '..', 'tests', 'data',
-                                                'db_fixture.yaml'),
-                      db_migrations=os.path.join(path, 'alembic'),
-                      models=models, rbac_file=app_config['rbac_file'])
+        kwargs = dict(
+            babel_translation_directories='i18n;' + (
+                os.path.join(path, 'i18n')),
+            db_schemas=['apicrud', 'main'],
+            db_seed_file=os.path.join(path, '..', 'tests', 'data',
+                                      'db_fixture.yaml'),
+            db_migrations=os.path.join(path, 'alembic'),
+            rbac_file=app_config['rbac_file'])
+        ServiceConfig(file=configfile, models=models, reset=True, **kwargs)
         app_config.update(updates)
         app_config['log_level'] = logging.WARNING
 
         response = self.call_endpoint('/config', 'get')
         self.assertEqual(response.status_code, 200)
+        # TODO get this test to pass, db_schemas mismatch
         self.assertEqual(response.get_json(), app_config)
 
         # restore settings
         os.environ['APPNAME'] = env_save
-        ServiceConfig(reset=True,
-                      babel_translation_directories='i18n;' + (
-                          os.path.join(path, 'i18n')),
-                      db_seed_file=os.path.join(path, '..', 'tests', 'data',
-                                                'db_fixture.yaml'),
-                      db_migrations=os.path.join(path, 'alembic'),
-                      models=models, rbac_file=app_config['rbac_file'])
+        ServiceConfig(models=models, reset=True, **kwargs)
         os.remove(configfile)
 
     def test_get_config_unauthorized(self):

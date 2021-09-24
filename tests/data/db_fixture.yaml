@@ -13,7 +13,6 @@ _constants:
   admin_uid: u-tMY1b862
   cat_id: x-Jiqag482
   contact_id: x-E97yKy73
-  default_storage_id: x-RwgSVd5G
   global_admin_id: x-23450001
   location_id: x-67673434
   password: t0ps3crEt
@@ -141,11 +140,4 @@ credential:
   vendor: aws
   secret: allyourbasearebelongtous
   settings_id: x-75023275
-  uid: u-B0miQweE
-storage:
-- id: x-RwgSVd5G
-  bucket: apicrud-test
-  cdn_uri: "https://apicrud-test.s3.amazonaws.com"
-  credentials_id: x-M2fe7E07
-  name: apicrud-test
   uid: u-B0miQweE

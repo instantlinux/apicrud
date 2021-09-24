@@ -19,7 +19,7 @@ def healthcheck(app_name='api', service_name='main', tests=None, model=None,
       app_name (str): the application name for description
       service_name (str): microservice name for serviceId
       tests (list): optional tests to run
-      model (obj): schema model (usually AlembicVersion)
+      model (obj): schema model (usually AlembicVersionMain)
       releaseId (str): a release ID string
       build_date (str): build timestamp
       version (str): a version string

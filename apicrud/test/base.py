@@ -163,6 +163,7 @@ class TestBaseMixin(object):
                 file=configfile, reset=True,
                 babel_translation_directories=(
                     config.BABEL_TRANSLATION_DIRECTORIES),
+                db_schemas=config.DB_SCHEMAS,
                 db_seed_file=config.DB_SEED_FILE,
                 db_migrations=config.DB_MIGRATIONS,
                 models=models, rbac_file=config.RBAC_FILE).config

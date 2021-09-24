@@ -15,7 +15,7 @@ from apicrud import initialize
 from apicrud.test.base import TestBaseMixin, test_globals
 import controllers
 from main import application
-import models
+from example import models
 
 unittest.util._MAX_LENGTH = 2000
 

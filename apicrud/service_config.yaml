@@ -246,6 +246,13 @@ components:
             version. If this value is zero, the service will ignore
             database schema version and come up immediately.
           type: integer
+        db_schemas:
+          default: [ apicrud ]
+          description: List of database schema names
+          type: array
+          items:
+            maxLength: 24
+            type: string
         db_seed_file:
           default: db_seed.yaml
           description: >

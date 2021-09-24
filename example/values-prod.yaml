@@ -45,11 +45,18 @@ api:
           key: example-redis-aes-secret
 media:
   enabled: true
+  tlsHostname: media.example.com
   deployment:
     env:
       app_env: prod
       cors_origins: https://www.example.com,https://media.example.com
       public_url: https://media.example.com
+  ingress:
+    hosts:
+    - host: media.example.com
+      paths:
+      - path: /api
+        pathType: Prefix
 media-worker:
   deployment:
     env:
@@ -63,3 +70,22 @@ ui:
   deployment:
     env:
       react_app_api_url: https://www.example.com/api/v1
+  ingress:
+    rules:
+    - host: dev.example.com
+      http:
+        paths:
+        - path: /api
+          backend:
+            service:
+              name: example-api
+              port:
+                number: 80
+          pathType: Prefix
+        - path: /
+          backend:
+            service:
+              name: example-ui
+              port:
+                number: 80
+          pathType: Prefix

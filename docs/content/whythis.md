@@ -41,5 +41,6 @@ Each portion of the framework may be simple and straightforward to use, from the
 * Message-passing and background processing is often implemented inconsistently even though there are standards like Amazon SQS and RabbitMQ (the one included in this framework)
 * When applications are launched in a single language (usually English), internationalization is often costly to add later
 * Monetizing an application to pay for its own hosting and engineering support requires billing and usage-tracking that remain difficult to implement
+* SQLAlchemy and Alembic are labor-intensive to set up, and schema changes require manual effort
 
 While this framework doesn't solve those problems itself, here they are brought together in one place. If this framework were to take off, crowd-sourced solutions could be brought to bear on such challenges.

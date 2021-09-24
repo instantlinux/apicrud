@@ -12,7 +12,7 @@ from apicrud import initialize
 from apicrud.messaging.send import Messaging
 
 import celeryconfig
-import models
+from example import models
 
 # TODO add function to send to a recipients list
 

@@ -13,6 +13,9 @@ class Constants:
     AUTH_INVITEE = 'invitee'
     CACHE_SIZE = 16384
     DEFAULT_AWS_REGION = 'us-east-2'
+    DEFAULT_COUNTRY = u'US'
+    DEFAULT_LANG = u'en_US'
+    DEFAULT_WINDOW_TITLE = u'Example apicrud Application'
     LIB_MOD_SPATIALITE = ['/usr/lib/x86_64-linux-gnu/mod_spatialite.so',
                           '/usr/lib/mod_spatialite.so.7']
     MFA_BACKUP_CODELEN = 8

@@ -7,11 +7,12 @@ license: lgpl-2.1
 
 from sqlalchemy.ext.declarative import declarative_base
 
-from apicrud import ServiceConfig
-
 Base = declarative_base()
-# TODO set this value after initialize.app not at import time
-aes_secret = ServiceConfig().config.DB_AES_SECRET
+aes_secret = None
+
+
+def get_aes_secret():
+    return aes_secret
 
 
 class AsDictMixin(object):

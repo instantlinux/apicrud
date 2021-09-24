@@ -5,7 +5,7 @@ created 23-sep-2019 by richb@instantlinux.net
 from apicrud import health, ServiceConfig
 
 from example import _version
-from models import AlembicVersion
+from example.models import AlembicVersionMain
 
 
 class HealthController(object):
@@ -27,6 +27,6 @@ class HealthController(object):
         config = ServiceConfig().config
         return health.healthcheck(
             app_name=config.APPNAME, service_name=config.SERVICE_NAME,
-            tests=tests, model=AlembicVersion,
+            tests=tests, model=AlembicVersionMain,
             releaseId=_version.vcs_ref, build_date=_version.build_date,
             version=_version.__version__)
