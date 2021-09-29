@@ -310,21 +310,4 @@ def upgrade():
         batch_op.add_column(sa.Column('default_storage_id', sa.String(length=16), nullable=True))
         batch_op.create_foreign_key('settings_fk2', 'storageitems', ['default_storage_id'], ['id'])
 
-    op.create_table('events',
-    sa.Column('id', sa.String(length=16), nullable=False),
-    sa.Column('name', sa.String(length=64), nullable=False),
-    sa.Column('description', sa.TEXT(), nullable=True),
-    sa.Column('privacy', sa.String(length=8), server_default='public', nullable=False),
-    sa.Column('category_id', sa.String(length=16), nullable=False),
-    sa.Column('uid', sa.String(length=16), nullable=False),
-    sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
-    sa.Column('modified', sa.TIMESTAMP(), nullable=True),
-    sa.Column('status', sa.Enum('active', 'disabled'), nullable=False),
-    sa.ForeignKeyConstraint(['category_id'], ['categories.id'], ),
-    sa.ForeignKeyConstraint(['uid'], ['people.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('id'),
-    sa.UniqueConstraint('name', 'uid', name='uniq_event_owner')
-    )
-
     # ### end Alembic commands ###

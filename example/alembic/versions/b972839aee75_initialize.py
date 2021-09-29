@@ -24,6 +24,7 @@ def upgrade():
     sa.Column('subject', sa.String(length=128), nullable=True),
     sa.Column('sender_id', sa.String(length=16), nullable=False),
     sa.Column('recipient_id', sa.String(length=16), nullable=True),
+    sa.Column('album_id', sa.String(length=16), nullable=True),
     sa.Column('list_id', sa.String(length=16), nullable=True),
     sa.Column('privacy', sa.String(length=8), server_default='secret', nullable=False),
     sa.Column('published', sa.BOOLEAN(), nullable=True),

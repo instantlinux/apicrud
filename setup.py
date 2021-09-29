@@ -43,7 +43,8 @@ setuptools.setup(
                                'templates/*.j2', 'alembic.ini', 'alembic/*',
                                'alembic/versions/*.py']),
     packages=('apicrud', 'apicrud.auth', 'apicrud.controllers',
-              'apicrud.media', 'apicrud.messaging', 'apicrud.test'),
+              'apicrud.media', 'apicrud.messaging', 'apicrud.models',
+              'apicrud.test'),
     include_package_data=True,
     install_requires=[
         'alembic>=1.6.5',
