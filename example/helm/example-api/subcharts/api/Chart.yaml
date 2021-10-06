@@ -6,7 +6,7 @@ sources:
 - https://git.instantlinux.net/richb/example.git
 type: application
 version: 0.1.0
-appVersion: "0.0.74"
+appVersion: "0.2.2"
 dependencies:
 - name: chartlib
   version: 0.1.6

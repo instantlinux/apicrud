@@ -187,29 +187,6 @@ def upgrade():
         batch_op.create_index(batch_op.f('ix_listmembers_list_id'), ['list_id'], unique=False)
         batch_op.create_unique_constraint('uniq_listmember', ['list_id', 'uid'])
 
-    op.create_table('scopes',
-    sa.Column('id', sa.String(length=16), nullable=False),
-    sa.Column('name', sa.String(length=32), nullable=False),
-    sa.Column('settings_id', sa.String(length=16), nullable=False),
-    sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
-    sa.Column('modified', sa.TIMESTAMP(), nullable=True),
-    sa.Column('status', sa.Enum('active', 'disabled'), server_default='active',
-              nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('id'),
-    sa.UniqueConstraint('name', 'settings_id', name='uniq_scope_name'),
-    )
-    op.create_table('apikeyscopes',
-    sa.Column('apikey_id', sa.String(length=16), primary_key=True, nullable=False),
-    sa.Column('scope_id', sa.String(length=16), primary_key=True, nullable=False),
-    sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
-    sa.ForeignKeyConstraint(['apikey_id'], ['apikeys.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['scope_id'], ['scopes.id'], ondelete='CASCADE'),
-    )
-    with op.batch_alter_table('apikeyscopes', schema=None) as batch_op:
-        batch_op.create_index(batch_op.f('ix_apikey_scope_id'), ['apikey_id'], unique=False)
-        batch_op.create_unique_constraint('uniq_apikeyscope', ['apikey_id', 'scope_id'])
-
     op.create_table('settings',
     sa.Column('id', sa.String(length=16), nullable=False),
     sa.Column('name', sa.String(length=32), nullable=False),
@@ -255,6 +232,30 @@ def upgrade():
     sa.UniqueConstraint('name'),
     sa.UniqueConstraint('uid')
     )
+
+    op.create_table('scopes',
+    sa.Column('id', sa.String(length=16), nullable=False),
+    sa.Column('name', sa.String(length=32), nullable=False),
+    sa.Column('settings_id', sa.String(length=16), nullable=False),
+    sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('modified', sa.TIMESTAMP(), nullable=True),
+    sa.Column('status', sa.Enum('active', 'disabled'), server_default='active',
+              nullable=False),
+    sa.ForeignKeyConstraint(['settings_id'], ['settings.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('id'),
+    sa.UniqueConstraint('name', 'settings_id', name='uniq_scope_name'),
+    )
+    op.create_table('apikeyscopes',
+    sa.Column('apikey_id', sa.String(length=16), primary_key=True, nullable=False),
+    sa.Column('scope_id', sa.String(length=16), primary_key=True, nullable=False),
+    sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.ForeignKeyConstraint(['apikey_id'], ['apikeys.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['scope_id'], ['scopes.id'], ondelete='CASCADE'),
+    )
+    with op.batch_alter_table('apikeyscopes', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_apikey_scope_id'), ['apikey_id'], unique=False)
+        batch_op.create_unique_constraint('uniq_apikeyscope', ['apikey_id', 'scope_id'])
 
     op.create_table(
     'credentials',
@@ -310,4 +311,8 @@ def upgrade():
         batch_op.add_column(sa.Column('default_storage_id', sa.String(length=16), nullable=True))
         batch_op.create_foreign_key('settings_fk2', 'storageitems', ['default_storage_id'], ['id'])
 
+    """
+    with op.batch_alter_table('scopes', schema=None) as batch_op:
+        batch_op.create_foreign_key('scopes_fk2', 'settings', ['settings_id'], ['id'])
+    """
     # ### end Alembic commands ###

@@ -253,11 +253,15 @@ components:
           items:
             maxLength: 24
             type: string
+        db_seed_enable:
+          default: true
+          description: The application provides an initial seed database
+          type: boolean
         db_seed_file:
           default: db_seed.yaml
           description: >
             Name of a file containing records for seeding a new database
-            file, relative to the openapi_file's parent directory
+            file, relative to the application's installation directory
           type: string
         debug:
           default: false

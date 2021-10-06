@@ -11,4 +11,4 @@ media-worker:
       queue: media
   image:
     repository: registry.gitlab.com/instantlinux/apicrud-media/apicrud-media-worker
-    tag: 0.0.36
+    tag: bld_e395a7e

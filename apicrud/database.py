@@ -224,19 +224,21 @@ def seed_new_db(db_session):
     Args:
       db_session (obj): existing db session
     """
-
+    config = ServiceConfig().config
+    models = ServiceConfig().models
+    if not config.DB_SEED_ENABLE:
+        return
+    with open(config.DB_SEED_FILE, 'rt', encoding='utf8') as f:
+        records = yaml.safe_load(f)
     if db_session.bind.dialect.name == 'sqlite':
         cmd = 'pragma foreign_keys'
     else:
         cmd = 'SET FOREIGN_KEY_CHECKS'
     db_session.execute('%s=off' % cmd)
-    with open(ServiceConfig().config.DB_SEED_FILE, 'rt', encoding='utf8') as f:
-        records = yaml.safe_load(f)
     if 'tz' not in records:
         with open(os.path.join(os.path.dirname(
                 __file__), 'timezones.yaml'), 'rt', encoding='utf8') as f:
             records['tz'] = yaml.safe_load(f)['tz']
-    models = ServiceConfig().models
     for resource, records in records.items():
         if resource == '_constants':
             continue
