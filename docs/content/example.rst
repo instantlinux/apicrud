@@ -1,6 +1,6 @@
 Example Application
 ===================
-This example serves a simple message-board. The `source code <https://github.com/instantlinux/apicrud/tree/master/example>`_ provides all the files needed to launch the service into a kubernetes cluster.
+This example serves a simple message-board. The `source code <https://github.com/instantlinux/apicrud/tree/main/example>`_ provides all the files needed to launch the service into a kubernetes cluster.
 
 
 .. code-block::

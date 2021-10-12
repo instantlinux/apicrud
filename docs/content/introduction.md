@@ -41,4 +41,4 @@ This system is built with the following technologies: [babel](http://babel.pocoo
 
 ## License
 
-Software copyright &copy; 2020 by Richard Braun &bull; [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+Software copyright &copy; 2021 by Richard Braun &bull; [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)

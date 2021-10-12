@@ -1,4 +1,4 @@
-.. apicrud documentation master file, created by
+.. apicrud documentation top-level file, created by
    sphinx-quickstart on Wed Jul  1 08:41:03 2020.
 
 APIcrud Framework
