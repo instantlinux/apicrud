@@ -66,7 +66,7 @@ Note -- if you get a message like `IP is not in the valid range`, kubernetes wil
     * Set up an S3 bucket in your AWS or compatible account
     * See usage instructions for [media service](https://github.com/instantlinux/apicrud-media#usage), starting with the `admin` login
     * Subsequent logins will now have access to media features in the UI
-* Optional: if running API within a docker container, update the kubernetes secrets defined below; see instructions in [example/Makefile.sops](https://github.com/instantlinux/apicrud/blob/master/example/Makefile.sops)
+* Optional: if running API within a docker container, update the kubernetes secrets defined below; see instructions in [example/Makefile.sops](https://github.com/instantlinux/apicrud/blob/main/example/Makefile.sops)
 * Prometheus metrics collector has a GUI on port 9090 of its container IP address
 * Optional for Linux: a full ansible-based bare-metal k8s cluster management suite is published at [instantlinux/docker-tools](https://github.com/instantlinux/docker-tools)
 
@@ -90,7 +90,7 @@ UI_DEV_PORT | `32180` | TCP port for UI (local dev k8s)
 
 ### Secrets
 
-Kubernetes needs secrets defined. Default values for these are under example/secrets/. See the [example/Makefile.sops](https://github.com/instantlinux/apicrud/blob/master/example/Makefile.sops) (and the lengthy [kubernetes secrets doc](https://kubernetes.io/docs/concepts/configuration/secret/) for instructions on modifying them or adding new secrets for multiple namespace environments.
+Kubernetes needs secrets defined. Default values for these are under example/secrets/. See the [example/Makefile.sops](https://github.com/instantlinux/apicrud/blob/main/example/Makefile.sops) (and the lengthy [kubernetes secrets doc](https://kubernetes.io/docs/concepts/configuration/secret/) for instructions on modifying them or adding new secrets for multiple namespace environments.
 
 Secret | Description
 ------ | -----------
@@ -109,7 +109,7 @@ Authentication via external providers such as Google, Twitter, GitHub, Facebook 
 
 * Don't even try to begin setting up SSO without having your application running with a valid SSL certificate (served by an https URL). Details of doing that are beyond scope of this document; there are mechanisms such as cert-manager that automate this. To run a new service in your own environment this will be one of the first steps to prepare it for your users.
 
-* Look in the [service_config.yaml](https://github.com/instantlinux/apicrud/blob/master/apicrud/service_config.yaml) defaults to see if auth_params for your provider are defined; you can add others but most of the major providers are pre-configured.
+* Look in the [service_config.yaml](https://github.com/instantlinux/apicrud/blob/main/apicrud/service_config.yaml) defaults to see if auth_params for your provider are defined; you can add others but most of the major providers are pre-configured.
 
 * When you request or reconfigure the provider's client, specify the "redirect URI" in the form `https://[your domain]/api/v1/auth_callback/[provider]`, such as `https://www.example.com/api/v1/auth_callback/google`.
 
