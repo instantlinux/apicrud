@@ -181,7 +181,8 @@ class Messaging(object):
         try:
             from_contact = self.db_session.query(Contact).filter_by(
                 uid=frm, type=to_contact.type).filter(
-                    (Contact.status.in_(['active', 'unconfirmed']))).first()
+                    (Contact.status.in_(['active', 'unconfirmed']))).order_by(
+                        Contact.rank).first()
         except Exception:
             # We don't care at all why this fails; next step catches error
             pass

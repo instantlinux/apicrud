@@ -472,6 +472,13 @@ class BasicCRUD(object):
                 return dict(message=_(u'invalid email address')), 405
         elif 'type' in body and body.get('type') not in ['sms', 'email']:
             return dict(message='contact type not yet supported'), 405
+        if not body.get('rank'):
+            try:
+                count = g.db.query(self.models.Contact).filter_by(
+                    uid=body.get('uid'), type=body.get('type')).count()
+            except Exception as ex:
+                return db_abort(str(ex), **logmsg)
+            body['rank'] = count + 1
         if body.get('uid', acc.uid) != acc.uid and 'admin' not in acc.auth:
             logging.warning(dict(message=_(u'access denied'), **logmsg))
             return dict(message=_(u'access denied')), 403
