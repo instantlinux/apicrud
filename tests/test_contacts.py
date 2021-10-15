@@ -22,7 +22,7 @@ class TestContacts(test_base.TestBase):
             carrier=None, label='home', type='email', privacy='invitee',
             info='addme@conclave.events', uid=self.test_uid)
         expected = dict(
-            status='unconfirmed', muted=False, rank=1, rbac='dru',
+            status='unconfirmed', muted=False, rank=2, rbac='dru',
             owner=self.test_person_name, **record)
         response = self.call_endpoint('/contact', 'post', data=record)
         self.assertEqual(response.status_code, 201)
@@ -43,7 +43,7 @@ class TestContacts(test_base.TestBase):
         updated = dict(
             label='mobile', info='changed@conclave.events')
         expected = dict(
-            carrier=None, status='unconfirmed', rank=1, rbac='dru',
+            carrier=None, status='unconfirmed', rbac='dru',
             owner=self.test_person_name, **record)
 
         response = self.call_endpoint('/contact', 'post', data=record)
@@ -57,6 +57,7 @@ class TestContacts(test_base.TestBase):
         result = response.get_json()
         del(result['created'])
         del(result['modified'])
+        del(result['rank'])
         expected.update(dict(id=id, **updated))
         self.assertEqual(result, expected)
         self.mock_messaging.assert_has_calls([
@@ -68,7 +69,7 @@ class TestContacts(test_base.TestBase):
             carrier=None, label='home', type='email', privacy='invitee',
             info='confirmme@conclave.events', uid=self.test_uid)
         expected = dict(
-            status='unconfirmed', muted=False, rank=1, rbac='dru',
+            status='unconfirmed', muted=False, rbac='dru',
             owner=self.test_person_name, **record)
         confirmed = dict(
             auth='person', info=record['info'], iss=self.config.JWT_ISSUER,
@@ -84,6 +85,7 @@ class TestContacts(test_base.TestBase):
         response = self.call_endpoint('/contact/%s' % id, 'get')
         result = response.get_json()
         del(result['created'])
+        del(result['rank'])
         expected['id'] = id
         self.assertEqual(result, expected)
 
