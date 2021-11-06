@@ -75,6 +75,7 @@ contact:
   info: hidden-adm@test.conclave.events
   muted: False
   privacy: member
+  rank: 2
   type: email
   uid: u-tMY1b862
   status: active

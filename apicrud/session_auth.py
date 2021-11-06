@@ -423,7 +423,7 @@ class SessionAuth(object):
         """
         acc = AccessControl()
         resource = resource or acc.primary_resource
-        current = set(acc.auth)
+        current = set(acc.auth if acc.auth else [])
         if force or ('%s-%s-%s' % (resource, id, Constants.AUTH_INVITEE)
                      not in current):
             # TODO handle privilege downgrade member/host->invitee
