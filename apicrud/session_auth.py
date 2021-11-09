@@ -423,12 +423,23 @@ class SessionAuth(object):
         """
         acc = AccessControl()
         resource = resource or acc.primary_resource
-        current = set(acc.auth if acc.auth else [])
+        if not acc.auth:
+            logging.warning(dict(action='update_auth', uid=acc.uid,
+                                 resource=resource, id=id, message='no auth'))
+            return
+        current = set(acc.auth)
         if force or ('%s-%s-%s' % (resource, id, Constants.AUTH_INVITEE)
                      not in current):
             # TODO handle privilege downgrade member/host->invitee
             current |= set(self.get_roles(acc.uid, member_model=member_model,
                                           resource=resource, id=id))
             creds = request.authorization
-            g.session.update(creds.username, creds.password, 'auth',
-                             ':'.join(current))
+            try:
+                g.session.update(creds.username, creds.password, 'auth',
+                                 ':'.join(current))
+            except TypeError as ex:
+                # TODO: figure out why this exception happens
+                logging.error(dict(
+                    action='update_auth', message=str(ex), uid=acc.uid,
+                    username=creds.username, auth=':'.join(current),
+                    resource=resource, id=id))

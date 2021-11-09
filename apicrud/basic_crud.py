@@ -424,6 +424,7 @@ class BasicCRUD(object):
         except Exception as ex:
             return db_abort(str(ex), **logmsg)
         count = 0
+        # logging.info(dict(step=1, membership=acc.primary_resource, **logmsg))
         for result in results[:limit]:
             record = result.as_dict()
             if hasattr(self.model, 'owner'):
@@ -432,6 +433,8 @@ class BasicCRUD(object):
             if record.get('category_id'):
                 record['category'] = result.category.name
             # TODO - takes 30ms per record for rbac: optimize or redesign
+            # logging.info(dict(step=2, id=record.get('id'),
+            #     privacy=record.get('privacy')))
             record['rbac'] = ''.join(sorted(list(
                 acc.rbac_permissions(owner_uid=record.get('uid'),
                                      membership=acc.primary_resource,

@@ -227,6 +227,8 @@ class AccessControl(object):
         Returns:
           set: actions available to principal
         """
+        # logging.info(dict(step=3, owner_uid=owner_uid, membership=membership,
+        #                   id=id, privacy=privacy))
         if query:
             try:
                 record = query.one()
@@ -257,6 +259,10 @@ class AccessControl(object):
                 deny_delete = set('d')
             except NoResultFound:
                 pass
+
+        # logging.info(dict(step=4, owner_uid=owner_uid, membership=membership,
+        #                   id=id, privacy=privacy, auth=self.auth,
+        #                   resource=self.resource))
 
         actions, defaults = (set(), set())
         if privacy == 'public' or (
@@ -300,6 +306,7 @@ class AccessControl(object):
                               '%s:%s' % (self.resource, match_id))):
                         actions |= policy['actions']
         actions -= deny_delete
+        # logging.info(dict(step=5, id=id, actions=actions))
         return actions if len(actions) else defaults
 
     def apikey_create(self):

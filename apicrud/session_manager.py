@@ -125,6 +125,8 @@ class SessionManager(object):
           arg (str): key to update
           value (str): new value for key
           key_id (str): session key ID for redis (defaults to uid)
+        Raises:
+          TypeError if uid/token not found in redis
         """
         key = 'ses:%s:%s' % (key_id or uid, token[-3:])
         data = self.get(uid, token)
