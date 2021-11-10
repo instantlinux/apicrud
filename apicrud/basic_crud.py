@@ -115,6 +115,7 @@ class BasicCRUD(object):
         grant = (self.resource if self.resource.endswith('s')
                  else self.resource + 's')
         limit = Grants().get(grant, uid=uid)
+        # TODO filter expired and disabled records
         if grant in ServiceConfig().config.DEFAULT_GRANTS and g.db.query(
                 self.model).filter_by(uid=uid).count() >= limit:
             msg = _('user limit exceeded')
@@ -203,7 +204,8 @@ class BasicCRUD(object):
                 ident=acc.identity, duration=utils.req_duration()))
             return retval, 200
         else:
-            return dict(message=_(u'access denied'), id=id), 403
+            return (dict(message=_(u'access denied'), id=id),
+                    403 if acc.auth else 401)
 
     @staticmethod
     def update(id, body, access='u', limit_related={}):

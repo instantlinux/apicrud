@@ -168,7 +168,8 @@ class AccessControl(object):
             logging.info(dict(
                 action='with_permission', message=_('access denied'),
                 resource=self.resource, uid=self.uid, ident=self.identity,
-                id=id, access=access, rbac=rbac, duration='%.3f' % duration))
+                id=id, access=access, rbac=''.join(rbac),
+                duration='%.3f' % duration))
         return False
 
     def with_filter(self, query, access='r'):
