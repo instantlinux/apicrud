@@ -2,14 +2,14 @@
 geocoder = "*"
 
 # alpine provides pre-built wheels for these
-boto3 = "==1.17.93"
-botocore = "==1.20.93"
+boto3 = "==1.18.49"
+botocore = "==1.21.49"
 cryptography = "==3.3.2"
-Flask = "==2.0.1"
+Flask = "==2.0.2"
 Flask-Babel = "==2.0.0"
 itsdangerous = "==2.0.1"
 pycryptodomex = "==3.10.1"
-requests = "==2.25.1"
+requests = "==2.26.0"
 
 # for faster builds, pin these versions in sync with images
 # instantlinux/python-builder and instantlinux/python-uwsgi
@@ -23,7 +23,7 @@ connexion = "*"
 dollar-ref = "*"
 Flask-Cors = "*"
 # GeoAlchemy2 = "*"
-greenlet = "==1.0.0"
+greenlet = "==1.1.2"
 ldap3 = "*"
 passlib = "*"
 PyJWT = "*"
@@ -32,20 +32,20 @@ pyotp = "*"
 pytz = "*"
 redis = "*"
 # Held back due to SAWarnings about many-to-many tables
-SQLAlchemy = "==1.3.24"
-SQLAlchemy-Utils = "==0.37.6"
+SQLAlchemy = "<1.4.0"
+SQLAlchemy-Utils = "*"
 swagger-ui-bundle = "*"
 urllib3 = "*"
 
 # Transitive dependencies pinned to versions of python-wsgi base image
 arrow = "==0.17.0"
 cffi = "==1.14.5"
-six = "==1.15.0"
+six = "==1.16.0"
 
 [dev-packages]
-coverage = "==5.5"
+coverage = "==6.2"
 fakeredis = "*"
-flake8 = "==3.9.2"
+flake8 = "==4.0.1"
 httpretty = "*"
 pytest = "*"
 pytest-cov = "*"

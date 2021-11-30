@@ -12,7 +12,7 @@ stages:
   - Publish Packages
   - Clean
 
-image: registry.gitlab.com/instantlinux/docker-tools/python-builder:3.9.5-r1
+image: registry.gitlab.com/instantlinux/docker-tools/python-builder:3.9.7-r4
 
 before_script:
   - export TAG=bld_$CI_PIPELINE_IID_${CI_COMMIT_SHA:0:7}

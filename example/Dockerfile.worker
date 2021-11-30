@@ -1,4 +1,4 @@
-FROM instantlinux/python-wsgi:3.9.5-r1
+FROM instantlinux/python-wsgi:3.9.7-r4
 MAINTAINER Rich Braun "richb@instantlinux.net"
 
 ARG BUILD_DATE
