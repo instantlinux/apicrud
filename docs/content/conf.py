@@ -14,7 +14,7 @@ from apicrud._version import __version__  # noqa
 # -- Project information -----------------------------------------------------
 
 project = 'APIcrud'
-copyright = '2020, Rich Braun'
+copyright = '2022, Rich Braun'
 author = 'Rich Braun'
 version = __version__
 # The full version, including alpha/beta/rc tags

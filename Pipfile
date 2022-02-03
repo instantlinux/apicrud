@@ -30,7 +30,8 @@ PyJWT = "*"
 PyMySQL = "*"
 pyotp = "*"
 pytz = "*"
-redis = "*"
+# fakeredis doesn't handle newest redis
+redis = "<4.1.0"
 # Held back due to SAWarnings about many-to-many tables
 SQLAlchemy = "<1.4.0"
 SQLAlchemy-Utils = "*"
@@ -38,12 +39,12 @@ swagger-ui-bundle = "*"
 urllib3 = "*"
 
 # Transitive dependencies pinned to versions of python-wsgi base image
-arrow = "==0.17.0"
+arrow = "==1.2.2"
 cffi = "==1.14.5"
 six = "==1.16.0"
 
 [dev-packages]
-coverage = "==6.2"
+coverage = "==6.3"
 fakeredis = "*"
 flake8 = "==4.0.1"
 httpretty = "*"
