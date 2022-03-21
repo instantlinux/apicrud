@@ -33,7 +33,7 @@ sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
 unify==0.5
 untokenize==0.1.1
-waitress==2.0.0
+waitress==2.1.1
 WebOb==1.8.7
 WebTest==3.0.0
 yapf==0.32.0
