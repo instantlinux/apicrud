@@ -6,8 +6,8 @@
 #  (update transitive dependencies, weeding out dups from requirements-dev)
 
 autodoc==0.5.0
-pymdown-extensions==9.1
-Sphinx==4.4.0
+pymdown-extensions==9.4
+Sphinx==4.5.0
 sphinxcontrib-mermaid==0.7.1
 sphinx-markdown-parser==0.2.4
 sphinx-markdown-tables==0.0.15
@@ -18,7 +18,7 @@ sphinx-rtd-theme==1.0.0
 
 # transitive dependencies
 alabaster==0.7.12
-beautifulsoup4==4.10.0
+beautifulsoup4==4.11.1
 commonmark==0.9.1
 imagesize==1.3.0
 Markdown==3.3.6
@@ -33,7 +33,7 @@ sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
 unify==0.5
 untokenize==0.1.1
-waitress==2.0.0
+waitress==2.1.1
 WebOb==1.8.7
 WebTest==3.0.0
 yapf==0.32.0

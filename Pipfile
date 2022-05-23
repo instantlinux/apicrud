@@ -2,6 +2,7 @@
 geocoder = "*"
 
 # alpine provides pre-built wheels for these
+Authlib = "==0.15.5"
 boto3 = "==1.18.49"
 botocore = "==1.21.49"
 cryptography = "==3.3.2"
@@ -14,7 +15,6 @@ requests = "==2.26.0"
 # for faster builds, pin these versions in sync with images
 # instantlinux/python-builder and instantlinux/python-uwsgi
 alembic = "*"
-Authlib = "*"
 b2sdk = "*"
 cachetools = "*"
 celery = "*"
@@ -37,6 +37,12 @@ SQLAlchemy = "<1.4.0"
 SQLAlchemy-Utils = "*"
 swagger-ui-bundle = "*"
 urllib3 = "*"
+# Held back due to
+# AttributeError: 'LocalStack' object has no attribute '__ident_func__'
+werkzeug = "==2.0.2"
+# Held back due to
+# AttributeError: module 'jinja2.ext' has no attribute 'autoescape'
+jinja2 = "==3.0.3"
 
 # Transitive dependencies pinned to versions of python-wsgi base image
 arrow = "==1.2.2"
@@ -44,7 +50,7 @@ cffi = "==1.14.5"
 six = "==1.16.0"
 
 [dev-packages]
-coverage = "==6.3"
+coverage = "==6.3.3"
 fakeredis = "*"
 flake8 = "==4.0.1"
 httpretty = "*"
