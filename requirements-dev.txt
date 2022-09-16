@@ -63,7 +63,7 @@ keyring==23.5.1; python_version >= '3.7'
 kombu==5.2.4; python_version >= '3.7'
 ldap3==2.9.1
 logfury==1.0.1
-mako==1.2.0; python_version >= '3.7'
+mako==1.2.2; python_version >= '3.7'
 markupsafe==2.1.1; python_version >= '3.7'
 mccabe==0.6.1
 openapi-schema-validator==0.2.3; python_version >= '3.7' and python_full_version < '4.0.0'
