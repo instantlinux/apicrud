@@ -39,7 +39,7 @@ swagger-ui-bundle = "*"
 urllib3 = "*"
 # Held back due to
 # AttributeError: 'LocalStack' object has no attribute '__ident_func__'
-werkzeug = "==2.0.2"
+werkzeug = "==2.2.3"
 # Held back due to
 # AttributeError: module 'jinja2.ext' has no attribute 'autoescape'
 jinja2 = "==3.0.3"
