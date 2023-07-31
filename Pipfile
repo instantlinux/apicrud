@@ -30,8 +30,7 @@ PyJWT = "*"
 PyMySQL = "*"
 pyotp = "*"
 pytz = "*"
-# fakeredis doesn't handle newest redis
-redis = "<4.1.0"
+redis = "*"
 # Held back due to SAWarnings about many-to-many tables
 SQLAlchemy = "<1.4.0"
 SQLAlchemy-Utils = "*"

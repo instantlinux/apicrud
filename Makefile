@@ -57,7 +57,7 @@ dev_requirements: python_env requirements-dev.txt
 
 requirements-dev.txt: python_env
 	@echo Updating Pipfile.lock and requirements-dev.txt
-	. $(VDIR)/bin/activate && pipenv lock --requirements --dev > $@ || rm $@
+	. $(VDIR)/bin/activate && pipenv requirements --dev > $@ || rm $@
 	@echo "Installing dev requirements"
 	. $(VDIR)/bin/activate && pip install -r $@
 # TODO remove this when doc build works with sphinx 4.x
