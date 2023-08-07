@@ -85,9 +85,14 @@ class AccessControl(object):
             if header_auth in request.headers:
                 # TODO: add support for HMAC request signing in place
                 # of this plain-text X-Api-Key header method
-                prefix, secret = request.headers.get(header_auth).split('.')
-                item = g.session.get(None, self.apikey_hash(secret)[:8],
-                                     key_id=prefix)
+                try:
+                    prefix, secret = request.headers.get(
+                        header_auth).split('.')
+                except ValueError:
+                    item = None
+                else:
+                    item = g.session.get(None, self.apikey_hash(secret)[:8],
+                                         key_id=prefix)
                 if item:
                     self.auth = item.get('auth').split(':')
                     self.uid = uid = item.get('sub')

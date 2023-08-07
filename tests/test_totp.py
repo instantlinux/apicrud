@@ -39,9 +39,9 @@ class TestAuthTOTP(test_base.TestBase):
             response = self.call_endpoint('/account/%s' % acc.id, 'get')
             self.assertEqual(response.status_code, 200)
             result = response.get_json()
-            del(result['created'])
-            del(result['last_login'])
-            del(result['uid'])
+            del result['created']
+            del result['last_login']
+            del result['uid']
             expected['id'] = acc.id
             self.assertEqual(result, expected)
 

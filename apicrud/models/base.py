@@ -30,7 +30,7 @@ class AsDictMixin(object):
         retval = self.__dict__.copy()
         if hasattr(self, '__rest_exclude__'):
             for col in self.__rest_exclude__:
-                del(retval[col])
+                del retval[col]
         if hasattr(self, '__rest_related__'):
             for key in self.__rest_related__:
                 retval[key] = [rec.id for rec in getattr(self, key)]

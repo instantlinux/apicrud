@@ -12,9 +12,9 @@ dependencies:
   version: 0.1.7
   repository: https://instantlinux.github.io/docker-tools
 - name: api
-  version: 0.1.0
+  version: 0.1.1
   repository: file://subcharts/api
 - name: media
-  version: 0.1.0
+  version: 0.1.1
   repository: file://subcharts/media
   condition: media.enabled

@@ -32,7 +32,7 @@ class TestContacts(test_base.TestBase):
                       type='email')])
         response = self.call_endpoint('/contact/%s' % id, 'get')
         result = response.get_json()
-        del(result['created'])
+        del result['created']
         expected['id'] = id
         self.assertEqual(result, expected)
 
@@ -55,9 +55,9 @@ class TestContacts(test_base.TestBase):
                          response.get_json().get('message'))
         response = self.call_endpoint('/contact/%s' % id, 'get')
         result = response.get_json()
-        del(result['created'])
-        del(result['modified'])
-        del(result['rank'])
+        del result['created']
+        del result['modified']
+        del result['rank']
         expected.update(dict(id=id, **updated))
         self.assertEqual(result, expected)
         self.mock_messaging.assert_has_calls([
@@ -84,16 +84,16 @@ class TestContacts(test_base.TestBase):
                       type='email')])
         response = self.call_endpoint('/contact/%s' % id, 'get')
         result = response.get_json()
-        del(result['created'])
-        del(result['rank'])
+        del result['created']
+        del result['rank']
         expected['id'] = id
         self.assertEqual(result, expected)
 
         confirmed['contact_id'] = id
         response = self.call_endpoint('/contact/confirm/%s' % token, 'post')
         result = response.get_json()
-        del(result['exp'])
-        del(result['jti'])
+        del result['exp']
+        del result['jti']
         self.assertEqual(response.status_code, 200)
         self.assertEqual(result, confirmed)
 
@@ -107,7 +107,7 @@ class TestContacts(test_base.TestBase):
         self.assertEqual(response.status_code, 200, 'get failed message=%s' %
                          response.get_json().get('message'))
         result = response.get_json()
-        del(result['created'])
+        del result['created']
         self.assertEqual(result, expected)
 
     @pytest.mark.slow

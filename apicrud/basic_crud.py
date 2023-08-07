@@ -187,7 +187,7 @@ class BasicCRUD(object):
         if hasattr(self.model, 'category_id') and retval['category_id']:
             retval['category'] = record.category.name
         if 'modified' in retval and not retval['modified']:
-            del(retval['modified'])
+            del retval['modified']
         eid = None if hasattr(self.model, 'event_id') else (
             acc.auth_ids[acc.primary_resource] or [None])[0]
         retval['rbac'] = ''.join(sorted(list(
@@ -375,7 +375,7 @@ class BasicCRUD(object):
                 if len(filter) == 1:
                     return dict(count=0, items=[]), 200
                 else:
-                    del(filter['id'])
+                    del filter['id']
         elif 'filter' in kwargs and not filter:
             return dict(count=0, items=[]), 200
         if filter.get('account_id') and not hasattr(self.model, 'account_id'):

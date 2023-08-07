@@ -3,16 +3,20 @@
 #   PYPI_PASSWORD, PYPI_USER, REGISTRY_URI
 
 variables:
-  PLATFORMS: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
+#  PLATFORMS: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
+  PLATFORMS: linux/amd64,linux/arm64
+  IMAGE: example-api
+  REGISTRY: $REGISTRY_URI/$CI_PROJECT_PATH
   
 stages:
   - Analyze and Unit Test
   - Images
   - Functional Tests
+  - Security Scan
   - Publish Packages
   - Clean
 
-image: registry.gitlab.com/instantlinux/docker-tools/python-builder:3.9.7-r4
+image: registry.gitlab.com/instantlinux/docker-tools/python-builder:3.11.4-r0
 
 before_script:
   - export TAG=bld_$CI_PIPELINE_IID_${CI_COMMIT_SHA:0:7}
@@ -50,6 +54,39 @@ worker:
 test:
   stage: Functional Tests
   script: make test_functional
+
+security_scan_trivy:
+  services: [ "docker:dind" ]
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  stage: Security Scan
+  variables:
+    GIT_STRATEGY: none
+    TRIVY_CACHE_DIR: .trivycache/
+    TRIVY_DEBUG: "true"
+    TRIVY_EXIT_CODE: 1
+    TRIVY_FORMAT: json
+    TRIVY_OUTPUT: gl-container-scanning-report.json
+    TRIVY_SEVERITY: HIGH,CRITICAL
+    TRIVY_VULN_TYPE: os,library
+  script:
+  - export TAG=bld_$CI_PIPELINE_IID_${CI_COMMIT_SHA:0:7}
+  - trivy image --clear-cache
+  - trivy image --download-db-only --no-progress
+  - trivy image "${REGISTRY}/${IMAGE}:${TAG}" --severity LOW,MEDIUM
+      --exit-code 0 --format table --output medium-vulns.txt
+  - cat medium-vulns.txt
+  - trivy image "${REGISTRY}/${IMAGE}:${TAG}"
+  cache:
+    paths: [ .trivycache ]
+  interruptible: true
+  timeout: 5m
+  artifacts:
+    reports:
+      container_scanning: gl-container-scanning-report.json
+    expire_in: 30 days
+    paths: [ medium-vulns.txt ]
 
 promote_images:
   stage: Publish Packages

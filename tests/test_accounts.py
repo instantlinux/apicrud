@@ -46,8 +46,8 @@ class TestAccounts(test_base.TestBase):
         self.assertEqual(response.status_code, 200, 'get failed message=%s' %
                          response.get_json().get('message'))
         result = response.get_json()
-        del(result['created'])
-        del(result['uid'])
+        del result['created']
+        del result['uid']
         expected['id'] = id
         self.assertEqual(result, expected)
 
@@ -101,7 +101,7 @@ class TestAccounts(test_base.TestBase):
         self.assertEqual(response.status_code, 200, 'get failed message=%s' %
                          response.get_json().get('message'))
         result = response.get_json()
-        del(result['created'])
+        del result['created']
         expected['id'] = uid
         self.assertEqual(result, expected)
 

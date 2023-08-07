@@ -24,7 +24,7 @@ class TestLists(test_base.TestBase):
         id = response.get_json()['id']
         response = self.call_endpoint('/list/%s' % id, 'get')
         result = response.get_json()
-        del(result['created'])
+        del result['created']
         expected['id'] = id
         self.assertEqual(result, expected)
 
@@ -46,8 +46,8 @@ class TestLists(test_base.TestBase):
                          response.get_json().get('message'))
         response = self.call_endpoint('/list/%s' % id, 'get')
         result = response.get_json()
-        del(result['created'])
-        del(result['modified'])
+        del result['created']
+        del result['modified']
         expected.update(updated)
         expected['id'] = id
         self.assertEqual(result, expected)
@@ -69,7 +69,7 @@ class TestLists(test_base.TestBase):
         # The record should still exist, with disabled status
         response = self.call_endpoint('/list/%s' % id, 'get')
         result = response.get_json()
-        del(result['created'])
+        del result['created']
         expected['id'] = id
         self.assertEqual(result, expected)
 
@@ -98,8 +98,8 @@ class TestLists(test_base.TestBase):
                          response.get_json().get('message'))
         response = self.call_endpoint('/list/%s' % id, 'get')
         result = response.get_json()
-        del(result['created'])
-        del(result['modified'])
+        del result['created']
+        del result['modified']
         expected.update(dict(members=set(members), id=id))
         result['members'] = set(result['members'])
         self.assertEqual(result, expected)
