@@ -32,7 +32,7 @@ class TestPeople(test_base.TestBase):
         id = response.get_json()['id']
         response = self.call_endpoint('/person/%s' % id, 'get')
         result = response.get_json()
-        del(result['created'])
+        del result['created']
         expected['id'] = id
         self.assertEqual(result, expected)
         response = self.call_endpoint('/contact?filter={"info":"%s"}' %
@@ -60,8 +60,8 @@ class TestPeople(test_base.TestBase):
                          response.get_json().get('message'))
         response = self.call_endpoint('/person/%s' % id, 'get')
         result = response.get_json()
-        del(result['created'])
-        del(result['modified'])
+        del result['created']
+        del result['modified']
         expected.update(updated)
         expected['id'] = id
         self.assertEqual(result, expected)
@@ -83,7 +83,7 @@ class TestPeople(test_base.TestBase):
         # The record should still exist, with disabled status
         response = self.call_endpoint('/person/%s' % id, 'get')
         result = response.get_json()
-        del(result['created'])
+        del result['created']
         expected.update(record)
         expected['id'] = id
         self.assertEqual(result, expected)
@@ -123,8 +123,8 @@ class TestPeople(test_base.TestBase):
         self.assertEqual(response.status_code, 200, 'get failed message=%s' %
                          response.get_json().get('message'))
         result = response.get_json()
-        del(result['created'])
-        del(result['modified'])
+        del result['created']
+        del result['modified']
         self.assertEqual(result, dict(id=cid, uid=uid, **expected))
         self.mock_messaging.assert_has_calls([
             mock.call(to=cid, template='contact_add', token=mock.ANY,
@@ -188,13 +188,13 @@ class TestPeople(test_base.TestBase):
         id = response.get_json()['id']
         response = self.call_endpoint('/person/%s' % id, 'get')
         result = response.get_json()
-        del(result['created'])
+        del result['created']
         expected['id'] = id
         self.assertEqual(result, expected)
         response = self.call_endpoint('/person', 'post', data=record)
         self.assertEqual(response.status_code, 405)
         result = response.get_json()
-        del(result['data'])
+        del result['data']
         self.assertEqual(result, dict(message='duplicate or other conflict'))
 
     # TODO - test that access disabled after contact-confirm

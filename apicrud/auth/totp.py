@@ -39,8 +39,8 @@ class AuthTOTP(SessionAuth):
         totp = pyotp.random_base32()
         uri = pyotp.totp.TOTP(totp).provisioning_uri(
             name=account.owner.identity, issuer_name=self.config.APPNAME)
-        return(dict(g.session.create(acc.uid, ['pendingtotp'],
-                                     totp=totp, ttl=120, uri=uri))), 200
+        return dict(g.session.create(acc.uid, ['pendingtotp'],
+                                     totp=totp, ttl=120, uri=uri)), 200
 
     def register(self, body):
         acc = AccessControl()

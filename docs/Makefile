@@ -7,7 +7,7 @@ SPHINXOPTS    ?=
 SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = content
 BUILDDIR      = _build
-PYTHONVER     = 3.8
+PYTHONVER     = 3.10
 
 VENV=python_env
 VDIR=$(PWD)/$(VENV)

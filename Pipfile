@@ -2,57 +2,58 @@
 geocoder = "*"
 
 # alpine provides pre-built wheels for these
-Authlib = "==0.15.5"
-boto3 = "==1.18.49"
-botocore = "==1.21.49"
-cryptography = "==3.3.2"
-Flask = "==2.0.2"
-Flask-Babel = "==2.0.0"
-itsdangerous = "==2.0.1"
-pycryptodomex = "==3.10.1"
-requests = "==2.26.0"
+# loads of breaking changes in 1.2
+Authlib = "<1.0.0"
+boto3 = "==1.26.132"
+botocore = "==1.29.132"
+cachetools = "==5.3.0"
+# upgrade to 41.0.2 to resolve CVE
+cryptography = "==40.0.2"
+# published 2.2.3 has CVE, newer 2.3.1 has error
+# AttributeError: module 'flask.json' has no attribute 'JSONEncoder'
+#  (See https://github.com/spec-first/connexion/issues/1699, in v2.14.2)
+Flask = "<2.3.0"
+# AttributeError: 'Babel' object has no attribute 'localeselector'
+Flask-Babel = "<3.0.0"
+greenlet = "==2.0.2"
+itsdangerous = "==2.1.2"
+jinja2 = "==3.1.2"
+ldap3 = "==2.9.1"
+passlib = "==1.7.4"
+pycryptodomex = "==3.17"
+requests = "==2.31.0"
+werkzeug = "==2.2.3"
 
 # for faster builds, pin these versions in sync with images
 # instantlinux/python-builder and instantlinux/python-uwsgi
 alembic = "*"
 b2sdk = "*"
-cachetools = "*"
 celery = "*"
 connexion = "*"
-"connexion[swagger-ui]" = "==2.7.0"
+"connexion[swagger-ui]" = "*"
 dollar-ref = "*"
 Flask-Cors = "*"
 # GeoAlchemy2 = "*"
-greenlet = "==1.1.2"
-ldap3 = "*"
-passlib = "*"
 PyJWT = "*"
 PyMySQL = "*"
 pyotp = "*"
 pytz = "*"
-# fakeredis doesn't handle newest redis
-redis = "<4.1.0"
+redis = "*"
 # Held back due to SAWarnings about many-to-many tables
 SQLAlchemy = "<1.4.0"
 SQLAlchemy-Utils = "*"
 swagger-ui-bundle = "*"
 urllib3 = "*"
-# Held back due to
-# AttributeError: 'LocalStack' object has no attribute '__ident_func__'
-werkzeug = "==2.0.2"
-# Held back due to
-# AttributeError: module 'jinja2.ext' has no attribute 'autoescape'
-jinja2 = "==3.0.3"
 
 # Transitive dependencies pinned to versions of python-wsgi base image
-arrow = "==1.2.2"
-cffi = "==1.14.5"
+##arrow = "==1.2.2" no longer present
+cffi = "==1.15.1"
 six = "==1.16.0"
 
 [dev-packages]
-coverage = "==6.3.3"
+coverage = "==7.2.7"
 fakeredis = "*"
-flake8 = "==4.0.1"
+flake8 = "==6.1.0"
 httpretty = "*"
 pytest = "*"
 pytest-cov = "*"

@@ -8,8 +8,9 @@ created 31-mar-2019 by richb@instantlinux.net
 import alembic.config
 import alembic.script
 from alembic.runtime.environment import EnvironmentContext
-from flask import _app_ctx_stack, g
+from flask import g
 from flask_babel import _
+import greenlet
 import logging
 import os.path
 from sqlalchemy import create_engine
@@ -54,7 +55,7 @@ def get_session(scopefunc=None, scoped=True, db_url=None, engine=None):
     if scoped:
         global Session
         if scopefunc is None:
-            scopefunc = _app_ctx_stack.__ident_func__
+            scopefunc = greenlet.getcurrent
         Session = scoped_session(sessionmaker(autocommit=False,
                                               autoflush=False,
                                               bind=engine),

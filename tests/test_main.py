@@ -94,7 +94,7 @@ class TestMain(test_base.TestBase):
         response = self.call_endpoint('/location/x-67673434', 'get')
         self.assertEqual(response.status_code, 200)
         result = response.get_json()
-        del(result['created'])
+        del result['created']
         self.assertEqual(result, expected)
 
     # TODO not yet implemented - extraneous-key rejection

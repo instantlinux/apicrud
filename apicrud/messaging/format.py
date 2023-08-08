@@ -128,8 +128,7 @@ class MessageFormat(object):
             for folder in config.TEMPLATE_FOLDERS:
                 jinja2Env.append(jinja2.Environment(
                     loader=jinja2.FileSystemLoader(searchpath=folder),
-                    extensions=['jinja2.ext.i18n', 'jinja2.ext.autoescape'],
-                    autoescape=jinja2.select_autoescape(['html'])
+                    extensions=['jinja2.ext.i18n']
                 ))
 
         kwargs.update(dict(siteurl=self.siteurl, appname=self.config.APPNAME))

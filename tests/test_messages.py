@@ -41,7 +41,7 @@ class TestMessages(test_base.TestBase):
         response = self.call_endpoint('/message/%s' % id, 'get')
         self.assertEqual(response.status_code, 200)
         result = response.get_json()
-        del(result['created'])
+        del result['created']
         expected['id'] = id
         self.assertEqual(result, expected)
 
@@ -64,9 +64,9 @@ class TestMessages(test_base.TestBase):
                          response.get_json().get('message'))
         response = self.call_endpoint('/message/%s' % id, 'get')
         result = response.get_json()
-        del(result['created'])
-        del(result['modified'])
-        # del(expected['list_id'])
+        del result['created']
+        del result['modified']
+        # del expected['list_id']
         expected.update(updated)
         expected['id'] = id
         self.assertEqual(result, expected)
@@ -89,7 +89,7 @@ class TestMessages(test_base.TestBase):
         # The record should still exist, with disabled status
         response = self.call_endpoint('/message/%s' % id, 'get')
         result = response.get_json()
-        del(result['created'])
+        del result['created']
         expected['id'] = id
         self.assertEqual(result, expected)
 

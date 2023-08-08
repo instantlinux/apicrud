@@ -34,7 +34,7 @@ class TestLocations(test_base.TestBase):
         response = self.call_endpoint('/location/%s' % id, 'get')
         self.assertEqual(response.status_code, 200)
         result = response.get_json()
-        del(result['created'])
+        del result['created']
         expected['id'] = id
         self.assertEqual(result, expected)
 
@@ -62,7 +62,7 @@ class TestLocations(test_base.TestBase):
         response = self.call_endpoint('/location/%s' % id, 'get')
         self.assertEqual(response.status_code, 200)
         result = response.get_json()
-        del(result['created'])
+        del result['created']
         expected['id'] = id
         expected['address'] = ''
         expected['geo'] = [-80.0392, 26.6771]
@@ -90,8 +90,8 @@ class TestLocations(test_base.TestBase):
                          response.get_json().get('location'))
         response = self.call_endpoint('/location/%s' % id, 'get')
         result = response.get_json()
-        del(result['created'])
-        del(result['modified'])
+        del result['created']
+        del result['modified']
         expected.update(updated)
         expected['id'] = id
         self.assertEqual(result, expected)
@@ -132,5 +132,5 @@ class TestLocations(test_base.TestBase):
         response = self.call_endpoint('/location?filter={"state":"CA"}', 'get')
         self.assertEqual(response.status_code, 200)
         result = response.get_json()['items']
-        del(result[0]['created'])
+        del result[0]['created']
         self.assertEqual(expected, result)

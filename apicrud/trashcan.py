@@ -58,7 +58,7 @@ class Trashcan(BasicCRUD):
         if hasattr(model, 'uid') and hasattr(model, 'owner'):
             retval['owner'] = record.owner.name
         if 'modified' in retval and not retval['modified']:
-            del(retval['modified'])
+            del retval['modified']
         eid = None if hasattr(model, 'event_id') else (
             acc.auth_ids[acc.primary_resource] or [None])[0]
         retval['rbac'] = ''.join(sorted(list(
@@ -226,7 +226,7 @@ class Trashcan(BasicCRUD):
                 and key >= start_resource]
         if 'id' in filter and not filter.get('id'):
             # allow get:foo?filter{id:null,key=val,etc}
-            del(filter['id'])
+            del filter['id']
         limit = logmsg['limit'] = int(kwargs.get(
             'limit', Constants.PER_PAGE_DEFAULT))
         retval = dict(items=[], count=0)
