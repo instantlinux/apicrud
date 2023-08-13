@@ -28,9 +28,9 @@ class Messaging(object):
         db_session (obj): open session to database
         settings (obj): AccountSettings for account
         smtp (obj): open session to SMTP smarthost
-        ssl_context (obj): an SSL context (TLSv1_2)
+        ssl_context (obj): an SSL context (TLS)
     """
-    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 
     def __init__(self, db_session=None, account_id=None, smtp=None,
                  settings=None):

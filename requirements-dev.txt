@@ -1,12 +1,12 @@
 # To update, edit Pipfile and then "make requirements-dev.txt"
 -i https://pypi.org/simple
-async-timeout==4.0.2; python_full_version <= '3.11.2'
+async-timeout==4.0.3; python_full_version <= '3.11.2'
 bleach==6.0.0; python_version >= '3.7'
 certifi==2023.7.22; python_version >= '3.6'
 cffi==1.15.1
 charset-normalizer==3.2.0; python_full_version >= '3.7.0'
 coverage==7.2.7
-cryptography==40.0.2
+cryptography==41.0.3
 docutils
 exceptiongroup==1.1.2; python_version < '3.11'
 execnet==2.0.2; python_version >= '3.7'
@@ -52,12 +52,12 @@ alembic==1.11.2
 amqp==5.1.1; python_version >= '3.6'
 attrs==23.1.0; python_version >= '3.7'
 authlib==0.15.6
-b2sdk==1.22.1
+b2sdk==1.23.0
 babel==2.12.1; python_version >= '3.7'
 billiard==4.1.0; python_version >= '3.7'
 boto3==1.26.132
 botocore==1.29.132
-cachetools==5.3.1
+cachetools==5.3.0
 celery==5.3.1
 click==8.1.6; python_version >= '3.7'
 click-didyoumean==0.3.0; python_full_version >= '3.6.2' and python_full_version < '4.0.0'
@@ -102,7 +102,7 @@ sqlalchemy==1.3.24
 sqlalchemy-utils==0.41.1
 swagger-ui-bundle==0.0.9
 termcolor==2.3.0; python_version >= '3.7'
-tqdm==4.65.1; python_version >= '3.7'
+tqdm==4.66.1; python_version >= '3.7'
 typing-extensions==4.7.1; python_version >= '3.7'
 tzdata==2023.3; python_version >= '2'
 vine==5.0.0; python_version >= '3.6'

@@ -7,8 +7,7 @@ Authlib = "<1.0.0"
 boto3 = "==1.26.132"
 botocore = "==1.29.132"
 cachetools = "==5.3.0"
-# upgrade to 41.0.2 to resolve CVE
-cryptography = "==40.0.2"
+cryptography = "==41.0.3"
 # published 2.2.3 has CVE, newer 2.3.1 has error
 # AttributeError: module 'flask.json' has no attribute 'JSONEncoder'
 #  (See https://github.com/spec-first/connexion/issues/1699, in v2.14.2)

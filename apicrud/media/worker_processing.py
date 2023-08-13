@@ -79,7 +79,7 @@ class MediaProcessing(object):
         # generate the 50-pixel thumbnail
         thumbnail = img.copy()
         thumbnail.thumbnail((self.config.THUMBNAIL_TINY,
-                             self.config.THUMBNAIL_TINY), Image.ANTIALIAS)
+                             self.config.THUMBNAIL_TINY), Image.LANCZOS)
         tbytes = io.BytesIO()
         thumbnail.save(tbytes, meta["ctype"])
 
@@ -146,7 +146,7 @@ class MediaProcessing(object):
             width = int(img.width * alt_size / img.height)
             logging.info("generating image name=%s width=%d height=%d id=%s"
                          % (meta["name"], width, alt_size, meta["fid"]))
-            alt_img = img.resize((width, alt_size), Image.ANTIALIAS)
+            alt_img = img.resize((width, alt_size), Image.LANCZOS)
             tbytes = io.BytesIO()
             alt_img.save(tbytes, meta["ctype"])
             if not self.api.put_object(
