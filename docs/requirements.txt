@@ -10,7 +10,7 @@ pymdown-extensions==10.1
 Sphinx==6.2.1
 sphinxcontrib-mermaid==0.9.2
 sphinx-markdown-parser==0.2.4
-sphinx-markdown-tables==0.0.16
+sphinx-markdown-tables==0.0.15
 # sphinxcontrib-openapi==0.7.0
 sphinx-rtd-theme==1.2.2
 
